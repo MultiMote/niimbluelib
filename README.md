@@ -10,6 +10,14 @@ NiimBlueLib is a library for the communication with NIIMBOT printers.
 
 Project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
 
+### Installation
+
+Yarn:
+
+```bash
+yarn add @mmote/niimbluelib --exact
+```
+
 ### Usage example
 
 ```js
