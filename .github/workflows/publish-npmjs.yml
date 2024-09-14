@@ -1,8 +1,10 @@
 name: Publish Package to npmjs
+
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - npm-test
+    tags:
+      - '*'
 
 jobs:
   build-and-publish:
