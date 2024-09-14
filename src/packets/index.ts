@@ -162,4 +162,4 @@ export * from "./packet";
 export * from "./packet_generator";
 export * from "./abstraction";
 export * from "./data_reader";
-export * from "./print_task_versions";
+export * from "../print_task_versions";

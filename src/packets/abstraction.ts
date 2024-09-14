@@ -4,21 +4,18 @@ import {
   ConnectResult,
   HeartbeatType,
   LabelType,
-  NiimbotPacket,
-  PacketGenerator,
   PrinterInfoType,
-  PrintOptions,
+  PrintTaskVersion,
   ResponseCommandId,
   SoundSettingsItemType,
   SoundSettingsType,
-  EncodedImage,
-  NiimbotAbstractClient,
-  Utils,
-  Validators,
-  PrintTaskVersion,
-  PrintProgressEvent,
-  SequentialDataReader
-} from "..";
+} from ".";
+import { NiimbotAbstractClient, PrintProgressEvent } from "../client";
+import { EncodedImage } from "../image_encoder";
+import { Validators, Utils } from "../utils";
+import { SequentialDataReader } from "./data_reader";
+import { NiimbotPacket } from "./packet";
+import { PacketGenerator, PrintOptions } from "./packet_generator";
 
 export class PrintError extends Error {
   public readonly reasonId: number;

@@ -1,4 +1,5 @@
-import { PrintTaskVersion, PrinterModel as M } from "..";
+import { PrintTaskVersion } from "./packets";
+import { PrinterModel as M } from "./printer_models";
 
 export const getPrintTaskVersion = (model: M): PrintTaskVersion | undefined => {
   switch (model) {

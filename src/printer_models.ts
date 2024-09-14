@@ -1,7 +1,8 @@
 /* AUTO-GENERATED FILE. DO NOT EDIT! */
 /* use 'yarn gen-printer-models' to generate */
 
-import { PrintDirection, LabelType as LT } from ".";
+import { PrintDirection } from "./image_encoder";
+import { LabelType as LT } from "./packets";
 
 export enum PrinterModel {
   UNKNOWN = "UNKNOWN",

@@ -1,4 +1,4 @@
-import { Utils } from "..";
+import { Utils } from "../utils";
 
 /** Utility class to sequentially fetch data from byte array. EOF checks included.  */
 export class SequentialDataReader {

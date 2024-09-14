@@ -1,4 +1,7 @@
-import { ConnectionInfo, PrinterInfo, HeartbeatData, NiimbotPacket } from "..";
+import { ConnectionInfo, PrinterInfo } from ".";
+import { HeartbeatData } from "../packets/abstraction";
+import { NiimbotPacket } from "../packets/packet";
+
 
 export class ConnectEvent extends Event {
   info: ConnectionInfo;

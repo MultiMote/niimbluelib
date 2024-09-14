@@ -1,5 +1,4 @@
 import { Mutex } from "async-mutex";
-import { ConnectionInfo, NiimbotAbstractClient, ConnectResult, NiimbotPacket, ResponseCommandId, Utils } from "..";
 import {
   ConnectEvent,
   DisconnectEvent,
@@ -7,6 +6,10 @@ import {
   RawPacketReceivedEvent,
   RawPacketSentEvent,
 } from "./events";
+import { ConnectionInfo, NiimbotAbstractClient } from ".";
+import { NiimbotPacket } from "../packets/packet";
+import { ConnectResult, ResponseCommandId } from "../packets";
+import { Utils } from "../utils";
 
 class BleConfiguration {
   public static readonly SERVICE: string = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";

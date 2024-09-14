@@ -30,7 +30,8 @@ fetch("https://oss-print.niimbot.com/public_resources/static_resources/devices.j
 
     console.log("/* AUTO-GENERATED FILE. DO NOT EDIT! */");
     console.log("/* use 'yarn gen-printer-models' to generate */\n");
-    console.log('import { PrintDirection, LabelType as LT } from ".";\n');
+    console.log('import { PrintDirection } from "./image_encoder";');
+    console.log('import { LabelType as LT } from "./packets";\n');
 
     console.log("export enum PrinterModel {");
     console.log('  UNKNOWN = "UNKNOWN",');

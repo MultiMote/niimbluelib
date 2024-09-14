@@ -4,13 +4,13 @@ import {
   LabelType,
   NiimbotPacket,
   PrinterInfoType,
+  PrintTaskVersion,
   RequestCommandId,
   ResponseCommandId,
   SoundSettingsItemType,
   SoundSettingsType,
-  PrintTaskVersion,
 } from ".";
-import { EncodedImage, ImageEncoder, ImageRow  } from "../image_encoder";
+import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
 import { Utils } from "../utils";
 
 export type PrintOptions = {

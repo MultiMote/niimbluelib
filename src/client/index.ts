@@ -1,5 +1,6 @@
 import { TypedEventTarget } from "typescript-event-target";
 import {
+  Abstraction,
   AutoShutdownTime,
   BatteryChargeLevel,
   ConnectResult,
@@ -7,14 +8,9 @@ import {
   LabelType,
   NiimbotPacket,
   PrintTaskVersion,
-  ClientEventMap,
-  HeartbeatEvent,
-  PacketSentEvent,
-  PrinterInfoFetchedEvent,
-  Abstraction,
-  getPrinterMetaById,
-  PrinterModelMeta,
-} from "..";
+} from "../packets";
+import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
+import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent } from "./events";
 
 export type ConnectionInfo = {
   deviceName?: string;
