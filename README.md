@@ -7,8 +7,9 @@
 > and is not intended to be used for commercial purposes without the consent of the vendor.
 
 NiimBlueLib is a library for the communication with NIIMBOT printers.
+Used in [NiimBlue](https://github.com/MultiMote/niimblue) project.
 
-Project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
+This project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
 
 ### Installation
 
