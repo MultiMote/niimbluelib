@@ -154,6 +154,12 @@ export class Abstraction {
 
   public async getPrinterModel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.PrinterModelId));
+    Validators.u8ArrayLengthAtLeast(packet.data, 1);
+
+    if (packet.data.length === 1) {
+      return Utils.bytesToI16(packet.data) << 8;
+    }
+
     Validators.u8ArrayLengthEquals(packet.data, 2);
     return Utils.bytesToI16(packet.data);
   }
