@@ -157,7 +157,7 @@ export class Abstraction {
     Validators.u8ArrayLengthAtLeast(packet.data, 1);
 
     if (packet.data.length === 1) {
-      return Utils.bytesToI16(packet.data) << 8;
+      return packet.data[0] << 8;
     }
 
     Validators.u8ArrayLengthEquals(packet.data, 2);
