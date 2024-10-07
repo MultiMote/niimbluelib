@@ -4,6 +4,7 @@ import {
   ConnectResult,
   HeartbeatType,
   LabelType,
+  PrinterErrorCode,
   PrinterInfoType,
   PrintTaskVersion,
   ResponseCommandId,
@@ -97,7 +98,10 @@ export class Abstraction {
 
     if (packet.command === ResponseCommandId.In_PrintError) {
       Validators.u8ArrayLengthEquals(packet.data, 1);
-      throw new PrintError(`Print error (${ResponseCommandId[packet.command]} packet received)`, packet.data[0]);
+      const errorName = PrinterErrorCode[packet.data[0]] ?? "unknown";
+      throw new PrintError(
+        `Print error (${ResponseCommandId[packet.command]} packet received, code is ${packet.data[0]} - ${errorName})`, packet.data[0]
+      );
     }
 
     Validators.u8ArrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
