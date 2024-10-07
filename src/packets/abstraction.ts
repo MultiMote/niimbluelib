@@ -6,13 +6,13 @@ import {
   LabelType,
   PrinterErrorCode,
   PrinterInfoType,
-  PrintTaskVersion,
   ResponseCommandId,
   SoundSettingsItemType,
   SoundSettingsType,
 } from ".";
 import { NiimbotAbstractClient, PrintProgressEvent } from "../client";
 import { EncodedImage } from "../image_encoder";
+import { PrintTaskVersion } from "../print_task_versions";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
@@ -68,6 +68,7 @@ export interface PrinterStatusData {
 /** Not sure for name. */
 export class Abstraction {
   private readonly DEFAULT_TIMEOUT: number = 1_000;
+  private readonly DEFAULT_PRINT_TIMEOUT: number = 10_000;
   private client: NiimbotAbstractClient;
   private timeout: number = this.DEFAULT_TIMEOUT;
   private statusPollTimer: NodeJS.Timeout | undefined;
@@ -301,7 +302,7 @@ export class Abstraction {
     options?: PrintOptions,
     timeout?: number
   ): Promise<void> {
-    this.setTimeout(timeout ?? 10_000);
+    this.setTimeout(timeout ?? this.DEFAULT_PRINT_TIMEOUT);
     const packets: NiimbotPacket[] = PacketGenerator.generatePrintSequence(taskVersion, image, options);
     try {
       for (const element of packets) {

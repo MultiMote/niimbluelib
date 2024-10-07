@@ -4,13 +4,12 @@ import {
   AutoShutdownTime,
   BatteryChargeLevel,
   ConnectResult,
-  getPrintTaskVersion,
   LabelType,
   NiimbotPacket,
-  PrintTaskVersion,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent } from "./events";
+import { getPrintTaskVersion, PrintTaskVersion } from "../print_task_versions";
 
 export type ConnectionInfo = {
   deviceName?: string;

@@ -147,18 +147,6 @@ export enum ConnectResult {
   FirmwareErrors = 90,
 }
 
-export enum PrintTaskVersion {
-  /** Used in D11 */
-  V1 = 1,
-  /** Used in B21, D110new */
-  V2,
-  /** Used in B16 */
-  V3,
-  /** Used in B1 */
-  V4,
-  /** Not used */
-  V5,
-}
 
 /** In_PrintError status codes */
 export enum PrinterErrorCode {
@@ -206,4 +194,3 @@ export * from "./packet";
 export * from "./packet_generator";
 export * from "./abstraction";
 export * from "./data_reader";
-export * from "../print_task_versions";
