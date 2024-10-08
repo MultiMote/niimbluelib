@@ -161,8 +161,9 @@ export class PacketGenerator {
   }
 
   public static setPrintQuantity(quantity: number): NiimbotPacket {
-    const [h, l] = Utils.u16ToBytes(quantity);
-    return new NiimbotPacket(RequestCommandId.PrintQuantity, [h, l]);
+    return new NiimbotPacket(RequestCommandId.PrintQuantity, [
+      ...Utils.u16ToBytes(quantity)
+    ]);
   }
 
   public static printStatus(): NiimbotPacket {
@@ -306,11 +307,14 @@ export class PacketGenerator {
         packets.push(PacketGenerator.printClear());
         packets.push(PacketGenerator.pageStart());
         packets.push(PacketGenerator.setPageSizeV1(image.rows));
+        packets.push(PacketGenerator.setPrintQuantity(options?.quantity ?? 1));
         break;
       case PrintTaskVersion.V2:
         packets.push(PacketGenerator.printClear());
         packets.push(PacketGenerator.pageStart());
         packets.push(PacketGenerator.setPageSizeV2(image.rows, image.cols));
+        packets.push(PacketGenerator.setPrintQuantity(options?.quantity ?? 1));
+
         break;
       case PrintTaskVersion.V3:
         packets.push(PacketGenerator.pageStart());
@@ -355,7 +359,7 @@ export class PacketGenerator {
       default:
         taskVersion satisfies never;
     }
-    
+
     return packets;
   }
 
