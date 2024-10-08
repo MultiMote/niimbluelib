@@ -79,7 +79,12 @@ spawned.on("close", (code) => {
         } else {
           comment += ResponseCommandId[packet.command] ?? "???";
         }
-        comment += `(${packet.dataLength}); `;
+        
+        if (display === "data") {
+          comment += `(${packet.dataLength}: ${Utils.bufToHex(packet.data)}); `;
+        } else {
+          comment += `(${packet.dataLength}); `;
+        }
       }
     } catch (e) {
       comment = "Invalid packet";

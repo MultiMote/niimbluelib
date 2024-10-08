@@ -27,7 +27,8 @@
   "scripts": {
     "clean-build": "yarn clean && yarn build",
     "build": "tsc --build",
-    "parse-dump": "yarn build && node utils/parse-dump.mjs",
+    "parse-wireshark-dump": "yarn build && node utils/parse-wireshark-dump.mjs",
+    "parse-text-dump": "yarn build && node utils/parse-text-dump.mjs",
     "clean": "node clean-dist.mjs",
     "gen-printer-models": "node utils/gen-printer-models.js > src/printer_models.ts"
   },
