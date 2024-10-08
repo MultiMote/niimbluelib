@@ -81,13 +81,14 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   }
 
   public async fetchPrinterInfo(): Promise<PrinterInfo> {
-    // console.log(await this.abstraction.getPrinterStatusData());
     this.info.model_id = await this.abstraction.getPrinterModel();
-    this.info.serial = await this.abstraction.getPrinterSerialNumber();
-    this.info.mac = await this.abstraction.getPrinterBluetoothMacAddress();
-    this.info.charge = await this.abstraction.getBatteryChargeLevel();
-    this.info.autoShutdownTime = await this.abstraction.getAutoShutDownTime();
-    this.info.labelType = await this.abstraction.getLabelType();
+
+    this.info.serial = await this.abstraction.getPrinterSerialNumber().catch(console.error) ?? undefined;
+    this.info.mac = await this.abstraction.getPrinterBluetoothMacAddress().catch(console.error) ?? undefined;
+    this.info.charge = await this.abstraction.getBatteryChargeLevel().catch(console.error) ?? undefined;
+    this.info.autoShutdownTime = await this.abstraction.getAutoShutDownTime().catch(console.error) ?? undefined;
+    this.info.labelType = await this.abstraction.getLabelType().catch(console.error) ?? undefined;
+
     this.dispatchTypedEvent("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
   }
