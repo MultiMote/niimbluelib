@@ -285,12 +285,12 @@ export class PacketGenerator {
     return image.rowsData.map((p: ImageRow) => {
       if (p.dataType === "pixels") {
         if (p.blackPixelsCount > 6) {
-          return PacketGenerator.printBitmapRow(p.rowNumber, p.repeat, p.rowData!);
+          return this.printBitmapRow(p.rowNumber, p.repeat, p.rowData!);
         } else {
-          return PacketGenerator.printBitmapRowIndexed(p.rowNumber, p.repeat, p.rowData!);
+          return this.printBitmapRowIndexed(p.rowNumber, p.repeat, p.rowData!);
         }
       } else {
-        return PacketGenerator.printEmptySpace(p.rowNumber, p.repeat);
+        return this.printEmptySpace(p.rowNumber, p.repeat);
       }
     });
   }
@@ -304,57 +304,57 @@ export class PacketGenerator {
 
     switch (taskVersion) {
       case PrintTaskVersion.V1:
-        packets.push(PacketGenerator.printClear());
-        packets.push(PacketGenerator.pageStart());
-        packets.push(PacketGenerator.setPageSizeV1(image.rows));
-        packets.push(PacketGenerator.setPrintQuantity(options?.quantity ?? 1));
+        packets.push(this.printClear());
+        packets.push(this.pageStart());
+        packets.push(this.setPageSizeV1(image.rows));
+        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
         break;
       case PrintTaskVersion.V2:
-        packets.push(PacketGenerator.printClear());
-        packets.push(PacketGenerator.pageStart());
-        packets.push(PacketGenerator.setPageSizeV2(image.rows, image.cols));
-        packets.push(PacketGenerator.setPrintQuantity(options?.quantity ?? 1));
+        packets.push(this.printClear());
+        packets.push(this.pageStart());
+        packets.push(this.setPageSizeV2(image.rows, image.cols));
+        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
 
         break;
       case PrintTaskVersion.V3:
-        packets.push(PacketGenerator.pageStart());
-        packets.push(PacketGenerator.setPageSizeV2(image.rows, image.cols));
-        packets.push(PacketGenerator.setPrintQuantity(options?.quantity ?? 1));
+        packets.push(this.pageStart());
+        packets.push(this.setPageSizeV2(image.rows, image.cols));
+        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
         break;
       case PrintTaskVersion.V4:
-        packets.push(PacketGenerator.pageStart());
-        packets.push(PacketGenerator.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
+        packets.push(this.pageStart());
+        packets.push(this.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
         break;
       case PrintTaskVersion.V5:
-        packets.push(PacketGenerator.pageStart());
-        packets.push(PacketGenerator.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
+        packets.push(this.pageStart());
+        packets.push(this.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
         break;
       default:
         taskVersion satisfies never;
     }
 
-    packets.push(...PacketGenerator.writeImageData(image));
-    packets.push(PacketGenerator.pageEnd());
+    packets.push(...this.writeImageData(image));
+    packets.push(this.pageEnd());
     return packets;
   }
 
   public static generatePrintInitSequence(taskVersion: PrintTaskVersion, options?: PrintOptions): NiimbotPacket[] {
     const packets: NiimbotPacket[] = [];
 
-    packets.push(PacketGenerator.setDensity(options?.density ?? 2));
-    packets.push(PacketGenerator.setLabelType(options?.labelType ?? LabelType.WithGaps));
+    packets.push(this.setDensity(options?.density ?? 2));
+    packets.push(this.setLabelType(options?.labelType ?? LabelType.WithGaps));
 
     switch (taskVersion) {
       case PrintTaskVersion.V1:
       case PrintTaskVersion.V2:
       case PrintTaskVersion.V3:
-        packets.push(PacketGenerator.printStart());
+        packets.push(this.printStart());
         break;
       case PrintTaskVersion.V4:
-        packets.push(PacketGenerator.printStartV4(options?.quantity ?? 1));
+        packets.push(this.printStartV4(options?.quantity ?? 1));
         break;
       case PrintTaskVersion.V5:
-        packets.push(PacketGenerator.printStartV5(options?.quantity ?? 1, 0, 0));
+        packets.push(this.printStartV5(options?.quantity ?? 1, 0, 0));
         break;
       default:
         taskVersion satisfies never;
