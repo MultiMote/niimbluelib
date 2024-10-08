@@ -19,12 +19,14 @@ export type ConnectionInfo = {
 export interface PrinterInfo {
   connectResult?: ConnectResult;
   protocolVersion?: number;
-  model_id?: number;
+  modelId?: number;
   serial?: string;
   mac?: string;
   charge?: BatteryChargeLevel;
   autoShutdownTime?: AutoShutdownTime;
   labelType?: LabelType;
+  softwareVersion?: string;
+  hardwareVersion?: string;
 }
 
 export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEventMap> {
@@ -81,13 +83,15 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   }
 
   public async fetchPrinterInfo(): Promise<PrinterInfo> {
-    this.info.model_id = await this.abstraction.getPrinterModel();
+    this.info.modelId = await this.abstraction.getPrinterModel();
 
     this.info.serial = await this.abstraction.getPrinterSerialNumber().catch(console.error) ?? undefined;
     this.info.mac = await this.abstraction.getPrinterBluetoothMacAddress().catch(console.error) ?? undefined;
     this.info.charge = await this.abstraction.getBatteryChargeLevel().catch(console.error) ?? undefined;
     this.info.autoShutdownTime = await this.abstraction.getAutoShutDownTime().catch(console.error) ?? undefined;
     this.info.labelType = await this.abstraction.getLabelType().catch(console.error) ?? undefined;
+    this.info.hardwareVersion = await this.abstraction.getHardwareVersion().catch(console.error) ?? undefined;
+    this.info.softwareVersion = await this.abstraction.getSoftwareVersion().catch(console.error) ?? undefined;
 
     this.dispatchTypedEvent("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
@@ -124,10 +128,10 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
 
   /** Get printer capabilities based on the printer model. Model library is hardcoded. */
   public getModelMetadata(): PrinterModelMeta | undefined {
-    if (this.info.model_id === undefined) {
+    if (this.info.modelId === undefined) {
       return undefined;
     }
-    return getPrinterMetaById(this.info.model_id);
+    return getPrinterMetaById(this.info.modelId);
   }
 
   /** Determine print task version if any */

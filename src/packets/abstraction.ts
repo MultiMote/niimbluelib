@@ -13,6 +13,7 @@ import {
 import { NiimbotAbstractClient, PrintProgressEvent } from "../client";
 import { EncodedImage } from "../image_encoder";
 import { PrintTaskVersion } from "../print_task_versions";
+import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
@@ -237,7 +238,7 @@ export class Abstraction {
     }
     r.end();
 
-    const model: number | undefined = this.client.getPrinterInfo().model_id;
+    const model: number | undefined = this.client.getPrinterInfo().modelId;
 
     if (model !== undefined && ![512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272].includes(model)) {
       info.lidClosed = !info.lidClosed;
@@ -256,6 +257,40 @@ export class Abstraction {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.AutoShutdownTime));
     Validators.u8ArrayLengthEquals(packet.data, 1);
     return packet.data[0] as AutoShutdownTime;
+  }
+
+  /** May be wrong, version format varies between models */
+  public async getSoftwareVersion(): Promise<string> {
+    const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.SoftWareVersion));
+    Validators.u8ArrayLengthEquals(packet.data, 2);
+
+    let version = 0;
+    const model = this.client.getModelMetadata()?.model;
+
+    if (model !== undefined && PrinterModel[model]?.startsWith("B")) {
+      version = packet.data[1] / 100 + packet.data[0];
+    } else {
+      version = (packet.data[0] * 256 + packet.data[1]) / 100.0;
+    }
+
+    return version.toFixed(2);
+  }
+
+  /** May be wrong, version format varies between models */
+  public async getHardwareVersion(): Promise<string> {
+    const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.HardWareVersion));
+    Validators.u8ArrayLengthEquals(packet.data, 2);
+
+    let version = 0;
+    const model = this.client.getModelMetadata()?.model;
+
+    if (model !== undefined && PrinterModel[model]?.startsWith("B")) {
+      version = packet.data[1] / 100 + packet.data[0];
+    } else {
+      version = (packet.data[0] * 256 + packet.data[1]) / 100.0;
+    }
+
+    return version.toFixed(2);
   }
 
   public async setAutoShutDownTime(time: AutoShutdownTime): Promise<void> {
