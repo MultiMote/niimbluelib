@@ -22,7 +22,7 @@ yarn add @mmote/niimbluelib --exact
 ### Usage example
 
 ```js
-import { Utils, RequestCommandId, ResponseCommandId, NiimbotBluetoothClient, ImageEncoder } from "@mmote/niimbluelib";
+import { Utils, RequestCommandId, ResponseCommandId, NiimbotBluetoothClient, ImageEncoder, PrintTaskVersion } from "@mmote/niimbluelib";
 
 const client = new NiimbotBluetoothClient();
 
@@ -77,10 +77,12 @@ ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
 
 const image = ImageEncoder.encodeCanvas(canvas, props.printDirection);
 
-await client.abstraction.print(client.getPrintTaskVersion(), image, { quantity });
+const taskVersion = client.getPrintTaskVersion() ?? PrintTaskVersion.V3;
+
+await client.abstraction.print(taskVersion, image, { quantity });
 
 try {
-  await client.abstraction.waitUntilPrintFinished(quantity);
+  await client.abstraction.waitUntilPrintFinished(taskVersion, quantity);
 } catch (e) {
   console.error(e);
 }

@@ -10,7 +10,7 @@ import {
   SoundSettingsItemType,
   SoundSettingsType,
 } from ".";
-import { NiimbotAbstractClient, PrintProgressEvent } from "../client";
+import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
 import { EncodedImage } from "../image_encoder";
 import { PrintTaskVersion } from "../print_task_versions";
 import { PrinterModel } from "../printer_models";
@@ -73,6 +73,7 @@ export class Abstraction {
   private client: NiimbotAbstractClient;
   private timeout: number = this.DEFAULT_TIMEOUT;
   private statusPollTimer: NodeJS.Timeout | undefined;
+  private statusTimeoutTimer: NodeJS.Timeout | undefined;
 
   constructor(client: NiimbotAbstractClient) {
     this.client = client;
@@ -102,7 +103,8 @@ export class Abstraction {
       Validators.u8ArrayLengthEquals(packet.data, 1);
       const errorName = PrinterErrorCode[packet.data[0]] ?? "unknown";
       throw new PrintError(
-        `Print error (${ResponseCommandId[packet.command]} packet received, code is ${packet.data[0]} - ${errorName})`, packet.data[0]
+        `Print error (${ResponseCommandId[packet.command]} packet received, code is ${packet.data[0]} - ${errorName})`,
+        packet.data[0]
       );
     }
 
@@ -357,6 +359,40 @@ export class Abstraction {
     }
   }
 
+  public async waitUntilPrintFinishedV1(pagesToPrint: number, timeoutMs: number = 5_000): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const listener = (evt: PacketReceivedEvent) => {
+        if (evt.packet.command === ResponseCommandId.In_PrinterPageIndex) {
+          Validators.u8ArrayLengthEquals(evt.packet.data, 2);
+          const page = Utils.bytesToI16(evt.packet.data);
+
+          this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(page, pagesToPrint, 100, 100));
+
+          clearTimeout(this.statusTimeoutTimer);
+          this.statusTimeoutTimer = setTimeout(() => {
+            this.client.removeEventListener("packetreceived", listener);
+            reject(new Error("Timeout waiting print status"));
+          }, timeoutMs);
+
+          if (page === pagesToPrint) {
+            clearTimeout(this.statusTimeoutTimer);
+            this.client.removeEventListener("packetreceived", listener);
+            resolve();
+          }
+        }
+      };
+
+      clearTimeout(this.statusTimeoutTimer);
+      this.statusTimeoutTimer = setTimeout(() => {
+        this.client.removeEventListener("packetreceived", listener);
+        reject(new Error("Timeout waiting print status"));
+      }, timeoutMs);
+
+      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+      this.client.addEventListener("packetreceived", listener);
+    });
+  }
+
   /**
    * Poll printer every {@link pollIntervalMs} and resolve when printer pages equals {@link pagesToPrint}, pagePrintProgress=100, pageFeedProgress=100.
    *
@@ -365,8 +401,10 @@ export class Abstraction {
    * @param pagesToPrint Total pages to print.
    * @param pollIntervalMs Poll interval in milliseconds.
    */
-  public async waitUntilPrintFinished(pagesToPrint: number, pollIntervalMs: number = 300): Promise<void> {
-    return new Promise((resolve, reject) => {
+  public async waitUntilPrintFinishedV2(pagesToPrint: number, pollIntervalMs: number = 300): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+
       this.statusPollTimer = setInterval(() => {
         this.getPrintStatus()
           .then((status: PrintStatus) => {
@@ -386,6 +424,23 @@ export class Abstraction {
           });
       }, pollIntervalMs);
     });
+  }
+
+  /**
+   * printprogress event is firing during this process.
+   *
+   * @param pagesToPrint Total pages to print.
+   */
+  public async waitUntilPrintFinished(
+    taskVersion: PrintTaskVersion,
+    pagesToPrint: number,
+    options?: { pollIntervalMs?: number; timeoutMs?: number }
+  ): Promise<void> {
+    if (taskVersion === PrintTaskVersion.V1) {
+      return this.waitUntilPrintFinishedV1(pagesToPrint, options?.timeoutMs);
+    }
+
+    return this.waitUntilPrintFinishedV2(pagesToPrint, options?.pollIntervalMs);
   }
 
   public async printEnd(): Promise<void> {
