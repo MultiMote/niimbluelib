@@ -306,7 +306,16 @@ export class Abstraction {
   public async getPrinterSerialNumber(): Promise<string> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.SerialNumber));
     Validators.u8ArrayLengthAtLeast(packet.data, 1);
-    return Utils.u8ArrayToString(packet.data);
+
+    if (packet.data.length < 4) {
+      return "-1";
+    }
+
+    if (packet.data.length >= 8) {
+      return Utils.u8ArrayToString(packet.data);
+    }
+
+    return Utils.bufToHex(packet.data.slice(0, 4), "").toUpperCase();
   }
 
   public async getPrinterBluetoothMacAddress(): Promise<string> {
