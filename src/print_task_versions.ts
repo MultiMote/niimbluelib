@@ -11,7 +11,6 @@ export enum PrintTaskVersion {
 export const getPrintTaskVersion = (model: M): PrintTaskVersion | undefined => {
   switch (model) {
     case M.D11:
-    case M.D11_H:
     case M.D11S:
     case M.B21_L2B:
     case M.B21:
@@ -23,6 +22,7 @@ export const getPrintTaskVersion = (model: M): PrintTaskVersion | undefined => {
 
     case M.D110:
     case M.D110_M:
+    case M.D11_H:
       return PrintTaskVersion.V3;
 
     case M.B1:
