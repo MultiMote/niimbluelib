@@ -57,6 +57,14 @@ export class HeartbeatEvent extends Event {
   }
 }
 
+export class HeartbeatFailedEvent extends Event {
+  failedAttempts: number;
+  constructor(failedAttempts: number) {
+    super("heartbeatfailed");
+    this.failedAttempts = failedAttempts;
+  }
+}
+
 export class PrinterInfoFetchedEvent extends Event {
   info: PrinterInfo;
   constructor(info: PrinterInfo) {
@@ -92,6 +100,7 @@ export interface ClientEventMap {
   packetreceived: PacketReceivedEvent;
   packetsent: PacketSentEvent;
   heartbeat: HeartbeatEvent;
+  heartbeatfailed: HeartbeatFailedEvent;
   printerinfofetched: PrinterInfoFetchedEvent;
   printprogress: PrintProgressEvent;
 }

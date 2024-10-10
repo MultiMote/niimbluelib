@@ -92,8 +92,8 @@ export class Abstraction {
   }
 
   /** Send packet and wait for response */
-  private async send(packet: NiimbotPacket): Promise<NiimbotPacket> {
-    return this.client.sendPacketWaitResponse(packet, this.timeout);
+  private async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
+    return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.timeout);
   }
 
   public async getPrintStatus(): Promise<PrintStatus> {
@@ -200,7 +200,7 @@ export class Abstraction {
   }
 
   public async heartbeat(): Promise<HeartbeatData> {
-    const packet = await this.send(PacketGenerator.heartbeat(HeartbeatType.Advanced1));
+    const packet = await this.send(PacketGenerator.heartbeat(HeartbeatType.Advanced1), 500);
 
     const info: HeartbeatData = {
       paperState: -1,
@@ -342,6 +342,15 @@ export class Abstraction {
     await this.send(PacketGenerator.printerReset());
   }
 
+  /**
+   *
+   * Call client.stopHeartbeat before print is started!
+   *
+   * @param taskVersion
+   * @param image
+   * @param options
+   * @param timeout
+   */
   public async print(
     taskVersion: PrintTaskVersion,
     image: EncodedImage,

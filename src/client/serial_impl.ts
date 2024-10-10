@@ -25,7 +25,6 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
 
     _port.addEventListener("disconnect", () => {
       this.port = undefined;
-      console.log("serial disconnect event");
       this.dispatchTypedEvent("disconnect", new DisconnectEvent());
     });
 

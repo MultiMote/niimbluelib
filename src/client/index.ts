@@ -8,7 +8,7 @@ import {
   NiimbotPacket,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
-import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent } from "./events";
+import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent, HeartbeatFailedEvent } from "./events";
 import { getPrintTaskVersion, PrintTaskVersion } from "../print_task_versions";
 
 export type ConnectionInfo = {
@@ -33,12 +33,17 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   public readonly abstraction: Abstraction;
   protected info: PrinterInfo = {};
   private heartbeatTimer?: NodeJS.Timeout;
+  private heartbeatFails: number = 0;
+  private heartbeatIntervalMs: number = 2_000;
+
   /** https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = 10;
 
   constructor() {
     super();
     this.abstraction = new Abstraction(this);
+    this.addEventListener("connect", () => this.startHeartbeat())
+    this.addEventListener("disconnect", () => this.stopHeartbeat())
   }
 
   /** Connect to printer port */
@@ -102,19 +107,38 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   }
 
   /**
-   * Starts the heartbeat timer, "heartbeat" is emitted after packet received.
+   * Set interval for {@link startHeartbeat}.
    *
    * @param interval Heartbeat interval, default is 1000ms
    */
-  public startHeartbeat(intervalMs: number = 1000): void {
+  public setHeartbeatInterval(intervalMs: number): void {
+    this.heartbeatIntervalMs = intervalMs;
+  }
+
+
+  /**
+   * Starts the heartbeat timer, "heartbeat" is emitted after packet received.
+   *
+   * If you need to change interval, call {@link setHeartbeatInterval} before.
+   */
+  public startHeartbeat(): void {
+    this.heartbeatFails = 0;
+
+    this.stopHeartbeat();
+
     this.heartbeatTimer = setInterval(() => {
       this.abstraction
         .heartbeat()
         .then((data) => {
+          this.heartbeatFails = 0;
           this.dispatchTypedEvent("heartbeat", new HeartbeatEvent(data));
         })
-        .catch(console.error);
-    }, intervalMs);
+        .catch((e) => {
+          console.error(e);
+          this.heartbeatFails++;
+          this.dispatchTypedEvent("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
+        });
+    }, this.heartbeatIntervalMs);
   }
 
   public stopHeartbeat(): void {

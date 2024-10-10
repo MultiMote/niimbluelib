@@ -43,7 +43,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       this.gattServer = undefined;
       this.channel = undefined;
       this.info = {};
-      this.stopHeartbeat();
       this.dispatchTypedEvent("disconnect", new DisconnectEvent());
       device.removeEventListener("gattserverdisconnected", disconnectListener);
     };
