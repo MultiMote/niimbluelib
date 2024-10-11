@@ -21,10 +21,10 @@ export const getPrintTaskVersion = (model: M): PrintTaskVersion | undefined => {
       return PrintTaskVersion.V1;
 
     case M.D110:
-    case M.D110_M:
-    case M.D11_H:
       return PrintTaskVersion.V3;
 
+    case M.D11_H:
+    case M.D110_M:
     case M.B1:
       return PrintTaskVersion.V4;
   }
