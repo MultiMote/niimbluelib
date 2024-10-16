@@ -10,7 +10,6 @@ import {
   SoundSettingsType,
 } from ".";
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
-import { PrintTaskVariant } from "../print_task_versions";
 import { Utils } from "../utils";
 
 export type PrintOptions = {
@@ -295,91 +294,91 @@ export class PacketGenerator {
     });
   }
 
-  public static generatePrintPageSequence(
-    taskVersion: PrintTaskVariant,
-    image: EncodedImage,
-    options?: PrintOptions
-  ): NiimbotPacket[] {
-    const packets: NiimbotPacket[] = [];
+  // public static generatePrintPageSequence(
+  //   taskVersion: PrintTaskVariant,
+  //   image: EncodedImage,
+  //   options?: PrintOptions
+  // ): NiimbotPacket[] {
+  //   const packets: NiimbotPacket[] = [];
 
-    switch (taskVersion) {
-      case PrintTaskVariant.D11_OLD:
-        packets.push(this.printClear());
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV1(image.rows));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-        break;
+  //   switch (taskVersion) {
+  //     case PrintTaskVariant.D11_OLD:
+  //       packets.push(this.printClear());
+  //       packets.push(this.pageStart());
+  //       packets.push(this.setPageSizeV1(image.rows));
+  //       packets.push(this.setPrintQuantity(options?.quantity ?? 1));
+  //       break;
 
-      case PrintTaskVariant.V2:
-        packets.push(this.printClear());
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV2(image.rows, image.cols));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-        break;
+  //     case PrintTaskVariant.V2:
+  //       packets.push(this.printClear());
+  //       packets.push(this.pageStart());
+  //       packets.push(this.setPageSizeV2(image.rows, image.cols));
+  //       packets.push(this.setPrintQuantity(options?.quantity ?? 1));
+  //       break;
 
-      case PrintTaskVariant.D110:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV2(image.rows, image.cols));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-        break;
+  //     case PrintTaskVariant.D110:
+  //       packets.push(this.pageStart());
+  //       packets.push(this.setPageSizeV2(image.rows, image.cols));
+  //       packets.push(this.setPrintQuantity(options?.quantity ?? 1));
+  //       break;
 
-      case PrintTaskVariant.B1:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
-        break;
+  //     case PrintTaskVariant.B1:
+  //       packets.push(this.pageStart());
+  //       packets.push(this.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
+  //       break;
 
-      case PrintTaskVariant.V5:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
-        break;
+  //     case PrintTaskVariant.V5:
+  //       packets.push(this.pageStart());
+  //       packets.push(this.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
+  //       break;
 
-      default:
-        taskVersion satisfies never;
-    }
+  //     default:
+  //       taskVersion satisfies never;
+  //   }
 
-    packets.push(...this.writeImageData(image));
-    packets.push(this.pageEnd());
-    return packets;
-  }
+  //   packets.push(...this.writeImageData(image));
+  //   packets.push(this.pageEnd());
+  //   return packets;
+  // }
 
-  public static generatePrintInitSequence(taskVersion: PrintTaskVariant, options?: PrintOptions): NiimbotPacket[] {
-    const packets: NiimbotPacket[] = [];
+  // public static generatePrintInitSequence(taskVersion: PrintTaskVariant, options?: PrintOptions): NiimbotPacket[] {
+  //   const packets: NiimbotPacket[] = [];
 
-    packets.push(this.setDensity(options?.density ?? 2));
-    packets.push(this.setLabelType(options?.labelType ?? LabelType.WithGaps));
+  //   packets.push(this.setDensity(options?.density ?? 2));
+  //   packets.push(this.setLabelType(options?.labelType ?? LabelType.WithGaps));
 
-    switch (taskVersion) {
-      case PrintTaskVariant.D11_OLD:
-      case PrintTaskVariant.V2:
-      case PrintTaskVariant.D110:
-        packets.push(this.printStart());
-        break;
-      case PrintTaskVariant.B1:
-        packets.push(this.printStartV4(options?.quantity ?? 1));
-        break;
-      case PrintTaskVariant.V5:
-        packets.push(this.printStartV5(options?.quantity ?? 1, 0, 0));
-        break;
-      default:
-        taskVersion satisfies never;
-    }
+  //   switch (taskVersion) {
+  //     case PrintTaskVariant.D11_OLD:
+  //     case PrintTaskVariant.V2:
+  //     case PrintTaskVariant.D110:
+  //       packets.push(this.printStart());
+  //       break;
+  //     case PrintTaskVariant.B1:
+  //       packets.push(this.printStartV4(options?.quantity ?? 1));
+  //       break;
+  //     case PrintTaskVariant.V5:
+  //       packets.push(this.printStartV5(options?.quantity ?? 1, 0, 0));
+  //       break;
+  //     default:
+  //       taskVersion satisfies never;
+  //   }
 
-    return packets;
-  }
+  //   return packets;
+  // }
 
   /**
    * Generate print sequence for one page (with one or multiple copies).
    *
    * You should send PrintEnd manually after this sequence after print is finished
    */
-  public static generatePrintSequence(
-    taskVersion: PrintTaskVariant,
-    image: EncodedImage,
-    options?: PrintOptions
-  ): NiimbotPacket[] {
-    return [
-      ...this.generatePrintInitSequence(taskVersion, options),
-      ...this.generatePrintPageSequence(taskVersion, image, options),
-    ];
-  }
+  // public static generatePrintSequence(
+  //   taskVersion: PrintTaskVariant,
+  //   image: EncodedImage,
+  //   options?: PrintOptions
+  // ): NiimbotPacket[] {
+  //   return [
+  //     ...this.generatePrintInitSequence(taskVersion, options),
+  //     ...this.generatePrintPageSequence(taskVersion, image, options),
+  //   ];
+  // }
 }

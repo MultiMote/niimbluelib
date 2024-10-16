@@ -13,6 +13,7 @@ import {
 import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
 import { EncodedImage } from "../image_encoder";
 import { PrintTaskVariant } from "../print_task_versions";
+import { instantiatePrintTask, ValidPrintTaskName } from "../print_tasks";
 import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
@@ -92,8 +93,14 @@ export class Abstraction {
   }
 
   /** Send packet and wait for response */
-  private async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
+  public async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
     return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.timeout);
+  }
+
+  public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
+    for (const p of packets) {
+      await this.send(p, forceTimeout);
+    }
   }
 
   public async getPrintStatus(): Promise<PrintStatus> {
@@ -351,22 +358,40 @@ export class Abstraction {
    * @param options
    * @param timeout
    */
-  public async print(
-    taskVersion: PrintTaskVariant,
-    image: EncodedImage,
-    options?: PrintOptions,
-    timeout?: number
-  ): Promise<void> {
-    this.setTimeout(timeout ?? this.DEFAULT_PRINT_TIMEOUT);
-    const packets: NiimbotPacket[] = PacketGenerator.generatePrintSequence(taskVersion, image, options);
-    try {
-      for (const element of packets) {
-        await this.send(element);
-      }
-    } finally {
-      this.setDefaultTimeout();
-    }
-  }
+  // public async print(
+  //   taskVersion: PrintTaskVariant,
+  //   image: EncodedImage,
+  //   options?: PrintOptions,
+  //   timeout?: number
+  // ): Promise<void> {
+  //   this.setTimeout(timeout ?? this.DEFAULT_PRINT_TIMEOUT);
+  //   const packets: NiimbotPacket[] = PacketGenerator.generatePrintSequence(taskVersion, image, options);
+  //   try {
+  //     for (const element of packets) {
+  //       await this.send(element);
+  //     }
+  //   } finally {
+  //     this.setDefaultTimeout();
+  //   }
+  // }
+
+  // public async print(
+  //   printTask: ValidPrintTaskName,
+  //   image: EncodedImage,
+  //   options?: PrintOptions,
+  //   timeout?: number
+  // ): Promise<void> {
+  //   this.setTimeout(timeout ?? this.DEFAULT_PRINT_TIMEOUT);
+  //   const task = instantiatePrintTask(printTask, this);
+
+  //   try {
+  //     await task.printInit(options);
+  //     await task.printPage(image, options);
+  //     await task.waitForFinished();
+  //   } finally {
+  //     this.setDefaultTimeout();
+  //   }
+  // }
 
   public async waitUntilPrintFinishedV1(pagesToPrint: number, timeoutMs: number = 5_000): Promise<void> {
     return new Promise<void>((resolve, reject) => {
@@ -433,23 +458,6 @@ export class Abstraction {
           });
       }, pollIntervalMs);
     });
-  }
-
-  /**
-   * printprogress event is firing during this process.
-   *
-   * @param pagesToPrint Total pages to print.
-   */
-  public async waitUntilPrintFinished(
-    taskVersion: PrintTaskVariant,
-    pagesToPrint: number,
-    options?: { pollIntervalMs?: number; timeoutMs?: number }
-  ): Promise<void> {
-    if (taskVersion === PrintTaskVariant.D11_OLD) {
-      return this.waitUntilPrintFinishedV1(pagesToPrint, options?.timeoutMs);
-    }
-
-    return this.waitUntilPrintFinishedV2(pagesToPrint, options?.pollIntervalMs);
   }
 
   public async printEnd(): Promise<void> {

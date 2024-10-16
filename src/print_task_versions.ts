@@ -17,8 +17,8 @@ export const getPrintTaskVariant = (model: M): PrintTaskVariant | undefined => {
     case M.B21_L2B:
     case M.B21:
     case M.B21_PRO:
-      case M.B21_C2B:
-        return PrintTaskVariant.D11_OLD;
+    case M.B21_C2B:
+      return PrintTaskVariant.D11_OLD;
 
     case M.B21S:
     case M.B21S_C2B:
