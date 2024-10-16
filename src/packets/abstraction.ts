@@ -12,7 +12,7 @@ import {
 } from ".";
 import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
 import { EncodedImage } from "../image_encoder";
-import { PrintTaskVersion } from "../print_task_versions";
+import { PrintTaskVariant } from "../print_task_versions";
 import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
@@ -352,7 +352,7 @@ export class Abstraction {
    * @param timeout
    */
   public async print(
-    taskVersion: PrintTaskVersion,
+    taskVersion: PrintTaskVariant,
     image: EncodedImage,
     options?: PrintOptions,
     timeout?: number
@@ -441,11 +441,11 @@ export class Abstraction {
    * @param pagesToPrint Total pages to print.
    */
   public async waitUntilPrintFinished(
-    taskVersion: PrintTaskVersion,
+    taskVersion: PrintTaskVariant,
     pagesToPrint: number,
     options?: { pollIntervalMs?: number; timeoutMs?: number }
   ): Promise<void> {
-    if (taskVersion === PrintTaskVersion.V1) {
+    if (taskVersion === PrintTaskVariant.D11_OLD) {
       return this.waitUntilPrintFinishedV1(pagesToPrint, options?.timeoutMs);
     }
 

@@ -9,7 +9,7 @@ import {
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent, HeartbeatFailedEvent } from "./events";
-import { getPrintTaskVersion, PrintTaskVersion } from "../print_task_versions";
+import { getPrintTaskVariant, PrintTaskVariant } from "../print_task_versions";
 
 export type ConnectionInfo = {
   deviceName?: string;
@@ -159,14 +159,14 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   }
 
   /** Determine print task version if any */
-  public getPrintTaskVersion(): PrintTaskVersion | undefined {
+  public getPrintTaskVersion(): PrintTaskVariant | undefined {
     const meta = this.getModelMetadata();
 
     if (meta === undefined) {
       return undefined;
     }
 
-    return getPrintTaskVersion(meta.model);
+    return getPrintTaskVariant(meta.model);
   }
 
   public setPacketInterval(milliseconds: number) {

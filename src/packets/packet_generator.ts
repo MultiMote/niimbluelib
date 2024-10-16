@@ -10,7 +10,7 @@ import {
   SoundSettingsType,
 } from ".";
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
-import { PrintTaskVersion } from "../print_task_versions";
+import { PrintTaskVariant } from "../print_task_versions";
 import { Utils } from "../utils";
 
 export type PrintOptions = {
@@ -296,39 +296,43 @@ export class PacketGenerator {
   }
 
   public static generatePrintPageSequence(
-    taskVersion: PrintTaskVersion,
+    taskVersion: PrintTaskVariant,
     image: EncodedImage,
     options?: PrintOptions
   ): NiimbotPacket[] {
     const packets: NiimbotPacket[] = [];
 
     switch (taskVersion) {
-      case PrintTaskVersion.V1:
+      case PrintTaskVariant.D11_OLD:
         packets.push(this.printClear());
         packets.push(this.pageStart());
         packets.push(this.setPageSizeV1(image.rows));
         packets.push(this.setPrintQuantity(options?.quantity ?? 1));
         break;
-      case PrintTaskVersion.V2:
+
+      case PrintTaskVariant.V2:
         packets.push(this.printClear());
         packets.push(this.pageStart());
         packets.push(this.setPageSizeV2(image.rows, image.cols));
         packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-
         break;
-      case PrintTaskVersion.V3:
+
+      case PrintTaskVariant.D110:
         packets.push(this.pageStart());
         packets.push(this.setPageSizeV2(image.rows, image.cols));
         packets.push(this.setPrintQuantity(options?.quantity ?? 1));
         break;
-      case PrintTaskVersion.V4:
+
+      case PrintTaskVariant.B1:
         packets.push(this.pageStart());
         packets.push(this.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
         break;
-      case PrintTaskVersion.V5:
+
+      case PrintTaskVariant.V5:
         packets.push(this.pageStart());
         packets.push(this.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
         break;
+
       default:
         taskVersion satisfies never;
     }
@@ -338,22 +342,22 @@ export class PacketGenerator {
     return packets;
   }
 
-  public static generatePrintInitSequence(taskVersion: PrintTaskVersion, options?: PrintOptions): NiimbotPacket[] {
+  public static generatePrintInitSequence(taskVersion: PrintTaskVariant, options?: PrintOptions): NiimbotPacket[] {
     const packets: NiimbotPacket[] = [];
 
     packets.push(this.setDensity(options?.density ?? 2));
     packets.push(this.setLabelType(options?.labelType ?? LabelType.WithGaps));
 
     switch (taskVersion) {
-      case PrintTaskVersion.V1:
-      case PrintTaskVersion.V2:
-      case PrintTaskVersion.V3:
+      case PrintTaskVariant.D11_OLD:
+      case PrintTaskVariant.V2:
+      case PrintTaskVariant.D110:
         packets.push(this.printStart());
         break;
-      case PrintTaskVersion.V4:
+      case PrintTaskVariant.B1:
         packets.push(this.printStartV4(options?.quantity ?? 1));
         break;
-      case PrintTaskVersion.V5:
+      case PrintTaskVariant.V5:
         packets.push(this.printStartV5(options?.quantity ?? 1, 0, 0));
         break;
       default:
@@ -369,7 +373,7 @@ export class PacketGenerator {
    * You should send PrintEnd manually after this sequence after print is finished
    */
   public static generatePrintSequence(
-    taskVersion: PrintTaskVersion,
+    taskVersion: PrintTaskVariant,
     image: EncodedImage,
     options?: PrintOptions
   ): NiimbotPacket[] {
