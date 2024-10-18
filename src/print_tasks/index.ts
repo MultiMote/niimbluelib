@@ -2,7 +2,7 @@ import { Abstraction } from "../packets";
 import { PrinterModel as M } from "../printer_models";
 import { B1PrintTask } from "./B1PrintTask";
 import { D110PrintTask } from "./D110PrintTask";
-import { IPrintTask } from "./IPrintTask";
+import { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";
 import { OldD11PrintTask } from "./OldD11PrintTask";
 
 export const printTasks = {
@@ -23,11 +23,15 @@ export const findPrintTask = (model: M): ValidPrintTaskName | undefined => {
   return (Object.keys(modelPrintTasks) as ValidPrintTaskName[]).find((key) => modelPrintTasks[key].includes(model));
 };
 
-export const instantiatePrintTask = (name: ValidPrintTaskName, abstraction: Abstraction): IPrintTask => {
-  return new printTasks[name](abstraction);
+export const instantiatePrintTask = (
+  name: ValidPrintTaskName,
+  abstraction: Abstraction,
+  printOptions?: PrintOptions
+): AbstractPrintTask => {
+  return new printTasks[name](abstraction, printOptions);
 };
 
-export const findAndInstantiatePrintTask = (model: M, abstraction: Abstraction): IPrintTask | undefined => {
+export const findAndInstantiatePrintTask = (model: M, abstraction: Abstraction): AbstractPrintTask | undefined => {
   const name: ValidPrintTaskName | undefined = findPrintTask(model);
 
   if (name !== undefined) {

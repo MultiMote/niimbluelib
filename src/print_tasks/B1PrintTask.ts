@@ -1,32 +1,27 @@
 import { EncodedImage } from "..";
-import { Abstraction, LabelType, PacketGenerator, PrintOptions } from "../packets";
-import { IPrintTask } from "./IPrintTask";
+import { LabelType, PacketGenerator } from "../packets";
+import { AbstractPrintTask } from "./AbstractPrintTask";
 
-export class B1PrintTask implements IPrintTask {
-  abstraction: Abstraction;
+export class B1PrintTask extends AbstractPrintTask {
 
-  constructor(abstraction: Abstraction) {
-    this.abstraction = abstraction;
-  }
-
-  printInit(options?: PrintOptions): Promise<void> {
+  override printInit(): Promise<void> {
     return this.abstraction.sendAll([
-      PacketGenerator.setDensity(options?.density ?? 2),
-      PacketGenerator.setLabelType(options?.labelType ?? LabelType.WithGaps),
-      PacketGenerator.printStartV4(options?.quantity ?? 1),
+      PacketGenerator.setDensity(this.printOptions?.density ?? 3),
+      PacketGenerator.setLabelType(this.printOptions?.labelType ?? LabelType.WithGaps),
+      PacketGenerator.printStartV4(this.printOptions?.totalPages ?? 1),
     ]);
   }
 
-  printPage(image: EncodedImage, options?: PrintOptions): Promise<void> {
+  override printPage(image: EncodedImage, quantity?: number): Promise<void> {
     return this.abstraction.sendAll([
       PacketGenerator.pageStart(),
-      PacketGenerator.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1),
+      PacketGenerator.setPageSizeV3(image.rows, image.cols, quantity ?? 1),
       ...PacketGenerator.writeImageData(image),
       PacketGenerator.pageEnd(),
     ]);
   }
 
-  waitForFinished(pagesToPrint: number, options?: { pollIntervalMs?: number }): Promise<void> {
-    return this.abstraction.waitUntilPrintFinishedV2(pagesToPrint, options?.pollIntervalMs);
+  override waitForFinished(options?: { pollIntervalMs?: number }): Promise<void> {
+    return this.abstraction.waitUntilPrintFinishedV2(this.printOptions?.totalPages ?? 1, options?.pollIntervalMs);
   }
 }

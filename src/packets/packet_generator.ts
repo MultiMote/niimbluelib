@@ -12,11 +12,11 @@ import {
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
 import { Utils } from "../utils";
 
-export type PrintOptions = {
-  labelType?: LabelType;
-  density?: number;
-  quantity?: number;
-};
+// export type PrintOptions = {
+//   labelType?: LabelType;
+//   density?: number;
+//   quantity?: number;
+// };
 
 export class PacketGenerator {
   public static generic(

@@ -11,14 +11,14 @@ import {
   SoundSettingsType,
 } from ".";
 import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
-import { EncodedImage } from "../image_encoder";
-import { PrintTaskVariant } from "../print_task_versions";
-import { instantiatePrintTask, ValidPrintTaskName } from "../print_tasks";
+// import { EncodedImage } from "../image_encoder";
+// import { PrintTaskVariant } from "../print_task_versions";
+// import { instantiatePrintTask, ValidPrintTaskName } from "../print_tasks";
 import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
-import { PacketGenerator, PrintOptions } from "./packet_generator";
+import { PacketGenerator } from "./packet_generator";
 
 export class PrintError extends Error {
   public readonly reasonId: number;
