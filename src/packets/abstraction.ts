@@ -11,13 +11,13 @@ import {
   SoundSettingsType,
 } from ".";
 import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
-import { EncodedImage } from "../image_encoder";
-import { PrintTaskVersion } from "../print_task_versions";
+import { PrintTaskName, printTasks } from "../print_tasks";
+import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
-import { PacketGenerator, PrintOptions } from "./packet_generator";
+import { PacketGenerator } from "./packet_generator";
 
 export class PrintError extends Error {
   public readonly reasonId: number;
@@ -92,8 +92,14 @@ export class Abstraction {
   }
 
   /** Send packet and wait for response */
-  private async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
+  public async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
     return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.timeout);
+  }
+
+  public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
+    for (const p of packets) {
+      await this.send(p, forceTimeout);
+    }
   }
 
   public async getPrintStatus(): Promise<PrintStatus> {
@@ -342,32 +348,6 @@ export class Abstraction {
     await this.send(PacketGenerator.printerReset());
   }
 
-  /**
-   *
-   * Call client.stopHeartbeat before print is started!
-   *
-   * @param taskVersion
-   * @param image
-   * @param options
-   * @param timeout
-   */
-  public async print(
-    taskVersion: PrintTaskVersion,
-    image: EncodedImage,
-    options?: PrintOptions,
-    timeout?: number
-  ): Promise<void> {
-    this.setTimeout(timeout ?? this.DEFAULT_PRINT_TIMEOUT);
-    const packets: NiimbotPacket[] = PacketGenerator.generatePrintSequence(taskVersion, image, options);
-    try {
-      for (const element of packets) {
-        await this.send(element);
-      }
-    } finally {
-      this.setDefaultTimeout();
-    }
-  }
-
   public async waitUntilPrintFinishedV1(pagesToPrint: number, timeoutMs: number = 5_000): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const listener = (evt: PacketReceivedEvent) => {
@@ -381,7 +361,7 @@ export class Abstraction {
           this.statusTimeoutTimer = setTimeout(() => {
             this.client.removeEventListener("packetreceived", listener);
             reject(new Error("Timeout waiting print status"));
-          }, timeoutMs);
+          }, timeoutMs ?? 5_000);
 
           if (page === pagesToPrint) {
             clearTimeout(this.statusTimeoutTimer);
@@ -431,28 +411,15 @@ export class Abstraction {
             clearInterval(this.statusPollTimer);
             reject(e as Error);
           });
-      }, pollIntervalMs);
+      }, pollIntervalMs ?? 300);
     });
-  }
-
-  /**
-   * printprogress event is firing during this process.
-   *
-   * @param pagesToPrint Total pages to print.
-   */
-  public async waitUntilPrintFinished(
-    taskVersion: PrintTaskVersion,
-    pagesToPrint: number,
-    options?: { pollIntervalMs?: number; timeoutMs?: number }
-  ): Promise<void> {
-    if (taskVersion === PrintTaskVersion.V1) {
-      return this.waitUntilPrintFinishedV1(pagesToPrint, options?.timeoutMs);
-    }
-
-    return this.waitUntilPrintFinishedV2(pagesToPrint, options?.pollIntervalMs);
   }
 
   public async printEnd(): Promise<void> {
     await this.send(PacketGenerator.printEnd());
+  }
+
+  public newPrintTask(name: PrintTaskName, options?: PrintOptions): AbstractPrintTask {
+    return new printTasks[name](this, options);
   }
 }

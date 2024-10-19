@@ -1,7 +1,6 @@
 import {
   AutoShutdownTime,
   HeartbeatType,
-  LabelType,
   NiimbotPacket,
   PrinterInfoType,
   RequestCommandId,
@@ -10,14 +9,7 @@ import {
   SoundSettingsType,
 } from ".";
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
-import { PrintTaskVersion } from "../print_task_versions";
 import { Utils } from "../utils";
-
-export type PrintOptions = {
-  labelType?: LabelType;
-  density?: number;
-  quantity?: number;
-};
 
 export class PacketGenerator {
   public static generic(
@@ -293,89 +285,5 @@ export class PacketGenerator {
         return this.printEmptySpace(p.rowNumber, p.repeat);
       }
     });
-  }
-
-  public static generatePrintPageSequence(
-    taskVersion: PrintTaskVersion,
-    image: EncodedImage,
-    options?: PrintOptions
-  ): NiimbotPacket[] {
-    const packets: NiimbotPacket[] = [];
-
-    switch (taskVersion) {
-      case PrintTaskVersion.V1:
-        packets.push(this.printClear());
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV1(image.rows));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-        break;
-      case PrintTaskVersion.V2:
-        packets.push(this.printClear());
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV2(image.rows, image.cols));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-
-        break;
-      case PrintTaskVersion.V3:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV2(image.rows, image.cols));
-        packets.push(this.setPrintQuantity(options?.quantity ?? 1));
-        break;
-      case PrintTaskVersion.V4:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV3(image.rows, image.cols, options?.quantity ?? 1));
-        break;
-      case PrintTaskVersion.V5:
-        packets.push(this.pageStart());
-        packets.push(this.setPageSizeV4(image.rows, image.cols, options?.quantity ?? 1, 0, false));
-        break;
-      default:
-        taskVersion satisfies never;
-    }
-
-    packets.push(...this.writeImageData(image));
-    packets.push(this.pageEnd());
-    return packets;
-  }
-
-  public static generatePrintInitSequence(taskVersion: PrintTaskVersion, options?: PrintOptions): NiimbotPacket[] {
-    const packets: NiimbotPacket[] = [];
-
-    packets.push(this.setDensity(options?.density ?? 2));
-    packets.push(this.setLabelType(options?.labelType ?? LabelType.WithGaps));
-
-    switch (taskVersion) {
-      case PrintTaskVersion.V1:
-      case PrintTaskVersion.V2:
-      case PrintTaskVersion.V3:
-        packets.push(this.printStart());
-        break;
-      case PrintTaskVersion.V4:
-        packets.push(this.printStartV4(options?.quantity ?? 1));
-        break;
-      case PrintTaskVersion.V5:
-        packets.push(this.printStartV5(options?.quantity ?? 1, 0, 0));
-        break;
-      default:
-        taskVersion satisfies never;
-    }
-
-    return packets;
-  }
-
-  /**
-   * Generate print sequence for one page (with one or multiple copies).
-   *
-   * You should send PrintEnd manually after this sequence after print is finished
-   */
-  public static generatePrintSequence(
-    taskVersion: PrintTaskVersion,
-    image: EncodedImage,
-    options?: PrintOptions
-  ): NiimbotPacket[] {
-    return [
-      ...this.generatePrintInitSequence(taskVersion, options),
-      ...this.generatePrintPageSequence(taskVersion, image, options),
-    ];
   }
 }

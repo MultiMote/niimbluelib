@@ -19,7 +19,7 @@ Yarn:
 yarn add @mmote/niimbluelib --exact
 ```
 
-### Usage example
+### Usage example (may be outdated)
 
 ```js
 import { Utils, RequestCommandId, ResponseCommandId, NiimbotBluetoothClient, ImageEncoder, PrintTaskVersion } from "@mmote/niimbluelib";
@@ -75,14 +75,20 @@ ctx.stroke();
 // draw border
 ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
 
-const image = ImageEncoder.encodeCanvas(canvas, props.printDirection);
+const encoded = ImageEncoder.encodeCanvas(canvas, props.printDirection);
 
-const taskVersion = client.getPrintTaskVersion() ?? PrintTaskVersion.V3;
+const printTaskName = client.getPrintTaskType() ?? "D110";
 
-await client.abstraction.print(taskVersion, image, { quantity });
+const printTask = client.abstraction.newPrintTask(printTaskName, {
+  totalPages: quantity,
+  statusPollIntervalMs: 100,
+  statusTimeoutMs: 8_000
+})
 
 try {
-  await client.abstraction.waitUntilPrintFinished(taskVersion, quantity);
+  await printTask.printInit();
+  await printTask.printPage(encoded, quantity);
+  await printTask.waitForFinished();
 } catch (e) {
   console.error(e);
 }
