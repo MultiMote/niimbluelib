@@ -124,10 +124,14 @@ export enum HeartbeatType {
 }
 
 export enum AutoShutdownTime {
-  Shutdown15min = 1,
-  Shutdown30min = 2,
-  Shutdown45min = 3,
-  Shutdown60min = 4,
+  /** Usually 15 minutes. */
+  ShutdownTime1 = 1,
+  /** Usually 30 minutes. */
+  ShutdownTime2 = 2,
+  /** May be 45 or 60 minutes (depending on model). */
+  ShutdownTime3 = 3,
+  /** May be 60 minutes or never (depending on model). */
+  ShutdownTime4 = 4,
 }
 
 /** Battery charge level */
