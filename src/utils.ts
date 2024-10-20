@@ -15,7 +15,7 @@ export class Utils {
     if (!match) {
       return new Uint8Array();
     }
-    
+
     return new Uint8Array(
       match.map((h) => {
         return parseInt(h, 16);
@@ -39,23 +39,45 @@ export class Utils {
     return new TextDecoder().decode(arr);
   }
 
-  /** Count non-zero bits in the byte array */
-  public static countSetBits(arr: Uint8Array): number {
-    // not so efficient, but readable
-    let count: number = 0;
+  /**
+   * Count non-zero bits in the byte array
+   *
+   * Not efficient, but readable.
+   *
+   * The algorithm is obtained by reverse engineering and I don't understand what's going on here.
+   * 
+   * Sometimes these values match original packets, sometimes not.
+   **/
+  public static countPixelsForBitmapPacket(
+    arr: Uint8Array,
+    printheadSize: number
+  ): { total: number; a: number; b: number; c: number } {
+    let total: number = 0;
+    let a: number = 0;
+    let b: number = 0;
+    let c: number = 0;
+    let xPos: number = 0;
 
-    arr.forEach((value) => {
-      // shift until value becomes zero
-      while (value > 0) {
-        // check last bit
-        if ((value & 1) === 1) {
-          count++;
+    const printheadSizeDiv3: number = printheadSize / 3;
+
+    arr.forEach((value: number) => {
+      //for (let bitN = 0; bitN < 8; bitN++) {
+      for (let bitN: number = 7; bitN >= 0; bitN--) {
+        const isBlack: boolean = (value & (1 << bitN)) !== 0;
+        if (isBlack) {
+          if (xPos < printheadSizeDiv3) {
+            a++;
+          } else if (xPos < printheadSizeDiv3 * 2) {
+            b++;
+          } else {
+            c++;
+          }
+          total++;
         }
-        value >>= 1;
+        xPos++;
       }
     });
-
-    return count;
+    return { total, a, b, c };
   }
 
   /** Big endian  */

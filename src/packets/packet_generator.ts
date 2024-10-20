@@ -153,9 +153,7 @@ export class PacketGenerator {
   }
 
   public static setPrintQuantity(quantity: number): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintQuantity, [
-      ...Utils.u16ToBytes(quantity)
-    ]);
+    return new NiimbotPacket(RequestCommandId.PrintQuantity, [...Utils.u16ToBytes(quantity)]);
   }
 
   public static printStatus(): NiimbotPacket {
@@ -226,37 +224,51 @@ export class PacketGenerator {
     return packet;
   }
 
-  public static printBitmapRow(pos: number, repeats: number, data: Uint8Array): NiimbotPacket {
-    const blackPixelCount: number = Utils.countSetBits(data);
+  public static printBitmapRow(
+    pos: number,
+    repeats: number,
+    data: Uint8Array,
+    printheadPixels?: number
+  ): NiimbotPacket {
+    const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
+    // Black pixel count. Not sure what role it plays in printing.
+    // There is two formats of this part
+    // 1. <count> <count> <count> (sum must equals number of pixels, every number calculated by algorithm based on printhead resolution)
+    // 2. <0> <countH> <countL> (big endian)
+    let header: number[] = [0, ...Utils.u16ToBytes(total)];
+
+    if (printheadPixels !== undefined) {
+      header = [a, b, c];
+    }
 
     const packet = new NiimbotPacket(RequestCommandId.PrintBitmapRow, [
       ...Utils.u16ToBytes(pos),
-      // Black pixel count. Not sure what role it plays in printing.
-      // There is two formats of this part
-      // 1. <count> <count> <count> (sum must equals number of pixels, every number calculated by algorithm based on printhead resolution)
-      // 2. <0> <countH> <countL> (big endian)
-      0,
-      ...Utils.u16ToBytes(blackPixelCount),
+      ...header,
       repeats,
       ...data,
     ]);
     packet.oneWay = true;
     return packet;
   }
-
   /** Printer powers off if black pixel count > 6 */
-  public static printBitmapRowIndexed(pos: number, repeats: number, data: Uint8Array): NiimbotPacket {
-    const blackPixelCount: number = Utils.countSetBits(data);
+  // 5555 83 0e 007e 000400 01 0027 0028 0029 002a fa aaaa
+  public static printBitmapRowIndexed(pos: number, repeats: number, data: Uint8Array, printheadPixels?: number): NiimbotPacket {
+    const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
     const indexes: Uint8Array = ImageEncoder.indexPixels(data);
 
-    if (blackPixelCount > 6) {
-      throw new Error(`Black pixel count > 6 (${blackPixelCount})`);
+    if (total > 6) {
+      throw new Error(`Black pixel count > 6 (${total})`);
+    }
+
+    let header: number[] = [0, ...Utils.u16ToBytes(total)];
+
+    if (printheadPixels !== undefined) {
+      header = [a, b, c];
     }
 
     const packet = new NiimbotPacket(RequestCommandId.PrintBitmapRowIndexed, [
       ...Utils.u16ToBytes(pos),
-      0,
-      ...Utils.u16ToBytes(blackPixelCount),
+      ...header,
       repeats,
       ...indexes,
     ]);
@@ -273,13 +285,13 @@ export class PacketGenerator {
     return new NiimbotPacket(RequestCommandId.WriteRFID, data);
   }
 
-  public static writeImageData(image: EncodedImage): NiimbotPacket[] {
+  public static writeImageData(image: EncodedImage, printheadPixels?: number): NiimbotPacket[] {
     return image.rowsData.map((p: ImageRow) => {
       if (p.dataType === "pixels") {
         if (p.blackPixelsCount > 6) {
-          return this.printBitmapRow(p.rowNumber, p.repeat, p.rowData!);
+          return this.printBitmapRow(p.rowNumber, p.repeat, p.rowData!, printheadPixels);
         } else {
-          return this.printBitmapRowIndexed(p.rowNumber, p.repeat, p.rowData!);
+          return this.printBitmapRowIndexed(p.rowNumber, p.repeat, p.rowData!, printheadPixels);
         }
       } else {
         return this.printEmptySpace(p.rowNumber, p.repeat);
