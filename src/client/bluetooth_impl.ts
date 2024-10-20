@@ -15,8 +15,20 @@ class BleConfiguration {
   public static readonly SERVICE: string = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
   public static readonly CHARACTERISTIC: string = "bef8d6c9-9c21-4c9e-b632-bd58c1009f9f";
   public static readonly FILTER: BluetoothLEScanFilter[] = [
-    { namePrefix: "D" },
+    { namePrefix: "A" },
     { namePrefix: "B" },
+    { namePrefix: "D" },
+    { namePrefix: "E" },
+    { namePrefix: "F" },
+    { namePrefix: "H" },
+    { namePrefix: "J" },
+    { namePrefix: "K" },
+    { namePrefix: "M" },
+    { namePrefix: "N" },
+    { namePrefix: "P" },
+    { namePrefix: "S" },
+    { namePrefix: "T" },
+    { namePrefix: "Z" },
     { services: [BleConfiguration.SERVICE] },
   ];
 }
