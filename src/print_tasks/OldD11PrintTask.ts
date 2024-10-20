@@ -13,15 +13,15 @@ export class OldD11PrintTask extends AbstractPrintTask {
 
   override printPage(image: EncodedImage, quantity: number): Promise<void> {
     this.checkAddPage(quantity ?? 1);
-    
+
     return this.abstraction.sendAll([
       PacketGenerator.printClear(),
       PacketGenerator.pageStart(),
       PacketGenerator.setPageSizeV1(image.rows),
       PacketGenerator.setPrintQuantity(quantity ?? 1),
-      ...PacketGenerator.writeImageData(image),
+      ...PacketGenerator.writeImageData(image, this.printheadPixels()),
       PacketGenerator.pageEnd(),
-    ]);
+    ], this.printOptions.pageTimeoutMs);
   }
 
   override waitForFinished(): Promise<void> {

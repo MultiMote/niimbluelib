@@ -17,9 +17,9 @@ export class B1PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.pageStart(),
       PacketGenerator.setPageSizeV3(image.rows, image.cols, quantity ?? 1),
-      ...PacketGenerator.writeImageData(image),
+      ...PacketGenerator.writeImageData(image, this.printheadPixels()),
       PacketGenerator.pageEnd(),
-    ]);
+    ], this.printOptions.pageTimeoutMs);
   }
 
   override waitForFinished(): Promise<void> {

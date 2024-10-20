@@ -18,9 +18,9 @@ export class D110PrintTask extends AbstractPrintTask {
       PacketGenerator.pageStart(),
       PacketGenerator.setPageSizeV2(image.rows, image.cols),
       PacketGenerator.setPrintQuantity(quantity ?? 1),
-      ...PacketGenerator.writeImageData(image),
+      ...PacketGenerator.writeImageData(image, this.printheadPixels()),
       PacketGenerator.pageEnd(),
-    ]);
+    ], this.printOptions.pageTimeoutMs);
   }
 
   override waitForFinished(): Promise<void> {

@@ -13,12 +13,15 @@ export type PrintOptions = {
   statusPollIntervalMs?: number;
   /** Used in {@link waitForFinished} where status is received by waiting */
   statusTimeoutMs?: number;
+  /** Used in {@link printPage} */
+  pageTimeoutMs?: number;
 };
 
 const printOptionsDefaults: PrintOptions = {
   totalPages: 1,
   statusPollIntervalMs: 300,
   statusTimeoutMs: 5_000,
+  pageTimeoutMs: 10_000,
 };
 
 export abstract class AbstractPrintTask {
@@ -48,4 +51,8 @@ export abstract class AbstractPrintTask {
   abstract printPage(image: EncodedImage, quantity?: number): Promise<void>;
   /** Wait for print is finished */
   abstract waitForFinished(): Promise<void>;
+  /** Printer's printhead resolution in pixels */
+  protected printheadPixels(): number | undefined {
+    return this.abstraction.getClient().getModelMetadata()?.printheadPixels;
+  }
 }

@@ -69,7 +69,6 @@ export interface PrinterStatusData {
 /** Not sure for name. */
 export class Abstraction {
   private readonly DEFAULT_TIMEOUT: number = 1_000;
-  private readonly DEFAULT_PRINT_TIMEOUT: number = 10_000;
   private client: NiimbotAbstractClient;
   private timeout: number = this.DEFAULT_TIMEOUT;
   private statusPollTimer: NodeJS.Timeout | undefined;
@@ -77,6 +76,10 @@ export class Abstraction {
 
   constructor(client: NiimbotAbstractClient) {
     this.client = client;
+  }
+
+  public getClient(): NiimbotAbstractClient {
+    return this.client;
   }
 
   public getTimeout(): number {
