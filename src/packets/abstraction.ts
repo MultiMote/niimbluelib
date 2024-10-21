@@ -351,7 +351,7 @@ export class Abstraction {
     await this.send(PacketGenerator.printerReset());
   }
 
-  public async waitUntilPrintFinishedV1(pagesToPrint: number, timeoutMs: number = 5_000): Promise<void> {
+  public async waitUntilPrintFinishedByPageIndex(pagesToPrint: number, timeoutMs: number = 5_000): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const listener = (evt: PacketReceivedEvent) => {
         if (evt.packet.command === ResponseCommandId.In_PrinterPageIndex) {
@@ -393,7 +393,7 @@ export class Abstraction {
    * @param pagesToPrint Total pages to print.
    * @param pollIntervalMs Poll interval in milliseconds.
    */
-  public async waitUntilPrintFinishedV2(pagesToPrint: number, pollIntervalMs: number = 300): Promise<void> {
+  public async waitUntilPrintFinishedByStatusPoll(pagesToPrint: number, pollIntervalMs: number = 300): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
 
@@ -418,8 +418,44 @@ export class Abstraction {
     });
   }
 
-  public async printEnd(): Promise<void> {
-    await this.send(PacketGenerator.printEnd());
+  /**
+   * Poll printer every {@link pollIntervalMs} and resolve when printer pages equals {@link pagesToPrint}.
+   *
+   * printprogress event is firing during this process.
+   *
+   * PrintEnd call is not needed after this functions is done running.
+   *
+   * @param pagesToPrint Total pages to print.
+   * @param pollIntervalMs Poll interval in milliseconds.
+   */
+  public async waitUntilPrintFinishedByPrintEndPoll(pagesToPrint: number, pollIntervalMs: number = 500): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+
+      this.statusPollTimer = setInterval(() => {
+        this.printEnd()
+          .then((printEndDone: boolean) => {
+            if(!printEndDone) {
+              this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+            } else {
+              this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
+              clearInterval(this.statusPollTimer);
+              resolve();
+            }
+          })
+          .catch((e: unknown) => {
+            clearInterval(this.statusPollTimer);
+            reject(e as Error);
+          });
+      }, pollIntervalMs ?? 500);
+    });
+  }
+
+  /** False returned when printEnd refused */
+  public async printEnd(): Promise<boolean> {
+    const response = await this.send(PacketGenerator.printEnd());
+    Validators.u8ArrayLengthEquals(response.data, 1);
+    return response.data[0] === 1;
   }
 
   public newPrintTask(name: PrintTaskName, options?: PrintOptions): AbstractPrintTask {

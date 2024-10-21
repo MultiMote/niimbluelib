@@ -23,7 +23,7 @@ export class B1PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
-    return this.abstraction.waitUntilPrintFinishedV2(
+    return this.abstraction.waitUntilPrintFinishedByStatusPoll(
       this.printOptions.totalPages ?? 1,
       this.printOptions.statusPollIntervalMs
     );

@@ -25,7 +25,7 @@ export class OldD11PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
-    return this.abstraction.waitUntilPrintFinishedV1(
+    return this.abstraction.waitUntilPrintFinishedByPageIndex(
       this.printOptions.totalPages ?? 1,
       this.printOptions.statusTimeoutMs
     );
