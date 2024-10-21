@@ -275,6 +275,8 @@ export class Abstraction {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.SoftWareVersion));
     Validators.u8ArrayLengthEquals(packet.data, 2);
 
+    // todo: find how to determine format
+    /*
     let version = 0;
     const model = this.client.getModelMetadata()?.model;
 
@@ -284,7 +286,9 @@ export class Abstraction {
       version = (packet.data[0] * 256 + packet.data[1]) / 100.0;
     }
 
-    return version.toFixed(2);
+    return version.toFixed(2);\
+    */
+    return `0x${Utils.bufToHex(packet.data, "")}`;
   }
 
   /** May be wrong, version format varies between models */
@@ -292,6 +296,8 @@ export class Abstraction {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.HardWareVersion));
     Validators.u8ArrayLengthEquals(packet.data, 2);
 
+    // todo: find how to determine format
+    /*
     let version = 0;
     const model = this.client.getModelMetadata()?.model;
 
@@ -302,6 +308,8 @@ export class Abstraction {
     }
 
     return version.toFixed(2);
+    */
+    return `0x${Utils.bufToHex(packet.data, "")}`;
   }
 
   public async setAutoShutDownTime(time: AutoShutdownTime): Promise<void> {
