@@ -27,3 +27,5 @@ export const modelPrintTasks: Partial<Record<PrintTaskName, M[]>> = {
 export const findPrintTask = (model: M): PrintTaskName | undefined => {
   return (Object.keys(modelPrintTasks) as PrintTaskName[]).find((key) => modelPrintTasks[key]?.includes(model));
 };
+
+export { AbstractPrintTask } from "./AbstractPrintTask";
