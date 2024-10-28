@@ -465,7 +465,7 @@ export class Abstraction {
     return response.data[0] === 1;
   }
 
-  public newPrintTask(name: PrintTaskName, options?: PrintOptions): AbstractPrintTask {
+  public newPrintTask(name: PrintTaskName, options?: Partial<PrintOptions>): AbstractPrintTask {
     return new printTasks[name](this, options);
   }
 }
