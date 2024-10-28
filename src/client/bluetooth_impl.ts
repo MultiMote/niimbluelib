@@ -1,19 +1,11 @@
 import { Mutex } from "async-mutex";
-import {
-  ConnectEvent,
-  DisconnectEvent,
-  PacketReceivedEvent,
-  RawPacketReceivedEvent,
-  RawPacketSentEvent,
-} from "./events";
+import { ConnectEvent, DisconnectEvent, PacketReceivedEvent, RawPacketReceivedEvent, RawPacketSentEvent } from "./events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult, ResponseCommandId } from "../packets";
 import { Utils } from "../utils";
 
 class BleConfiguration {
-  public static readonly SERVICE: string = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
-  public static readonly CHARACTERISTIC: string = "bef8d6c9-9c21-4c9e-b632-bd58c1009f9f";
   public static readonly FILTER: BluetoothLEScanFilter[] = [
     { namePrefix: "A" },
     { namePrefix: "B" },
@@ -29,7 +21,6 @@ class BleConfiguration {
     { namePrefix: "S" },
     { namePrefix: "T" },
     { namePrefix: "Z" },
-    { services: [BleConfiguration.SERVICE] },
   ];
 }
 
@@ -45,6 +36,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     const options: RequestDeviceOptions = {
       filters: BleConfiguration.FILTER,
     };
+
     const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options);
 
     if (device.gatt === undefined) {
@@ -62,10 +54,16 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     device.addEventListener("gattserverdisconnected", disconnectListener);
 
     const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect();
+    const channel: BluetoothRemoteGATTCharacteristic | undefined = await this.findSuitableBluetoothCharacteristic(
+      gattServer
+    );
 
-    const service: BluetoothRemoteGATTService = await gattServer.getPrimaryService(BleConfiguration.SERVICE);
+    if (channel === undefined) {
+      gattServer.disconnect();
+      throw new Error("Suitable device characteristic not found");
+    }
 
-    const channel: BluetoothRemoteGATTCharacteristic = await service.getCharacteristic(BleConfiguration.CHARACTERISTIC);
+    console.log(`Found suitable characteristic ${channel.uuid}`);
 
     channel.addEventListener("characteristicvaluechanged", (event: Event) => {
       const target = event.target as BluetoothRemoteGATTCharacteristic;
@@ -101,6 +99,27 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.dispatchTypedEvent("connect", new ConnectEvent(result));
 
     return result;
+  }
+
+  private async findSuitableBluetoothCharacteristic(
+    gattServer: BluetoothRemoteGATTServer
+  ): Promise<BluetoothRemoteGATTCharacteristic | undefined> {
+    const services: BluetoothRemoteGATTService[] = await gattServer.getPrimaryServices();
+
+    for (const service of services) {
+      if (service.uuid.length < 5) {
+        continue;
+      }
+
+      const characteristics: BluetoothRemoteGATTCharacteristic[] = await service.getCharacteristics();
+
+      for (const c of characteristics) {
+        if (c.properties.notify && c.properties.writeWithoutResponse) {
+          return c;
+        }
+      }
+    }
+    return undefined;
   }
 
   public isConnected(): boolean {
