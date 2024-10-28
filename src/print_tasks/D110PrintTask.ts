@@ -1,12 +1,12 @@
 import { EncodedImage } from "../image_encoder";
-import { LabelType, PacketGenerator } from "../packets";
+import { PacketGenerator } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 export class D110PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
     return this.abstraction.sendAll([
-      PacketGenerator.setDensity(this.printOptions.density ?? 2),
-      PacketGenerator.setLabelType(this.printOptions.labelType ?? LabelType.WithGaps),
+      PacketGenerator.setDensity(this.printOptions.density),
+      PacketGenerator.setLabelType(this.printOptions.labelType),
       PacketGenerator.printStart(),
     ]);
   }
@@ -24,9 +24,11 @@ export class D110PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
+    this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
+
     return this.abstraction.waitUntilPrintFinishedByStatusPoll(
-      this.printOptions.totalPages ?? 1,
+      this.printOptions.totalPages,
       this.printOptions.statusPollIntervalMs
-    );
+    ).finally(this.abstraction.setDefaultPacketTimeout);
   }
 }

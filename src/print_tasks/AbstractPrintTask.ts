@@ -4,20 +4,27 @@ import { Abstraction } from "../packets/abstraction";
 
 export type PrintOptions = {
   /** Printer label type */
-  labelType?: LabelType;
+  labelType: LabelType;
+
   /** Print density */
-  density?: number;
+  density: number;
+
   /** How many pages will be printed */
-  totalPages?: number;
+  totalPages: number;
+
   /** Used in {@link waitForFinished} where status is received by polling */
-  statusPollIntervalMs?: number;
-  /** Used in {@link waitForFinished} where status is received by waiting */
-  statusTimeoutMs?: number;
+  statusPollIntervalMs: number;
+
+  /** Used in {@link waitForFinished} */
+  statusTimeoutMs: number;
+
   /** Used in {@link printPage} */
-  pageTimeoutMs?: number;
+  pageTimeoutMs: number;
 };
 
 const printOptionsDefaults: PrintOptions = {
+  labelType: LabelType.WithGaps,
+  density: 2,
   totalPages: 1,
   statusPollIntervalMs: 300,
   statusTimeoutMs: 5_000,
@@ -29,7 +36,7 @@ export abstract class AbstractPrintTask {
   protected printOptions: PrintOptions;
   protected pagesPrinted: number;
 
-  constructor(abstraction: Abstraction, printOptions?: PrintOptions) {
+  constructor(abstraction: Abstraction, printOptions?: Partial<PrintOptions>) {
     this.abstraction = abstraction;
     this.pagesPrinted = 0;
 

@@ -13,7 +13,6 @@ import {
 import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
-import { PrinterModel } from "../printer_models";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
@@ -68,9 +67,9 @@ export interface PrinterStatusData {
 
 /** Not sure for name. */
 export class Abstraction {
-  private readonly DEFAULT_TIMEOUT: number = 1_000;
+  private readonly DEFAULT_PACKET_TIMEOUT: number = 1_000;
   private client: NiimbotAbstractClient;
-  private timeout: number = this.DEFAULT_TIMEOUT;
+  private packetTimeout: number = this.DEFAULT_PACKET_TIMEOUT;
   private statusPollTimer: NodeJS.Timeout | undefined;
   private statusTimeoutTimer: NodeJS.Timeout | undefined;
 
@@ -82,21 +81,21 @@ export class Abstraction {
     return this.client;
   }
 
-  public getTimeout(): number {
-    return this.timeout;
+  public getPacketTimeout(): number {
+    return this.packetTimeout;
   }
 
-  public setTimeout(value: number) {
-    this.timeout = value;
+  public setPacketTimeout(value: number) {
+    this.packetTimeout = value;
   }
 
-  public setDefaultTimeout() {
-    this.timeout = this.DEFAULT_TIMEOUT;
+  public setDefaultPacketTimeout() {
+    this.packetTimeout = this.DEFAULT_PACKET_TIMEOUT;
   }
 
   /** Send packet and wait for response */
   public async send(packet: NiimbotPacket, forceTimeout?: number): Promise<NiimbotPacket> {
-    return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.timeout);
+    return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.packetTimeout);
   }
 
   public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
