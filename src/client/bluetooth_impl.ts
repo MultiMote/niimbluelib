@@ -36,7 +36,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     const options: RequestDeviceOptions = {
       filters: BleConfiguration.FILTER,
     };
-    
+
     const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options);
 
     if (device.gatt === undefined) {
@@ -62,6 +62,8 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       gattServer.disconnect();
       throw new Error("Suitable device characteristic not found");
     }
+
+    console.log(`Found suitable characteristic ${channel.uuid}`);
 
     channel.addEventListener("characteristicvaluechanged", (event: Event) => {
       const target = event.target as BluetoothRemoteGATTCharacteristic;
@@ -106,7 +108,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
     for (const service of services) {
       if (service.uuid.length < 5) {
-        console.log(`Skip service ${service.uuid}`);
         continue;
       }
 
@@ -114,7 +115,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
       for (const c of characteristics) {
         if (c.properties.notify && c.properties.writeWithoutResponse) {
-          console.log(`Found matching characteristic ${c.uuid}`);
           return c;
         }
       }
