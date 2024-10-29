@@ -28,6 +28,6 @@ export class V5PrintTask extends AbstractPrintTask {
     return this.abstraction.waitUntilPrintFinishedByStatusPoll(
       this.printOptions.totalPages ?? 1,
       this.printOptions.statusPollIntervalMs
-    ).finally(this.abstraction.setDefaultPacketTimeout);
+    ).finally(() => this.abstraction.setDefaultPacketTimeout());
   }
 }

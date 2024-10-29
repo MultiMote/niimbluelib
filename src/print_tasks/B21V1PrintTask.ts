@@ -30,6 +30,6 @@ export class B21V1PrintTask extends AbstractPrintTask {
     return this.abstraction.waitUntilPrintFinishedByPrintEndPoll(
       this.printOptions.totalPages,
       this.printOptions.statusPollIntervalMs
-    ).finally(this.abstraction.setDefaultPacketTimeout);
+    ).finally(() => this.abstraction.setDefaultPacketTimeout());
   }
 }

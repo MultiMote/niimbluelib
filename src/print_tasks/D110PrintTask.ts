@@ -29,6 +29,6 @@ export class D110PrintTask extends AbstractPrintTask {
     return this.abstraction.waitUntilPrintFinishedByStatusPoll(
       this.printOptions.totalPages,
       this.printOptions.statusPollIntervalMs
-    ).finally(this.abstraction.setDefaultPacketTimeout);
+    ).finally(() => this.abstraction.setDefaultPacketTimeout());
   }
 }
