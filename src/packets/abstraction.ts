@@ -10,7 +10,8 @@ import {
   SoundSettingsItemType,
   SoundSettingsType,
 } from ".";
-import { NiimbotAbstractClient, PacketReceivedEvent, PrintProgressEvent } from "../client";
+import { NiimbotAbstractClient } from "../client";
+import { PacketReceivedEvent, PrintProgressEvent } from "../events";
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
@@ -365,17 +366,17 @@ export class Abstraction {
           Validators.u8ArrayLengthEquals(evt.packet.data, 2);
           const page = Utils.bytesToI16(evt.packet.data);
 
-          this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(page, pagesToPrint, 100, 100));
+          this.client.emit("printprogress", new PrintProgressEvent(page, pagesToPrint, 100, 100));
 
           clearTimeout(this.statusTimeoutTimer);
           this.statusTimeoutTimer = setTimeout(() => {
-            this.client.removeEventListener("packetreceived", listener);
+            this.client.off("packetreceived", listener);
             reject(new Error("Timeout waiting print status"));
           }, timeoutMs ?? 5_000);
 
           if (page === pagesToPrint) {
             clearTimeout(this.statusTimeoutTimer);
-            this.client.removeEventListener("packetreceived", listener);
+            this.client.off("packetreceived", listener);
             resolve();
           }
         }
@@ -383,12 +384,12 @@ export class Abstraction {
 
       clearTimeout(this.statusTimeoutTimer);
       this.statusTimeoutTimer = setTimeout(() => {
-        this.client.removeEventListener("packetreceived", listener);
+        this.client.off("packetreceived", listener);
         reject(new Error("Timeout waiting print status"));
       }, timeoutMs);
 
-      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
-      this.client.addEventListener("packetreceived", listener);
+      this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+      this.client.on("packetreceived", listener);
     });
   }
 
@@ -402,12 +403,12 @@ export class Abstraction {
    */
   public async waitUntilPrintFinishedByStatusPoll(pagesToPrint: number, pollIntervalMs: number = 300): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+      this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
 
       this.statusPollTimer = setInterval(() => {
         this.getPrintStatus()
           .then((status: PrintStatus) => {
-            this.client.dispatchTypedEvent(
+            this.client.emit(
               "printprogress",
               new PrintProgressEvent(status.page, pagesToPrint, status.pagePrintProgress, status.pageFeedProgress)
             );
@@ -437,15 +438,15 @@ export class Abstraction {
    */
   public async waitUntilPrintFinishedByPrintEndPoll(pagesToPrint: number, pollIntervalMs: number = 500): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+      this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
 
       this.statusPollTimer = setInterval(() => {
         this.printEnd()
           .then((printEndDone: boolean) => {
             if(!printEndDone) {
-              this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
+              this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
             } else {
-              this.client.dispatchTypedEvent("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
+              this.client.emit("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
               clearInterval(this.statusPollTimer);
               resolve();
             }

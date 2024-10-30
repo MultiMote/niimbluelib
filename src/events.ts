@@ -1,9 +1,16 @@
 import { ConnectionInfo, PrinterInfo } from ".";
-import { HeartbeatData } from "../packets/abstraction";
-import { NiimbotPacket } from "../packets/packet";
+import { HeartbeatData } from "./packets/abstraction";
+import { NiimbotPacket } from "./packets/packet";
 
+export class NiimbotEvent {
+  readonly type: string;
 
-export class ConnectEvent extends Event {
+  constructor(type: string) {
+    this.type = type;
+  }
+}
+
+export class ConnectEvent extends NiimbotEvent {
   info: ConnectionInfo;
   constructor(info: ConnectionInfo) {
     super("connect");
@@ -11,13 +18,13 @@ export class ConnectEvent extends Event {
   }
 }
 
-export class DisconnectEvent extends Event {
+export class DisconnectEvent extends NiimbotEvent {
   constructor() {
     super("disconnect");
   }
 }
 
-export class PacketReceivedEvent extends Event {
+export class PacketReceivedEvent extends NiimbotEvent {
   packet: NiimbotPacket;
   constructor(packet: NiimbotPacket) {
     super("packetreceived");
@@ -25,7 +32,7 @@ export class PacketReceivedEvent extends Event {
   }
 }
 
-export class PacketSentEvent extends Event {
+export class PacketSentEvent extends NiimbotEvent {
   packet: NiimbotPacket;
   constructor(packet: NiimbotPacket) {
     super("packetsent");
@@ -33,7 +40,7 @@ export class PacketSentEvent extends Event {
   }
 }
 
-export class RawPacketSentEvent extends Event {
+export class RawPacketSentEvent extends NiimbotEvent {
   data: Uint8Array;
   constructor(data: Uint8Array) {
     super("rawpacketsent");
@@ -41,7 +48,7 @@ export class RawPacketSentEvent extends Event {
   }
 }
 
-export class RawPacketReceivedEvent extends Event {
+export class RawPacketReceivedEvent extends NiimbotEvent {
   data: Uint8Array;
   constructor(data: Uint8Array) {
     super("rawpacketreceived");
@@ -49,7 +56,7 @@ export class RawPacketReceivedEvent extends Event {
   }
 }
 
-export class HeartbeatEvent extends Event {
+export class HeartbeatEvent extends NiimbotEvent {
   data: HeartbeatData;
   constructor(data: HeartbeatData) {
     super("heartbeat");
@@ -57,7 +64,7 @@ export class HeartbeatEvent extends Event {
   }
 }
 
-export class HeartbeatFailedEvent extends Event {
+export class HeartbeatFailedEvent extends NiimbotEvent {
   failedAttempts: number;
   constructor(failedAttempts: number) {
     super("heartbeatfailed");
@@ -65,7 +72,7 @@ export class HeartbeatFailedEvent extends Event {
   }
 }
 
-export class PrinterInfoFetchedEvent extends Event {
+export class PrinterInfoFetchedEvent extends NiimbotEvent {
   info: PrinterInfo;
   constructor(info: PrinterInfo) {
     super("printerinfofetched");
@@ -73,7 +80,7 @@ export class PrinterInfoFetchedEvent extends Event {
   }
 }
 
-export class PrintProgressEvent extends Event {
+export class PrintProgressEvent extends NiimbotEvent {
   /** 0 – n */
   page: number;
 
@@ -92,15 +99,15 @@ export class PrintProgressEvent extends Event {
   }
 }
 
-export interface ClientEventMap {
-  connect: ConnectEvent;
-  disconnect: DisconnectEvent;
-  rawpacketsent: RawPacketSentEvent;
-  rawpacketreceived: RawPacketReceivedEvent;
-  packetreceived: PacketReceivedEvent;
-  packetsent: PacketSentEvent;
-  heartbeat: HeartbeatEvent;
-  heartbeatfailed: HeartbeatFailedEvent;
-  printerinfofetched: PrinterInfoFetchedEvent;
-  printprogress: PrintProgressEvent;
+export type ClientEventMap = {
+  connect: (event: ConnectEvent) => void;
+  disconnect: (event: DisconnectEvent) => void;
+  rawpacketsent: (event: RawPacketSentEvent) => void;
+  rawpacketreceived: (event: RawPacketReceivedEvent) => void;
+  packetreceived: (event: PacketReceivedEvent) => void;
+  packetsent: (event: PacketSentEvent) => void;
+  heartbeat: (event: HeartbeatEvent) => void;
+  heartbeatfailed: (event: HeartbeatFailedEvent) => void;
+  printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
+  printprogress: (event: PrintProgressEvent) => void;
 }

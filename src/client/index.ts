@@ -1,4 +1,4 @@
-import { TypedEventTarget } from "typescript-event-target";
+import { EventEmitter } from "eventemitter3";
 import {
   Abstraction,
   AutoShutdownTime,
@@ -8,7 +8,7 @@ import {
   NiimbotPacket,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
-import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent, HeartbeatFailedEvent } from "./events";
+import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent, HeartbeatFailedEvent } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 
 export type ConnectionInfo = {
@@ -29,7 +29,7 @@ export interface PrinterInfo {
   hardwareVersion?: string;
 }
 
-export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEventMap> {
+export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly abstraction: Abstraction;
   protected info: PrinterInfo = {};
   private heartbeatTimer?: NodeJS.Timeout;
@@ -42,8 +42,8 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   constructor() {
     super();
     this.abstraction = new Abstraction(this);
-    this.addEventListener("connect", () => this.startHeartbeat())
-    this.addEventListener("disconnect", () => this.stopHeartbeat())
+    this.on("connect", () => this.startHeartbeat());
+    this.on("disconnect", () => this.stopHeartbeat());
   }
 
   /** Connect to printer port */
@@ -70,7 +70,7 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
 
   public async sendPacket(packet: NiimbotPacket, force?: boolean) {
     await this.sendRaw(packet.toBytes(), force);
-    this.dispatchTypedEvent("packetsent", new PacketSentEvent(packet));
+    this.emit("packetsent", new PacketSentEvent(packet));
   }
 
   /** Send "connect" packet and fetch the protocol version */
@@ -98,7 +98,7 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
     this.info.hardwareVersion = await this.abstraction.getHardwareVersion().catch(console.error) ?? undefined;
     this.info.softwareVersion = await this.abstraction.getSoftwareVersion().catch(console.error) ?? undefined;
 
-    this.dispatchTypedEvent("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
   }
 
@@ -115,7 +115,6 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
     this.heartbeatIntervalMs = intervalMs;
   }
 
-
   /**
    * Starts the heartbeat timer, "heartbeat" is emitted after packet received.
    *
@@ -131,12 +130,12 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
         .heartbeat()
         .then((data) => {
           this.heartbeatFails = 0;
-          this.dispatchTypedEvent("heartbeat", new HeartbeatEvent(data));
+          this.emit("heartbeat", new HeartbeatEvent(data));
         })
         .catch((e) => {
           console.error(e);
           this.heartbeatFails++;
-          this.dispatchTypedEvent("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
+          this.emit("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
         });
     }, this.heartbeatIntervalMs);
   }
@@ -174,6 +173,5 @@ export abstract class NiimbotAbstractClient extends TypedEventTarget<ClientEvent
   }
 }
 
-export * from "./events";
 export * from "./bluetooth_impl";
 export * from "./serial_impl";

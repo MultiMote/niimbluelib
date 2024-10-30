@@ -5,7 +5,7 @@ import {
   PacketReceivedEvent,
   RawPacketReceivedEvent,
   RawPacketSentEvent,
-} from "./events";
+} from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult, ResponseCommandId } from "../packets";
@@ -25,7 +25,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
 
     _port.addEventListener("disconnect", () => {
       this.port = undefined;
-      this.dispatchTypedEvent("disconnect", new DisconnectEvent());
+      this.emit("disconnect", new DisconnectEvent());
     });
 
     await _port.open({ baudRate: 115200 });
@@ -62,7 +62,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
       result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
-    this.dispatchTypedEvent("connect", new ConnectEvent(result));
+    this.emit("connect", new ConnectEvent(result));
     return result;
   }
 
@@ -93,10 +93,10 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
         const packets: NiimbotPacket[] = NiimbotPacket.fromBytesMultiPacket(buf);
 
         if (packets.length > 0) {
-          this.dispatchTypedEvent("rawpacketreceived", new RawPacketReceivedEvent(buf));
+          this.emit("rawpacketreceived", new RawPacketReceivedEvent(buf));
 
           packets.forEach((p) => {
-            this.dispatchTypedEvent("packetreceived", new PacketReceivedEvent(p));
+            this.emit("packetreceived", new PacketReceivedEvent(p));
           });
 
           buf = new Uint8Array();
@@ -120,7 +120,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
 
     if (this.port !== undefined) {
       await this.port.close();
-      this.dispatchTypedEvent("disconnect", new DisconnectEvent());
+      this.emit("disconnect", new DisconnectEvent());
     }
 
     this.port = undefined;
@@ -152,17 +152,17 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
             packet.validResponseIds.includes(evt.packet.command as ResponseCommandId)
           ) {
             clearTimeout(timeout);
-            this.removeEventListener("packetreceived", listener);
+            this.off("packetreceived", listener);
             resolve(evt.packet);
           }
         };
 
         timeout = setTimeout(() => {
-          this.removeEventListener("packetreceived", listener);
+          this.off("packetreceived", listener);
           reject(new Error(`Timeout waiting response (waited for ${Utils.bufToHex(packet.validResponseIds, ", ")})`));
         }, timeoutMs ?? 1000);
 
-        this.addEventListener("packetreceived", listener);
+        this.on("packetreceived", listener);
       });
     });
   }
@@ -174,7 +174,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
       }
       await Utils.sleep(this.packetIntervalMs);
       await this.writer.write(data);
-      this.dispatchTypedEvent("rawpacketsent", new RawPacketSentEvent(data));
+      this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
 
     if (force) {
