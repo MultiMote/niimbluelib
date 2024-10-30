@@ -28,23 +28,23 @@ import { Utils, RequestCommandId, ResponseCommandId, NiimbotBluetoothClient, Ima
 
 const client = new NiimbotBluetoothClient();
 
-client.addEventListener("packetsent", (e) => {
+client.on("packetsent", (e) => {
   console.log(`>> ${Utils.bufToHex(e.packet.toBytes())} (${RequestCommandId[e.packet.command]})`);
 });
 
-client.addEventListener("packetreceived", (e) => {
+client.on("packetreceived", (e) => {
   console.log(`<< ${Utils.bufToHex(e.packet.toBytes())} (${ResponseCommandId[e.packet.command]})`);
 });
 
-client.addEventListener("connect", () => {
+client.on("connect", () => {
   console.log("connected");
 });
 
-client.addEventListener("disconnect", () => {
+client.on("disconnect", () => {
   console.log("disconnected");
 });
 
-client.addEventListener("printprogress", (e) => {
+client.on("printprogress", (e) => {
   console.log(`Page ${e.page}/${e.pagesTotal}, Page print ${e.pagePrintProgress}%, Page feed ${e.pageFeedProgress}%`);
 });
 

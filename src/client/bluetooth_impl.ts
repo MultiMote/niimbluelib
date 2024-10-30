@@ -5,7 +5,7 @@ import {
   PacketReceivedEvent,
   RawPacketReceivedEvent,
   RawPacketSentEvent,
-} from "./events";
+} from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult, ResponseCommandId } from "../packets";
@@ -55,7 +55,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       this.gattServer = undefined;
       this.channel = undefined;
       this.info = {};
-      this.dispatchTypedEvent("disconnect", new DisconnectEvent());
+      this.emit("disconnect", new DisconnectEvent());
       device.removeEventListener("gattserverdisconnected", disconnectListener);
     };
 
@@ -72,8 +72,8 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       const data = new Uint8Array(target.value!.buffer);
       const packet = NiimbotPacket.fromBytes(data);
 
-      this.dispatchTypedEvent("rawpacketreceived", new RawPacketReceivedEvent(data));
-      this.dispatchTypedEvent("packetreceived", new PacketReceivedEvent(packet));
+      this.emit("rawpacketreceived", new RawPacketReceivedEvent(data));
+      this.emit("packetreceived", new PacketReceivedEvent(packet));
 
       if (!(packet.command in ResponseCommandId)) {
         console.warn(`Unknown response command: 0x${Utils.numberToHex(packet.command)}`);
@@ -98,7 +98,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
-    this.dispatchTypedEvent("connect", new ConnectEvent(result));
+    this.emit("connect", new ConnectEvent(result));
 
     return result;
   }
@@ -139,17 +139,17 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
             packet.validResponseIds.includes(evt.packet.command as ResponseCommandId)
           ) {
             clearTimeout(timeout);
-            this.removeEventListener("packetreceived", listener);
+            this.off("packetreceived", listener);
             resolve(evt.packet);
           }
         };
 
         timeout = setTimeout(() => {
-          this.removeEventListener("packetreceived", listener);
+          this.off("packetreceived", listener);
           reject(new Error(`Timeout waiting response (waited for ${Utils.bufToHex(packet.validResponseIds, ", ")})`));
         }, timeoutMs ?? 1000);
 
-        this.addEventListener("packetreceived", listener);
+        this.on("packetreceived", listener);
       });
     });
   }
@@ -161,7 +161,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       }
       await Utils.sleep(this.packetIntervalMs);
       await this.channel.writeValueWithoutResponse(data);
-      this.dispatchTypedEvent("rawpacketsent", new RawPacketSentEvent(data));
+      this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
 
     if (force) {
