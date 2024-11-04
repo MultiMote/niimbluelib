@@ -211,9 +211,11 @@ export class PacketGenerator {
   public static printEnd(): NiimbotPacket {
     return new NiimbotPacket(RequestCommandId.PrintEnd, [1], [ResponseCommandId.In_PrintEnd]);
   }
+
   public static pageStart(): NiimbotPacket {
     return new NiimbotPacket(RequestCommandId.PageStart, [1], [ResponseCommandId.In_PageStart]);
   }
+
   public static pageEnd(): NiimbotPacket {
     return new NiimbotPacket(RequestCommandId.PageEnd, [1], [ResponseCommandId.In_PageEnd]);
   }
@@ -297,5 +299,17 @@ export class PacketGenerator {
         return this.printEmptySpace(p.rowNumber, p.repeat);
       }
     });
+  }
+
+  public static printTestPage(): NiimbotPacket {
+    return new NiimbotPacket(RequestCommandId.PrintTestPage, [1], [ResponseCommandId.In_PrintTestPage]);
+  }
+
+  public static labelPositioningCalibration(value: number): NiimbotPacket {
+    return new NiimbotPacket(
+      RequestCommandId.LabelPositioningCalibration,
+      [value],
+      [ResponseCommandId.In_LabelPositioningCalibration]
+    );
   }
 }

@@ -466,6 +466,16 @@ export class Abstraction {
     return response.data[0] === 1;
   }
 
+  /**
+   * When 1 or 2 sent to B1, it starts to throw out some, paper (~15cm)
+   * @param value success
+   */
+  public async labelPositioningCalibration(value: number): Promise<boolean> {
+    const response = await this.send(PacketGenerator.labelPositioningCalibration(value));
+    Validators.u8ArrayLengthEquals(response.data, 1);
+    return response.data[0] === 1;
+  }
+
   public newPrintTask(name: PrintTaskName, options?: Partial<PrintOptions>): AbstractPrintTask {
     return new printTasks[name](this, options);
   }

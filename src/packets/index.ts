@@ -2,8 +2,9 @@ export enum RequestCommandId {
   Invalid = -1,
   Connect = 0xc1,
   CancelPrint = 0xda,
+  CalibrateHeight = 0x59,
   Heartbeat = 0xdc,
-  LabelPositioningCalibration = 0x8e, //-114,
+  LabelPositioningCalibration = 0x8e,
   PageEnd = 0xe3,
   PrinterLog = 0x05,
   PageStart = 0x03,
@@ -29,17 +30,21 @@ export enum RequestCommandId {
   SoundSettings = 0x58,
   AntiFake = 0x0b, // some info request (niimbot app), 01 long 02 short
   WriteRFID = 0x70, // same as GetVolumeLevel???
+  PrintTestPage = 0x5a,
 }
 
 export enum ResponseCommandId {
   Invalid = -1,
   In_NotSupported = 0x00,
   In_Connect = 0xc2,
+  In_CalibrateHeight = 0x69,
+  In_CancelPrint = 0xd0,
   In_AntiFake = 0x0c,
   In_HeartbeatAdvanced1 = 0xdd,
   In_HeartbeatBasic = 0xde,
   In_HeartbeatUnknown = 0xdf,
   In_HeartbeatAdvanced2 = 0xd9,
+  In_LabelPositioningCalibration = 0x8f,
   In_PageStart = 0x04,
   In_PrintClear = 0x30,
   /** sent by printer after {@link RequestCommandId.PageEnd} with {@link ResponseCommandId.In_PageEnd} */
@@ -74,6 +79,7 @@ export enum ResponseCommandId {
   In_SoundSettings = 0x68,
   In_PageEnd = 0xe4,
   In_PrinterPageIndex = 0xe0,
+  In_PrintTestPage = 0x6a,
 }
 
 export enum PrinterInfoType {
