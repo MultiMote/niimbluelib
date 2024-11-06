@@ -4,7 +4,6 @@ import {
   ConnectResult,
   HeartbeatType,
   LabelType,
-  PrinterErrorCode,
   PrinterInfoType,
   ResponseCommandId,
   SoundSettingsItemType,
@@ -107,15 +106,6 @@ export class Abstraction {
 
   public async getPrintStatus(): Promise<PrintStatus> {
     const packet = await this.send(PacketGenerator.printStatus());
-
-    if (packet.command === ResponseCommandId.In_PrintError) {
-      Validators.u8ArrayLengthEquals(packet.data, 1);
-      const errorName = PrinterErrorCode[packet.data[0]] ?? "unknown";
-      throw new PrintError(
-        `Print error (${ResponseCommandId[packet.command]} packet received, code is ${packet.data[0]} - ${errorName})`,
-        packet.data[0]
-      );
-    }
 
     Validators.u8ArrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
 

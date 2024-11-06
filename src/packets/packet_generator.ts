@@ -160,7 +160,7 @@ export class PacketGenerator {
     return new NiimbotPacket(
       RequestCommandId.PrintStatus,
       [1],
-      [ResponseCommandId.In_PrintStatus, ResponseCommandId.In_PrintError]
+      [ResponseCommandId.In_PrintStatus]
     );
   }
   public static printerReset(): NiimbotPacket {

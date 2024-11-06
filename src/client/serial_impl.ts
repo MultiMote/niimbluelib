@@ -8,8 +8,8 @@ import {
 } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { NiimbotPacket } from "../packets/packet";
-import { ConnectResult, ResponseCommandId } from "../packets";
-import { Utils } from "../utils";
+import { ConnectResult, PrinterErrorCode, PrintError, ResponseCommandId } from "../packets";
+import { Utils, Validators } from "../utils";
 
 /** Uses Web Serial API */
 export class NiimbotSerialClient extends NiimbotAbstractClient {
@@ -147,13 +147,26 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
         let timeout: NodeJS.Timeout | undefined = undefined;
 
         const listener = (evt: PacketReceivedEvent) => {
+          const pktIn = evt.packet;
+          const cmdIn = pktIn.command as ResponseCommandId;
+
           if (
             packet.validResponseIds.length === 0 ||
-            packet.validResponseIds.includes(evt.packet.command as ResponseCommandId)
+            packet.validResponseIds.includes(cmdIn) ||
+            [ResponseCommandId.In_PrintError, ResponseCommandId.In_NotSupported].includes(cmdIn)
           ) {
             clearTimeout(timeout);
             this.off("packetreceived", listener);
-            resolve(evt.packet);
+
+            if (cmdIn === ResponseCommandId.In_PrintError) {
+              Validators.u8ArrayLengthEquals(pktIn.data, 1);
+              const errorName = PrinterErrorCode[pktIn.data[0]] ?? "unknown";
+              reject(new PrintError(`Print error ${pktIn.data[0]}: ${errorName}`, pktIn.data[0]));
+            } else if (cmdIn === ResponseCommandId.In_NotSupported) {
+              reject(new PrintError("Feature not supported", 0));
+            } else {
+              resolve(pktIn);
+            }
           }
         };
 
