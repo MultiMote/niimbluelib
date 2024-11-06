@@ -17,15 +17,30 @@ export type PrintTaskName = keyof typeof printTasks;
 
 export const printTaskNames = Object.keys(printTasks) as PrintTaskName[];
 
-export const modelPrintTasks: Partial<Record<PrintTaskName, M[]>> = {
+export type ModelWithProtocol = {
+  /** Model */
+  m: M;
+  /** Protocol version */
+  v: number;
+};
+
+export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol | M)[]>> = {
   D11_V1: [M.D11, M.D11S],
   B21_V1: [M.B21, M.B21_L2B, M.B21_C2B],
-  D110: [M.B21S, M.B21S_C2B, M.D110],
+  D110: [M.B21S, M.B21S_C2B, M.D110, { m: M.D11, v: 1 }, { m: M.D11, v: 2 }],
   B1: [M.D11_H, M.D110_M, M.B1],
 };
 
-export const findPrintTask = (model: M): PrintTaskName | undefined => {
-  return (Object.keys(modelPrintTasks) as PrintTaskName[]).find((key) => modelPrintTasks[key]?.includes(model));
+export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName | undefined => {
+  const tasks = Object.keys(modelPrintTasks) as PrintTaskName[];
+
+  const foundExact = tasks.find((key) =>
+    modelPrintTasks[key]?.find(
+      (o: ModelWithProtocol | M) => typeof o === "object" && o.v === protocolVersion && o.m === model
+    )
+  );
+
+  return foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
 };
 
 export { AbstractPrintTask } from "./AbstractPrintTask";

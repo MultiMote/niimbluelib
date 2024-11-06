@@ -165,7 +165,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       return undefined;
     }
 
-    return findPrintTask(meta.model);
+    return findPrintTask(meta.model, this.getPrinterInfo().protocolVersion);
   }
 
   public setPacketInterval(milliseconds: number) {
