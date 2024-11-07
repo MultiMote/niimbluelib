@@ -43,4 +43,5 @@ export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName
   return foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
 };
 
-export { AbstractPrintTask } from "./AbstractPrintTask";
+export { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";
+export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, V5PrintTask };

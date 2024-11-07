@@ -88,7 +88,7 @@ export enum PrinterInfoType {
   LabelType = 3,
   Language = 6,
   AutoShutdownTime = 7,
-  /** See {@link PrinterId} */
+  /** See {@link PrinterModelId} */
   PrinterModelId = 8,
   SoftWareVersion = 9,
   BatteryChargeLevel = 10,

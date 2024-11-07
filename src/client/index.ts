@@ -109,7 +109,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   /**
    * Set interval for {@link startHeartbeat}.
    *
-   * @param interval Heartbeat interval, default is 1000ms
+   * @param intervalMs Heartbeat interval, default is 1000ms
    */
   public setHeartbeatInterval(intervalMs: number): void {
     this.heartbeatIntervalMs = intervalMs;

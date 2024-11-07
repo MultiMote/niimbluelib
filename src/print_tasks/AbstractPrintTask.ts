@@ -12,13 +12,13 @@ export type PrintOptions = {
   /** How many pages will be printed */
   totalPages: number;
 
-  /** Used in {@link waitForFinished} where status is received by polling */
+  /** Used in {@link AbstractPrintTask.waitForFinished} where status is received by polling */
   statusPollIntervalMs: number;
 
-  /** Used in {@link waitForFinished} */
+  /** Used in {@link AbstractPrintTask.waitForFinished} */
   statusTimeoutMs: number;
 
-  /** Used in {@link printPage} */
+  /** Used in {@link AbstractPrintTask.printPage} */
   pageTimeoutMs: number;
 };
 
