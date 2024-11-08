@@ -137,6 +137,7 @@ printButton.onclick = async () => {
     await printTask.waitForFinished();
   } catch (e) {
     alert(e);
+  } finally {
     await client.abstraction.printEnd();
   }
 };
