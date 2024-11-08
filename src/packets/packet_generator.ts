@@ -3,107 +3,75 @@ import {
   HeartbeatType,
   NiimbotPacket,
   PrinterInfoType,
-  RequestCommandId,
-  ResponseCommandId,
+  RequestCommandId as TX,
+  ResponseCommandId as RX,
   SoundSettingsItemType,
   SoundSettingsType,
+  commandsMap,
 } from ".";
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
 import { Utils } from "../utils";
 
 export class PacketGenerator {
-  public static generic(
-    requestId: RequestCommandId,
-    data: Uint8Array | number[],
-    responseIds: ResponseCommandId[] = []
-  ): NiimbotPacket {
-    return new NiimbotPacket(requestId, data, responseIds);
+  /** Generate packet */
+  public static mapped(sendCmd: TX, data: Uint8Array | number[] = [1]): NiimbotPacket {
+    const respIds: RX[] | null = commandsMap[sendCmd];
+
+    if (respIds === null) {
+      const p = new NiimbotPacket(sendCmd, data);
+      p.oneWay = true;
+      return p;
+    }
+
+    return new NiimbotPacket(sendCmd, data, respIds);
   }
 
   public static connect(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.Connect, [1], [ResponseCommandId.In_Connect]);
+    return this.mapped(TX.Connect);
   }
 
   public static getPrinterStatusData(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrinterStatusData, [1], [ResponseCommandId.In_PrinterStatusData]);
+    return this.mapped(TX.PrinterStatusData);
   }
 
   public static rfidInfo(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.RfidInfo, [1], [ResponseCommandId.In_RfidInfo]);
+    return this.mapped(TX.RfidInfo);
   }
 
   public static setAutoShutDownTime(time: AutoShutdownTime): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.SetAutoShutdownTime, [time], [ResponseCommandId.In_SetAutoShutdownTime]);
+    return this.mapped(TX.SetAutoShutdownTime, [time]);
   }
 
   public static getPrinterInfo(type: PrinterInfoType): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.PrinterInfo,
-      [type],
-      [
-        ResponseCommandId.In_PrinterInfoArea,
-        ResponseCommandId.In_PrinterInfoAutoShutDownTime,
-        ResponseCommandId.In_PrinterInfoBluetoothAddress,
-        ResponseCommandId.In_PrinterInfoChargeLevel,
-        ResponseCommandId.In_PrinterInfoDensity,
-        ResponseCommandId.In_PrinterInfoHardWareVersion,
-        ResponseCommandId.In_PrinterInfoLabelType,
-        ResponseCommandId.In_PrinterInfoLanguage,
-        ResponseCommandId.In_PrinterInfoPrinterCode,
-        ResponseCommandId.In_PrinterInfoSerialNumber,
-        ResponseCommandId.In_PrinterInfoSoftWareVersion,
-        ResponseCommandId.In_PrinterInfoSpeed,
-      ]
-    );
+    return this.mapped(TX.PrinterInfo, [type]);
   }
 
   public static setSoundSettings(soundType: SoundSettingsItemType, on: boolean): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SoundSettings,
-      [SoundSettingsType.SetSound, soundType, on ? 1 : 0],
-      [ResponseCommandId.In_SoundSettings]
-    );
+    return this.mapped(TX.SoundSettings, [SoundSettingsType.SetSound, soundType, on ? 1 : 0]);
   }
 
   public static getSoundSettings(soundType: SoundSettingsItemType): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SoundSettings,
-      [SoundSettingsType.GetSoundState, soundType, 1],
-      [ResponseCommandId.In_SoundSettings]
-    );
+    return this.mapped(TX.SoundSettings, [SoundSettingsType.GetSoundState, soundType, 1]);
   }
 
   public static heartbeat(type: HeartbeatType): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.Heartbeat,
-      [type],
-      [
-        ResponseCommandId.In_HeartbeatBasic,
-        ResponseCommandId.In_HeartbeatUnknown,
-        ResponseCommandId.In_HeartbeatAdvanced1,
-        ResponseCommandId.In_HeartbeatAdvanced2,
-      ]
-    );
+    return this.mapped(TX.Heartbeat, [type]);
   }
 
   public static setDensity(value: number): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.SetDensity, [value], [ResponseCommandId.In_SetDensity]);
+    return this.mapped(TX.SetDensity, [value]);
   }
 
   public static setLabelType(value: number): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.SetLabelType, [value], [ResponseCommandId.In_SetLabelType]);
+    return this.mapped(TX.SetLabelType, [value]);
   }
 
   public static setPageSizeV1(rows: number): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SetPageSize,
-      [...Utils.u16ToBytes(rows)],
-      [ResponseCommandId.In_SetPageSize]
-    );
+    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows)]);
   }
 
   /**
-   * B1 behavior: strange, first print is blank or printer prints many copies (use {@link setPageSizeV2} instead)
+   * B1 behavior: strange, first print is blank or printer prints many copies (use {@link setPageSizeV3} instead)
    *
    * D110 behavior: ordinary.
    *
@@ -111,11 +79,7 @@ export class PacketGenerator {
    * @param cols Width in pixels
    */
   public static setPageSizeV2(rows: number, cols: number): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SetPageSize,
-      [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols)],
-      [ResponseCommandId.In_SetPageSize]
-    );
+    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols)]);
   }
 
   /**
@@ -124,11 +88,11 @@ export class PacketGenerator {
    * @param copiesCount Page instances
    */
   public static setPageSizeV3(rows: number, cols: number, copiesCount: number): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SetPageSize,
-      [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols), ...Utils.u16ToBytes(copiesCount)],
-      [ResponseCommandId.In_SetPageSize]
-    );
+    return this.mapped(TX.SetPageSize, [
+      ...Utils.u16ToBytes(rows),
+      ...Utils.u16ToBytes(cols),
+      ...Utils.u16ToBytes(copiesCount),
+    ]);
   }
 
   /** Meaning of two last args is unknown */
@@ -139,32 +103,24 @@ export class PacketGenerator {
     someSize: number,
     isDivide: boolean
   ): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.SetPageSize,
-      [
-        ...Utils.u16ToBytes(rows),
-        ...Utils.u16ToBytes(cols),
-        ...Utils.u16ToBytes(copiesCount),
-        ...Utils.u16ToBytes(someSize),
-        isDivide ? 1 : 0,
-      ],
-      [ResponseCommandId.In_SetPageSize]
-    );
+    return this.mapped(TX.SetPageSize, [
+      ...Utils.u16ToBytes(rows),
+      ...Utils.u16ToBytes(cols),
+      ...Utils.u16ToBytes(copiesCount),
+      ...Utils.u16ToBytes(someSize),
+      isDivide ? 1 : 0,
+    ]);
   }
 
   public static setPrintQuantity(quantity: number): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintQuantity, [...Utils.u16ToBytes(quantity)]);
+    return this.mapped(TX.PrintQuantity, [...Utils.u16ToBytes(quantity)]);
   }
 
   public static printStatus(): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.PrintStatus,
-      [1],
-      [ResponseCommandId.In_PrintStatus]
-    );
+    return this.mapped(TX.PrintStatus);
   }
   public static printerReset(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrinterReset, [1], [ResponseCommandId.In_PrinterReset]);
+    return this.mapped(TX.PrinterReset);
   }
 
   /**
@@ -173,15 +129,11 @@ export class PacketGenerator {
    * D110 behavior: ordinary.
    * */
   public static printStart(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintStart, [1], [ResponseCommandId.In_PrintStart]);
+    return this.mapped(TX.PrintStart);
   }
 
   public static printStartV3(totalPages: number): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.PrintStart,
-      [...Utils.u16ToBytes(totalPages)],
-      [ResponseCommandId.In_PrintStart]
-    );
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages)]);
   }
 
   /**
@@ -193,45 +145,30 @@ export class PacketGenerator {
    * @param totalPages Declare how many pages will be printed
    */
   public static printStartV4(totalPages: number, pageColor: number = 0): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.PrintStart,
-      [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor],
-      [ResponseCommandId.In_PrintStart]
-    );
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor]);
   }
 
   public static printStartV5(totalPages: number, pageColor: number = 0, quality: number = 0): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.PrintStart,
-      [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality],
-      [ResponseCommandId.In_PrintStart]
-    );
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality]);
   }
 
   public static printEnd(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintEnd, [1], [ResponseCommandId.In_PrintEnd]);
+    return this.mapped(TX.PrintEnd);
   }
 
   public static pageStart(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PageStart, [1], [ResponseCommandId.In_PageStart]);
+    return this.mapped(TX.PageStart);
   }
 
   public static pageEnd(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PageEnd, [1], [ResponseCommandId.In_PageEnd]);
+    return this.mapped(TX.PageEnd);
   }
 
   public static printEmptySpace(pos: number, repeats: number): NiimbotPacket {
-    const packet = new NiimbotPacket(RequestCommandId.PrintEmptyRow, [...Utils.u16ToBytes(pos), repeats]);
-    packet.oneWay = true;
-    return packet;
+    return this.mapped(TX.PrintEmptyRow, [...Utils.u16ToBytes(pos), repeats]);
   }
 
-  public static printBitmapRow(
-    pos: number,
-    repeats: number,
-    data: Uint8Array,
-    printheadPixels?: number
-  ): NiimbotPacket {
+  public static printBitmapRow(pos: number, repeats: number, data: Uint8Array, printheadPixels?: number): NiimbotPacket {
     const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
     // Black pixel count. Not sure what role it plays in printing.
     // There is two formats of this part
@@ -243,18 +180,17 @@ export class PacketGenerator {
       header = [a, b, c];
     }
 
-    const packet = new NiimbotPacket(RequestCommandId.PrintBitmapRow, [
-      ...Utils.u16ToBytes(pos),
-      ...header,
-      repeats,
-      ...data,
-    ]);
-    packet.oneWay = true;
-    return packet;
+    return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...header, repeats, ...data]);
   }
+
   /** Printer powers off if black pixel count > 6 */
   // 5555 83 0e 007e 000400 01 0027 0028 0029 002a fa aaaa
-  public static printBitmapRowIndexed(pos: number, repeats: number, data: Uint8Array, printheadPixels?: number): NiimbotPacket {
+  public static printBitmapRowIndexed(
+    pos: number,
+    repeats: number,
+    data: Uint8Array,
+    printheadPixels?: number
+  ): NiimbotPacket {
     const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
     const indexes: Uint8Array = ImageEncoder.indexPixels(data);
 
@@ -268,23 +204,15 @@ export class PacketGenerator {
       header = [a, b, c];
     }
 
-    const packet = new NiimbotPacket(RequestCommandId.PrintBitmapRowIndexed, [
-      ...Utils.u16ToBytes(pos),
-      ...header,
-      repeats,
-      ...indexes,
-    ]);
-
-    packet.oneWay = true;
-    return packet;
+    return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...header, repeats, ...indexes]);
   }
 
   public static printClear(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintClear, [1]);
+    return this.mapped(TX.PrintClear);
   }
 
   public static writeRfid(data: Uint8Array): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.WriteRFID, data);
+    return this.mapped(TX.WriteRFID, data);
   }
 
   public static writeImageData(image: EncodedImage, printheadPixels?: number): NiimbotPacket[] {
@@ -302,14 +230,10 @@ export class PacketGenerator {
   }
 
   public static printTestPage(): NiimbotPacket {
-    return new NiimbotPacket(RequestCommandId.PrintTestPage, [1], [ResponseCommandId.In_PrintTestPage]);
+    return this.mapped(TX.PrintTestPage);
   }
 
   public static labelPositioningCalibration(value: number): NiimbotPacket {
-    return new NiimbotPacket(
-      RequestCommandId.LabelPositioningCalibration,
-      [value],
-      [ResponseCommandId.In_LabelPositioningCalibration]
-    );
+    return this.mapped(TX.LabelPositioningCalibration, [value]);
   }
 }
