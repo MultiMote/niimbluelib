@@ -47,7 +47,7 @@ jobs:
         run: yarn add -D typedoc@0.26.11
 
       - name: Build
-        run: yarn typedoc --treatValidationWarningsAsErrors --entryPointStrategy expand --out docs src
+        run: yarn typedoc --treatValidationWarningsAsErrors --excludeReferences --entryPointStrategy expand --out docs src
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
