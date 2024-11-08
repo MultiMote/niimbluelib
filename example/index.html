@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NiimBlueLib Example</title>
+    <style>
+      .logger {
+        width: 50%;
+        height: 300px;
+        overflow-y: scroll;
+        border: 1px solid gray;
+      }
+
+      canvas {
+        border: 1px solid gray;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="connect ble">Connect BLE</button>
+    <button class="connect serial">Connect Serial</button>
+    <button class="disconnect" disabled>Disconnect</button>
+    <pre class="logger"></pre>
+
+    <canvas width="240" height="96"></canvas>
+
+    <button class="print" disabled>Print</button>
+
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
