@@ -4,7 +4,9 @@ title: NIIMBOT printers protocol
 
 WIP
 
-# Packet structure
+# NIIMBOT printers protocol
+
+## Packet structure
 
 ![](proto/packet.png)
 
@@ -16,40 +18,38 @@ WIP
 * **Checksum** - calculated by XOR of all bytes from **Command** to the last byte of **Data** (inclusive).
 * **Tail** - always 2 bytes (`0xAA` `0xAA`).
 
-# Interfacing
+## List of packets
 
-## Bluetooth
-
-NIIMBOT printers have two bluetooth addresses.
-
-In case of D110 :
-
-* `26:03:03:c3:f9:11` - low energy
-* `03:26:03:C3:F9:11` - classic
-
-### Bluetooth Low Energy
-
-You can interact with printer through a specific BLE characteristic.
-To find what characteristic is suitable for this:
-
-1. Find services which have UUID length > 4.
-2. Find characteristic in these services which have `NOTIFY` and `WRITE_WITHOUT_RESPONSE` properties.
-
-   ![](proto/characteristic.png)
-
-Unfortunately, this process is can't be done with Web Bluetooth API (you must set service UUID in filter before devices searching).
-Anyway, most of NIIMBOT printers have characteristic `bef8d6c9-9c21-4c9e-b632-bd58c1009f9f` of service `e7810a71-73ae-499d-8c15-faa9aef0c3f2`.
-NiimBlueLib uses these UUIDS for interfacing.
-
-If you found characteristic, you can subscribe for notifications to get responses from the printer.
-To send data, write a value without response.
-
-### Bluetooth Classic
-
-Use bluetooth serial.
-
-## Serial (USB).
-
-Packer format is same as Bluetooth. The only problem is that packets may be fragmented.
-
-For example, packet `5555d9091f90044c000001000016aaaa` can be received as `5555d9091f90044c000001000016` `aaaa`.
+| Request ID | Name | Response ID(s) |
+|------|------------|------|
+| 0x01 | PrintStart | 0x02 |
+| 0x03 | PageStart | 0x04 |
+| 0x05 | PrinterLog | 0x06 |
+| 0x0b | AntiFake | 0x0c |
+| 0x13 | SetPageSize | 0x14 |
+| 0x15 | PrintQuantity | 0x16 |
+| 0x1a | RfidInfo | 0x1b |
+| 0x1c | RfidInfo2 | 0x1d |
+| 0x20 | PrintClear | 0x30 |
+| 0x21 | SetDensity | 0x31 |
+| 0x23 | SetLabelType | 0x33 |
+| 0x27 | SetAutoShutdownTime | 0x37 |
+| 0x28 | PrinterReset | 0x38 |
+| 0x40 | PrinterInfo | 0x4f, 0x47, 0x4d, 0x4a, 0x41, 0x4c, 0x43, 0x46, 0x48, 0x4b, 0x49, 0x42 |
+| 0x54 | RfidSuccessTimes | 0x64 |
+| 0x58 | SoundSettings | 0x68 |
+| 0x59 | CalibrateHeight | 0x69 |
+| 0x5a | PrintTestPage | 0x6a |
+| 0x70 | WriteRFID | 0x71 |
+| 0x83 | PrintBitmapRowIndexed | ⚠ one way |
+| 0x84 | PrintEmptyRow | ⚠ one way |
+| 0x85 | PrintBitmapRow | ⚠ one way |
+| 0x8e | LabelPositioningCalibration | 0x8f |
+| 0xa3 | PrintStatus | 0xb3 |
+| 0xa5 | PrinterStatusData | 0xb5 |
+| 0xaf | PrinterConfig | 0xbf |
+| 0xc1 | Connect | 0xc2 |
+| 0xda | CancelPrint | 0xd0 |
+| 0xdc | Heartbeat | 0xde, 0xdf, 0xdd, 0xd9 |
+| 0xe3 | PageEnd | 0xe4 |
+| 0xf3 | PrintEnd | 0xf4 |
