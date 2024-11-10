@@ -11,11 +11,18 @@ import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import { ClientEventMap, PacketSentEvent, PrinterInfoFetchedEvent, HeartbeatEvent, HeartbeatFailedEvent } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 
+
+/**
+ * Represents the connection result information.
+ */
 export type ConnectionInfo = {
   deviceName?: string;
   result: ConnectResult;
 };
 
+/**
+ * Interface representing printer information.
+ */
 export interface PrinterInfo {
   connectResult?: ConnectResult;
   protocolVersion?: number;
@@ -29,6 +36,11 @@ export interface PrinterInfo {
   hardwareVersion?: string;
 }
 
+
+/**
+ * Abstract class representing a client with common functionality for interacting with a printer.
+ * Hardware interface must be defined after extending this class.
+ */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly abstraction: Abstraction;
   protected info: PrinterInfo = {};
@@ -36,7 +48,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   private heartbeatFails: number = 0;
   private heartbeatIntervalMs: number = 2_000;
 
-  /** https://github.com/MultiMote/niimblue/issues/5 */
+  /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = 10;
 
   constructor() {
@@ -46,12 +58,19 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.on("disconnect", () => this.stopHeartbeat());
   }
 
-  /** Connect to printer port */
+  /**
+   * Connect to printer port.
+   **/
   public abstract connect(): Promise<ConnectionInfo>;
 
-  /** Disconnect from printer port */
+  /**
+   * Disconnect from printer port.
+   **/
   public abstract disconnect(): Promise<void>;
 
+  /**
+   * Check if the client is connected.
+   */
   public abstract isConnected(): boolean;
 
   /**
@@ -87,6 +106,10 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     }
   }
 
+
+  /**
+   * Fetches printer information and stores it.
+   */
   public async fetchPrinterInfo(): Promise<PrinterInfo> {
     this.info.modelId = await this.abstraction.getPrinterModel();
 
@@ -102,6 +125,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     return this.info;
   }
 
+  /**
+   * Get the stored information about the printer.
+   */
   public getPrinterInfo(): PrinterInfo {
     return this.info;
   }
@@ -140,16 +166,24 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     }, this.heartbeatIntervalMs);
   }
 
+  /**
+   * Stops the heartbeat by clearing the interval timer.
+   */
   public stopHeartbeat(): void {
     clearInterval(this.heartbeatTimer);
     this.heartbeatTimer = undefined;
   }
 
+  /**
+   * Checks if the heartbeat timer has been started.
+   */
   public isHeartbeatStarted(): boolean {
     return this.heartbeatTimer === undefined;
   }
 
-  /** Get printer capabilities based on the printer model. Model library is hardcoded. */
+  /**
+   * Get printer capabilities based on the printer model. Model library is hardcoded.
+   **/
   public getModelMetadata(): PrinterModelMeta | undefined {
     if (this.info.modelId === undefined) {
       return undefined;
@@ -157,7 +191,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     return getPrinterMetaById(this.info.modelId);
   }
 
-  /** Determine print task version if any */
+  /**
+   * Determine print task version if any.
+   **/
   public getPrintTaskType(): PrintTaskName | undefined {
     const meta = this.getModelMetadata();
 
@@ -168,6 +204,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     return findPrintTask(meta.model, this.getPrinterInfo().protocolVersion);
   }
 
+  /**
+   * Set the interval between packets in milliseconds.
+   */
   public setPacketInterval(milliseconds: number) {
     this.packetIntervalMs = milliseconds;
   }

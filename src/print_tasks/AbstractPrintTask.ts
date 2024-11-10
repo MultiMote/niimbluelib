@@ -2,6 +2,7 @@ import { EncodedImage } from "../image_encoder";
 import { LabelType } from "../packets";
 import { Abstraction } from "../packets/abstraction";
 
+/** Print options for print tasks. */
 export type PrintOptions = {
   /** Printer label type */
   labelType: LabelType;
@@ -22,6 +23,7 @@ export type PrintOptions = {
   pageTimeoutMs: number;
 };
 
+/** Default print options for print tasks. */
 const printOptionsDefaults: PrintOptions = {
   labelType: LabelType.WithGaps,
   density: 2,
@@ -31,6 +33,28 @@ const printOptionsDefaults: PrintOptions = {
   pageTimeoutMs: 10_000,
 };
 
+/**
+ * Different printer models have different print algorithms. Print task defines this algorithm.
+ *
+ * @example
+ * ```ts
+ * const quantity = 1;
+ *
+ * const printTask = client.abstraction.newPrintTask("D110", {
+ *   totalPages: quantity
+ * });
+ *
+ * try {
+ *   await printTask.printInit();
+ *   await printTask.printPage(encodedImage, quantity); // encode your canvas with ImageEncoder.encodeCanvas
+ *   await printTask.waitForFinished();
+ * } catch (e) {
+ *   alert(e);
+ * } finally {
+ *   await client.abstraction.printEnd();
+ * }
+ * ```
+ **/
 export abstract class AbstractPrintTask {
   protected abstraction: Abstraction;
   protected printOptions: PrintOptions;
@@ -46,6 +70,7 @@ export abstract class AbstractPrintTask {
     };
   }
 
+  /** Check added pages not does not exceed {@link pagesPrinted} */
   protected checkAddPage(quantity: number) {
     if (this.pagesPrinted + quantity > (this.printOptions.totalPages ?? 1)) {
       throw new Error("Trying to print too many pages (task totalPages may not be set correctly)");

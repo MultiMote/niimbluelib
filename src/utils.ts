@@ -1,14 +1,26 @@
+/**
+ * Utility class for various common operations.
+ */
 export class Utils {
+  /**
+   * Converts a given number to its hexadecimal representation.
+   */
   public static numberToHex(n: number): string {
     const hex = n.toString(16);
     return hex.length === 1 ? `0${hex}` : hex;
   }
 
+  /**
+   * Converts a DataView, Uint8Array, or number array to a hexadecimal string with byte separator.
+   */
   public static bufToHex(buf: DataView | Uint8Array | number[], separator: string = " "): string {
     const arr: number[] = buf instanceof DataView ? this.dataViewToNumberArray(buf) : Array.from(buf);
     return arr.map((n) => Utils.numberToHex(n)).join(separator);
   }
 
+  /**
+   * Converts a hexadecimal string to a Uint8Array buffer.
+   */
   public static hexToBuf(str: string): Uint8Array {
     const match = str.match(/[\da-f]{2}/gi);
 
@@ -23,6 +35,9 @@ export class Utils {
     );
   }
 
+  /**
+   * Converts a DataView object to an array of numbers.
+   */
   public static dataViewToNumberArray(dw: DataView): number[] {
     const a: number[] = [];
     for (let i = 0; i < dw.byteLength; i++) {
@@ -31,21 +46,27 @@ export class Utils {
     return a;
   }
 
+  /**
+   * Converts a DataView object to a Uint8Array
+   */
   public static dataViewToU8Array(dw: DataView): Uint8Array {
     return Uint8Array.from(this.dataViewToNumberArray(dw));
   }
 
+  /**
+   * Converts a Uint8Array to a string using TextDecoder.
+   */
   public static u8ArrayToString(arr: Uint8Array): string {
     return new TextDecoder().decode(arr);
   }
 
   /**
-   * Count non-zero bits in the byte array
+   * Count non-zero bits in the byte array.
    *
    * Not efficient, but readable.
    *
    * The algorithm is obtained by reverse engineering and I don't understand what's going on here.
-   * 
+   *
    * Sometimes these values match original packets, sometimes not.
    **/
   public static countPixelsForBitmapPacket(
@@ -80,49 +101,78 @@ export class Utils {
     return { total, a, b, c };
   }
 
-  /** Big endian  */
+  /**
+   * Converts a 16-bit unsigned integer to an array of two bytes (big endian).
+   */
   public static u16ToBytes(n: number): [number, number] {
     const h = (n >> 8) & 0xff;
     const l = n % 256 & 0xff;
     return [h, l];
   }
 
-  /** Big endian  */
+  /**
+   * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
+   */
   public static bytesToI16(arr: Uint8Array): number {
     Validators.u8ArrayLengthEquals(arr, 2);
     return arr[0] * 256 + arr[1];
   }
 
+  /**
+   * Compares two Uint8Arrays to check if they are equal.
+   */
   public static u8ArraysEqual(a: Uint8Array, b: Uint8Array): boolean {
     return a.length === b.length && a.every((el, i) => el === b[i]);
   }
 
+  /**
+   * Asynchronously pauses the execution for the specified amount of time.
+   */
   public static sleep(ms: number): Promise<undefined> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Checks if the browser supports Bluetooth functionality.
+   */
   public static isBluetoothSupported(): boolean {
     return typeof navigator.bluetooth?.requestDevice !== "undefined";
   }
 
+  /**
+   * Checks if the browser supports the Web Serial API for serial communication.
+   */
   public static isSerialSupported(): boolean {
     return typeof navigator.serial?.requestPort !== "undefined";
   }
 }
 
+/**
+ * Utility class for validating objects.
+ */
 export class Validators {
-  public static u8ArraysEqual(a: Uint8Array, b: Uint8Array, message?: string): void {
-    if (!Utils.u8ArraysEqual(a, b)) {
+  /**
+   * Compares two Uint8Arrays for equality and throws an error if they are not equal.
+   */
+  public static u8ArraysEqual(arr: Uint8Array, b: Uint8Array, message?: string): void {
+    if (!Utils.u8ArraysEqual(arr, b)) {
       throw new Error(message ?? "Arrays must be equal");
     }
   }
-  public static u8ArrayLengthEquals(a: Uint8Array, len: number, message?: string): void {
-    if (a.length !== len) {
+  /**
+   * Checks if the length of a Uint8Array equals a specified length and throws an error if the lengths do not match.
+   */
+  public static u8ArrayLengthEquals(arr: Uint8Array, len: number, message?: string): void {
+    if (arr.length !== len) {
       throw new Error(message ?? `Array length must be ${len}`);
     }
   }
-  public static u8ArrayLengthAtLeast(a: Uint8Array, len: number, message?: string): void {
-    if (a.length < len) {
+  /**
+   * Checks if the length of a Uint8Array is at least a specified length.
+   * Throws an error if the length is less than the specified length.
+   */
+  public static u8ArrayLengthAtLeast(arr: Uint8Array, len: number, message?: string): void {
+    if (arr.length < len) {
       throw new Error(message ?? `Array length must be at least ${len}`);
     }
   }

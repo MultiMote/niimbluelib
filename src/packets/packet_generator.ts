@@ -12,8 +12,14 @@ import {
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
 import { Utils } from "../utils";
 
+/**
+ * A helper class that generates various types of packets.
+ */
 export class PacketGenerator {
-  /** Generate packet */
+  /**
+   * Maps a request command ID to its corresponding response IDs and creates a packet object.
+   * Sends `0x01` as payload by default.
+   */
   public static mapped(sendCmd: TX, data: Uint8Array | number[] = [1]): NiimbotPacket {
     const respIds: RX[] | null = commandsMap[sendCmd];
 
@@ -119,6 +125,8 @@ export class PacketGenerator {
   public static printStatus(): NiimbotPacket {
     return this.mapped(TX.PrintStatus);
   }
+
+  /** Reset printer settings (sound and maybe some other settings). */
   public static printerReset(): NiimbotPacket {
     return this.mapped(TX.PrinterReset);
   }
