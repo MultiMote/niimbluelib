@@ -1,6 +1,9 @@
 import { ConnectionInfo, PrinterInfo, NiimbotAbstractClient, AbstractPrintTask, HeartbeatData, NiimbotPacket } from ".";
 
-/** Base client event */
+/**
+ * Base client event
+ * @category Events
+ */
 export class NiimbotEvent {
   readonly type: string;
 
@@ -9,7 +12,10 @@ export class NiimbotEvent {
   }
 }
 
-/** Fired when client connected to printer and fetched it's information. */
+/**
+ * Fired when client connected to printer and fetched it's information.
+ * @category Events
+ */
 export class ConnectEvent extends NiimbotEvent {
   info: ConnectionInfo;
   constructor(info: ConnectionInfo) {
@@ -18,14 +24,20 @@ export class ConnectEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when client disconnected from printer. */
+/**
+ * Fired when client disconnected from printer.
+ * @category Events
+ */
 export class DisconnectEvent extends NiimbotEvent {
   constructor() {
     super("disconnect");
   }
 }
 
-/** Fired when packet received, converted to object and validated (head, tail, checksum). */
+/**
+ * Fired when packet received, converted to object and validated (head, tail, checksum).
+ * @category Events
+ */
 export class PacketReceivedEvent extends NiimbotEvent {
   packet: NiimbotPacket;
   constructor(packet: NiimbotPacket) {
@@ -34,7 +46,10 @@ export class PacketReceivedEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when packet object sent. */
+/**
+ * Fired when packet object sent.
+ * @category Events
+ */
 export class PacketSentEvent extends NiimbotEvent {
   packet: NiimbotPacket;
   constructor(packet: NiimbotPacket) {
@@ -43,7 +58,10 @@ export class PacketSentEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when raw packet sent to printer. */
+/**
+ * Fired when raw packet sent to printer.
+ * @category Events
+ */
 export class RawPacketSentEvent extends NiimbotEvent {
   data: Uint8Array;
   constructor(data: Uint8Array) {
@@ -52,7 +70,10 @@ export class RawPacketSentEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when raw packet received from printer. */
+/**
+ * Fired when raw packet received from printer.
+ * @category Events
+ */
 export class RawPacketReceivedEvent extends NiimbotEvent {
   data: Uint8Array;
   constructor(data: Uint8Array) {
@@ -61,7 +82,10 @@ export class RawPacketReceivedEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when heartbeat packet received and parsed. */
+/**
+ * Fired when heartbeat packet received and parsed.
+ * @category Events
+ */
 export class HeartbeatEvent extends NiimbotEvent {
   data: HeartbeatData;
   constructor(data: HeartbeatData) {
@@ -70,7 +94,10 @@ export class HeartbeatEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when no response received after heartbeat packet sent. */
+/**
+ * Fired when no response received after heartbeat packet sent.
+ * @category Events
+ */
 export class HeartbeatFailedEvent extends NiimbotEvent {
   failedAttempts: number;
   constructor(failedAttempts: number) {
@@ -79,7 +106,10 @@ export class HeartbeatFailedEvent extends NiimbotEvent {
   }
 }
 
-/** Fired when info fetched from printer (after {@link NiimbotAbstractClient.fetchPrinterInfo} finished). */
+/**
+ * Fired when info fetched from printer (after {@link NiimbotAbstractClient.fetchPrinterInfo} finished).
+ * @category Events
+ */
 export class PrinterInfoFetchedEvent extends NiimbotEvent {
   info: PrinterInfo;
   constructor(info: PrinterInfo) {
@@ -88,7 +118,10 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
   }
 }
 
-/** Fired progress received (during {@link AbstractPrintTask.waitForFinished}). */
+/**
+ * Fired progress received (during {@link AbstractPrintTask.waitForFinished}).
+ * @category Events
+ */
 export class PrintProgressEvent extends NiimbotEvent {
   /** 0 – n */
   page: number;
@@ -108,6 +141,10 @@ export class PrintProgressEvent extends NiimbotEvent {
   }
 }
 
+/**
+ * Event list for {@link NiimbotAbstractClient}.
+ * @category Events
+ */
 export type ClientEventMap = {
   connect: (event: ConnectEvent) => void;
   disconnect: (event: DisconnectEvent) => void;

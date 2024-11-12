@@ -1,5 +1,6 @@
 import { Utils } from ".";
 
+/** @category Image encoder */
 export type ImageRow = {
   dataType: "void" | "pixels";
   rowNumber: number;
@@ -8,14 +9,20 @@ export type ImageRow = {
   rowData?: Uint8Array;
 };
 
+/** @category Image encoder */
 export type EncodedImage = {
   cols: number;
   rows: number;
   rowsData: ImageRow[];
 };
 
+/** @category Image encoder */
 export type PrintDirection = "left" | "top";
 
+/**
+ * @category Helpers
+ * @category Image encoder
+ */
 export class ImageEncoder {
   /** printDirection = "left" rotates image for 90 degrees clockwise */
   public static encodeCanvas(canvas: HTMLCanvasElement, printDirection: PrintDirection = "left"): EncodedImage {

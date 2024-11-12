@@ -2,7 +2,7 @@
 title: NIIMBOT hardware interfacing
 ---
 
-# Hardware interfacing
+# NIIMBOT hardware interfacing
 
 ## Bluetooth
 
@@ -10,7 +10,7 @@ NIIMBOT printers have two bluetooth addresses.
 
 In case of D110 :
 
-* `26:03:03:c3:f9:11` - low energy
+* `26:03:03:C3:F9:11` - low energy
 * `03:26:03:C3:F9:11` - classic
 
 ### Bluetooth Low Energy
@@ -19,7 +19,7 @@ You can interact with printer through a specific BLE characteristic.
 To find what characteristic is suitable for this:
 
 1. Find services which have UUID length > 4.
-2. Find characteristic in these services which have `NOTIFY` and `WRITE_WITHOUT_RESPONSE` properties.
+2. Find characteristic in these services which have `NOTIFY` and `WRITE_NO_RESPONSE` properties.
 
    ![](proto/characteristic.png)
 
@@ -32,10 +32,14 @@ To send data, write a value without response.
 
 ### Bluetooth Classic
 
-Use bluetooth serial.
+Use bluetooth serial. The only problem is that packets may be fragmented.
+
+For example, packet `5555d9091f90044c000001000016aaaa` can be received as `5555d9091f90044c000001000016` `aaaa`.
+
+Android [Serial Bluetooth Terminal](https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal) test:
+
+![](proto/bluetooh_terminal.jpg)
 
 ## Serial (USB)
 
-Packet format is same as Bluetooth. The only problem is that packets may be fragmented.
-
-For example, packet `5555d9091f90044c000001000016aaaa` can be received as `5555d9091f90044c000001000016` `aaaa`.
+Packet format is same as Bluetooth. Packets may be fragmented.

@@ -5,7 +5,10 @@ import { D110PrintTask } from "./D110PrintTask";
 import { OldD11PrintTask } from "./OldD11PrintTask";
 import { V5PrintTask } from "./V5PrintTask";
 
-/** Define available print tasks. */
+/**
+ * Define available print tasks.
+ * @category Print tasks
+ */
 export const printTasks = {
   D11_V1: OldD11PrintTask,
   D110: D110PrintTask,
@@ -14,12 +17,19 @@ export const printTasks = {
   V5: V5PrintTask,
 };
 
-/** Available print task name type. */
+/**
+ * Available print task name type.
+ * @category Print tasks
+ */
 export type PrintTaskName = keyof typeof printTasks;
 
-/** List of available print task names. */
+/**
+ * List of available print task names.
+ * @category Print tasks
+ */
 export const printTaskNames = Object.keys(printTasks) as PrintTaskName[];
 
+/** @category Printer model library */
 export type ModelWithProtocol = {
   /** Model */
   m: M;
@@ -31,7 +41,8 @@ export type ModelWithProtocol = {
  * Define print tasks for models.
  * Model or model with protocol version can be specified.
  * Model with protocol version has priority over just model.
- **/
+ * @category Print tasks
+ */
 export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol | M)[]>> = {
   D11_V1: [M.D11, M.D11S],
   B21_V1: [M.B21, M.B21_L2B, M.B21_C2B],
@@ -39,7 +50,10 @@ export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol |
   B1: [M.D11_H, M.D110_M, M.B1],
 };
 
-/** Search print task. */
+/**
+ * Search print task.
+ * @category Print tasks
+ */
 export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName | undefined => {
   const tasks = Object.keys(modelPrintTasks) as PrintTaskName[];
 

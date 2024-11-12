@@ -1,6 +1,10 @@
 import { Utils } from "../utils";
 
-/** Utility class to sequentially fetch data from byte array. EOF checks included.  */
+/**
+ * Utility class to sequentially fetch data from byte array. EOF checks included.
+ *
+ * @category Packets
+ **/
 export class SequentialDataReader {
   private bytes: Uint8Array;
   private offset: number;

@@ -4,6 +4,7 @@
 import { PrintDirection } from "./image_encoder";
 import { LabelType as LT } from "./packets";
 
+/** @category Printer model library */
 export enum PrinterModel {
   UNKNOWN = "UNKNOWN",
   A20 = "A20",
@@ -69,6 +70,7 @@ export enum PrinterModel {
   Z401 = "Z401",
 };
 
+/** @category Printer model library */
 export interface PrinterModelMeta {
   model: PrinterModel;
   id: [number, ...number[]];
@@ -81,6 +83,7 @@ export interface PrinterModelMeta {
   densityDefault: number;
 }
 
+/** @category Printer model library */
 export const modelsLibrary: PrinterModelMeta[] = [
   {
     model: PrinterModel.A20,
@@ -722,10 +725,12 @@ export const modelsLibrary: PrinterModelMeta[] = [
   },
 ];
 
+/** @category Printer model library */
 export const getPrinterMetaById = (id: number): PrinterModelMeta | undefined => {
     return modelsLibrary.find((o) => o.id.includes(id));
 };
 
+/** @category Printer model library */
 export const getPrinterMetaByModel = (model: PrinterModel): PrinterModelMeta | undefined => {
     return modelsLibrary.find((o) => o.model === model);
 };

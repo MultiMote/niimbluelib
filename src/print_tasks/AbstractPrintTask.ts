@@ -2,7 +2,10 @@ import { EncodedImage } from "../image_encoder";
 import { LabelType } from "../packets";
 import { Abstraction } from "../packets/abstraction";
 
-/** Print options for print tasks. */
+/**
+ * Print options for print tasks.
+ * @category Print tasks
+ */
 export type PrintOptions = {
   /** Printer label type */
   labelType: LabelType;
@@ -54,6 +57,8 @@ const printOptionsDefaults: PrintOptions = {
  *   await client.abstraction.printEnd();
  * }
  * ```
+ *
+ * @category Print tasks
  **/
 export abstract class AbstractPrintTask {
   protected abstraction: Abstraction;

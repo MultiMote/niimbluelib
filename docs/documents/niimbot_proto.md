@@ -53,3 +53,10 @@ WIP
 | 0xdc | Heartbeat | 0xde, 0xdf, 0xdd, 0xd9 |
 | 0xe3 | PageEnd | 0xe4 |
 | 0xf3 | PrintEnd | 0xf4 |
+
+## Packets example
+
+* `55 55 40 01 0b 4a aa aa` - get device serial number
+* `55 55 1a 01 01 1a aa aa` - get rfid data
+* `55 55 58 03 01 01 01 5a aa aa` - enable Bluetooth connection sound
+* `55 55 58 03 01 01 00 5b aa aa` - disable Bluetooth connection sound

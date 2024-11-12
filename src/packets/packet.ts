@@ -1,6 +1,11 @@
 import { Validators } from "../utils";
 import { RequestCommandId, ResponseCommandId } from ".";
 
+/**
+ * NIIMBOT packet object
+ * 
+ * @category Packets
+ */
 export class NiimbotPacket {
   public static readonly HEAD = new Uint8Array([0x55, 0x55]);
   public static readonly TAIL = new Uint8Array([0xaa, 0xaa]);

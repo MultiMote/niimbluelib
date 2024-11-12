@@ -33,6 +33,7 @@ fetch("https://oss-print.niimbot.com/public_resources/static_resources/devices.j
     console.log('import { PrintDirection } from "./image_encoder";');
     console.log('import { LabelType as LT } from "./packets";\n');
 
+    console.log("/** @category Printer model library */");
     console.log("export enum PrinterModel {");
     console.log('  UNKNOWN = "UNKNOWN",');
     for (const item of items) {
@@ -43,6 +44,7 @@ fetch("https://oss-print.niimbot.com/public_resources/static_resources/devices.j
     console.log("};");
 
     console.log(`
+/** @category Printer model library */
 export interface PrinterModelMeta {
   model: PrinterModel;
   id: [number, ...number[]];
@@ -56,6 +58,7 @@ export interface PrinterModelMeta {
 }
 `);
 
+    console.log("/** @category Printer model library */");
     console.log("export const modelsLibrary: PrinterModelMeta[] = [");
     for (const item of items) {
       if (item.codes.length === 0) {
@@ -83,10 +86,12 @@ export interface PrinterModelMeta {
     console.log("];");
 
     console.log(`
+/** @category Printer model library */
 export const getPrinterMetaById = (id: number): PrinterModelMeta | undefined => {
     return modelsLibrary.find((o) => o.id.includes(id));
 };
 
+/** @category Printer model library */
 export const getPrinterMetaByModel = (model: PrinterModel): PrinterModelMeta | undefined => {
     return modelsLibrary.find((o) => o.model === model);
 };`);

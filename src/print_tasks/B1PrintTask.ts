@@ -2,6 +2,9 @@ import { EncodedImage } from "../image_encoder";
 import { PacketGenerator } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
+/**
+ * @category Print tasks
+ */
 export class B1PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
     return this.abstraction.sendAll([

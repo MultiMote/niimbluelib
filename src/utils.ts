@@ -1,5 +1,6 @@
 /**
  * Utility class for various common operations.
+ * @category Helpers
  */
 export class Utils {
   /**
@@ -149,6 +150,7 @@ export class Utils {
 
 /**
  * Utility class for validating objects.
+ * @category Helpers
  */
 export class Validators {
   /**

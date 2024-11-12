@@ -11,7 +11,11 @@ import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult, PrinterErrorCode, PrintError, ResponseCommandId } from "../packets";
 import { Utils, Validators } from "../utils";
 
-/** Uses Web Serial API */
+/**
+ * Uses [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
+ *
+ * @category Client
+ **/
 export class NiimbotSerialClient extends NiimbotAbstractClient {
   private port?: SerialPort = undefined;
   private writer?: WritableStreamDefaultWriter<Uint8Array> = undefined;

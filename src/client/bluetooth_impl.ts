@@ -27,7 +27,11 @@ class BleConfiguration {
   ];
 }
 
-/** Uses Web Bluetooth API */
+/**
+ * Uses [Web Bluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)
+ *
+ * @category Client
+ */
 export class NiimbotBluetoothClient extends NiimbotAbstractClient {
   private gattServer?: BluetoothRemoteGATTServer = undefined;
   private channel?: BluetoothRemoteGATTCharacteristic = undefined;

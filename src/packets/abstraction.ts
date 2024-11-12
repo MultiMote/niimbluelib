@@ -18,6 +18,9 @@ import { SequentialDataReader } from "./data_reader";
 import { NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 
+/**
+ * @category Packets
+ */
 export class PrintError extends Error {
   public readonly reasonId: number;
 
@@ -27,6 +30,9 @@ export class PrintError extends Error {
   }
 }
 
+/**
+ * @category Packets
+ */
 export interface PrintStatus {
   /** 0 – n */
   page: number;
@@ -35,7 +41,9 @@ export interface PrintStatus {
   /** 0 – 100 */
   pageFeedProgress: number;
 }
-
+/**
+ * @category Packets
+ */
 export interface RfidInfo {
   tagPresent: boolean;
   uuid: string;
@@ -46,7 +54,9 @@ export interface RfidInfo {
   consumablesType: LabelType;
 }
 
-/** closingState inverted on some printers */
+/**
+ * @category Packets
+ **/
 export interface HeartbeatData {
   paperState: number;
   rfidReadState: number;
@@ -54,18 +64,28 @@ export interface HeartbeatData {
   powerLevel: BatteryChargeLevel;
 }
 
+/**
+ * @category Packets
+ */
 export interface SoundSettings {
   category: SoundSettingsType;
   item: SoundSettingsItemType;
   value: boolean;
 }
 
+/**
+ * @category Packets
+ */
 export interface PrinterStatusData {
   supportColor: number;
   protocolVersion: number;
 }
 
-/** Not sure for name. */
+/**
+ * Packet sender and parser.
+ *
+ * @category Packets
+ */
 export class Abstraction {
   private readonly DEFAULT_PACKET_TIMEOUT: number = 1_000;
   private client: NiimbotAbstractClient;

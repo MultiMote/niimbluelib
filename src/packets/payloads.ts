@@ -1,7 +1,10 @@
 import { modelsLibrary } from "../printer_models";
 import { RequestCommandId, ResponseCommandId } from "./commands";
 
-/** Sent with {@link RequestCommandId.PrinterInfo} */
+/**
+ * Sent with {@link RequestCommandId.PrinterInfo}
+ * @category Packets
+ **/
 export enum PrinterInfoType {
   Density = 1,
   Speed = 2,
@@ -19,17 +22,23 @@ export enum PrinterInfoType {
   Area = 15,
 }
 
+/** @category Packets */
 export enum SoundSettingsType {
   SetSound = 0x01,
   GetSoundState = 0x02,
 }
 
+/** @category Packets */
 export enum SoundSettingsItemType {
   BluetoothConnectionSound = 0x01,
   PowerSound = 0x02,
 }
 
-/** Sent with {@link RequestCommandId.SetLabelType}. */
+/**
+ * Sent with {@link RequestCommandId.SetLabelType}.
+ *
+ * @category Packets
+ **/
 export enum LabelType {
   Invalid = 0,
   /** Default for most of label printers */
@@ -43,6 +52,7 @@ export enum LabelType {
   HeatShrinkTube = 11,
 }
 
+/** @category Packets */
 export enum HeartbeatType {
   Advanced1 = 1,
   Basic = 2,
@@ -50,6 +60,7 @@ export enum HeartbeatType {
   Advanced2 = 4,
 }
 
+/** @category Packets */
 export enum AutoShutdownTime {
   /** Usually 15 minutes. */
   ShutdownTime1 = 1,
@@ -61,7 +72,10 @@ export enum AutoShutdownTime {
   ShutdownTime4 = 4,
 }
 
-/** Battery charge level */
+/**
+ * Battery charge level
+ * @category Packets
+ **/
 export enum BatteryChargeLevel {
   Charge0 = 0,
   Charge25 = 1,
@@ -70,7 +84,10 @@ export enum BatteryChargeLevel {
   Charge100 = 4,
 }
 
-/** {@link ResponseCommandId.In_Connect} status codes. */
+/**
+ * {@link ResponseCommandId.In_Connect} status codes.
+ * @category Packets
+ **/
 export enum ConnectResult {
   Disconnect = 0,
   Connected = 1,
@@ -79,9 +96,13 @@ export enum ConnectResult {
   FirmwareErrors = 90,
 }
 
-/** {@link ResponseCommandId.In_PrintError} status codes. */
+/**
+ * {@link ResponseCommandId.In_PrintError} status codes.
+ * @category Packets
+ **/
 export enum PrinterErrorCode {
   CoverOpen = 0x01,
+  /** No paper */
   LackPaper = 0x02,
   LowBattery = 0x03,
   BatteryException = 0x04,

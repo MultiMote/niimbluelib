@@ -1,4 +1,8 @@
-/** Commands IDs from client to printer */
+/**
+ * Commands IDs from client to printer
+ *
+ * @category Packets
+ **/
 export enum RequestCommandId {
   Invalid = -1,
   /** Entire packet should be prefixed with 0x03 */
@@ -39,7 +43,11 @@ export enum RequestCommandId {
   PrintTestPage = 0x5a,
 }
 
-/** Commands IDs from printer to client */
+/**
+ * Commands IDs from printer to client
+ *
+ * @category Packets
+ **/
 export enum ResponseCommandId {
   Invalid = -1,
   In_NotSupported = 0x00,
@@ -95,7 +103,11 @@ export enum ResponseCommandId {
 import TX = RequestCommandId;
 import RX = ResponseCommandId;
 
-/** Map request id to response id. null meant no response expected (one way). */
+/**
+ * Map request id to response id. null meant no response expected (one way).
+ *
+ * @category Packets
+ **/
 export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> = {
   [TX.Invalid]: null,
   [TX.PrintBitmapRow]: null,

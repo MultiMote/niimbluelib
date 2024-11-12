@@ -14,6 +14,7 @@ import { Utils } from "../utils";
 
 /**
  * A helper class that generates various types of packets.
+ * @category Packets
  */
 export class PacketGenerator {
   /**

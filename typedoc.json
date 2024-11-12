@@ -1,13 +1,12 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "NiimBlueLib Docs",
-  "entryPoints": ["./src"],
+  "entryPoints": ["./src/index.ts"],
   "navigationLinks": {
     "GitHub": "https://github.com/MultiMote/niimbluelib"
   },
   "treatValidationWarningsAsErrors": true,
   "excludeReferences": true,
-  "entryPointStrategy": "expand",
   "out": "./docs/html",
   "projectDocuments": ["docs/documents/*.md"],
 }

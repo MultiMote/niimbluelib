@@ -14,6 +14,8 @@ import { findPrintTask, PrintTaskName } from "../print_tasks";
 
 /**
  * Represents the connection result information.
+ *
+ * @category Client
  */
 export type ConnectionInfo = {
   deviceName?: string;
@@ -22,6 +24,8 @@ export type ConnectionInfo = {
 
 /**
  * Interface representing printer information.
+ *
+ * @category Client
  */
 export interface PrinterInfo {
   connectResult?: ConnectResult;
@@ -40,6 +44,8 @@ export interface PrinterInfo {
 /**
  * Abstract class representing a client with common functionality for interacting with a printer.
  * Hardware interface must be defined after extending this class.
+ *
+ * @category Client
  */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly abstraction: Abstraction;
