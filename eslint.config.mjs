@@ -15,4 +15,14 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   { ignores: ["dist/*", "dumps/*", "**/*.{mjs,js}"] },
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 ];

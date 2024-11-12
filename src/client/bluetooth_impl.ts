@@ -1,9 +1,8 @@
-import { Mutex } from "async-mutex";
 import { ConnectEvent, DisconnectEvent, PacketReceivedEvent, RawPacketReceivedEvent, RawPacketSentEvent } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { NiimbotPacket } from "../packets/packet";
-import { ConnectResult, PrinterErrorCode, PrintError, ResponseCommandId } from "../packets";
-import { Utils, Validators } from "../utils";
+import { ConnectResult, ResponseCommandId } from "../packets";
+import { Utils } from "../utils";
 
 class BleConfiguration {
   public static readonly SERVICE: string = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
@@ -35,7 +34,6 @@ class BleConfiguration {
 export class NiimbotBluetoothClient extends NiimbotAbstractClient {
   private gattServer?: BluetoothRemoteGATTServer = undefined;
   private channel?: BluetoothRemoteGATTCharacteristic = undefined;
-  private mutex: Mutex = new Mutex();
 
   public async connect(): Promise<ConnectionInfo> {
     await this.disconnect();
@@ -112,57 +110,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.gattServer = undefined;
     this.channel = undefined;
     this.info = {};
-  }
-
-  /**
-   * Send packet and wait for response.
-   * If packet.responsePacketCommandId is defined, it will wait for packet with this command id.
-   */
-  public async sendPacketWaitResponse(packet: NiimbotPacket, timeoutMs?: number): Promise<NiimbotPacket> {
-    return this.mutex.runExclusive(async () => {
-      await this.sendPacket(packet, true);
-
-      if (packet.oneWay) {
-        return new NiimbotPacket(ResponseCommandId.Invalid, []); // or undefined is better?
-      }
-
-      // what if response received at this point?
-
-      return new Promise((resolve, reject) => {
-        let timeout: NodeJS.Timeout | undefined = undefined;
-
-        const listener = (evt: PacketReceivedEvent) => {
-          const pktIn = evt.packet;
-          const cmdIn = pktIn.command as ResponseCommandId;
-
-          if (
-            packet.validResponseIds.length === 0 ||
-            packet.validResponseIds.includes(cmdIn) ||
-            [ResponseCommandId.In_PrintError, ResponseCommandId.In_NotSupported].includes(cmdIn)
-          ) {
-            clearTimeout(timeout);
-            this.off("packetreceived", listener);
-
-            if (cmdIn === ResponseCommandId.In_PrintError) {
-              Validators.u8ArrayLengthEquals(pktIn.data, 1);
-              const errorName = PrinterErrorCode[pktIn.data[0]] ?? "unknown";
-              reject(new PrintError(`Print error ${pktIn.data[0]}: ${errorName}`, pktIn.data[0]));
-            } else if (cmdIn === ResponseCommandId.In_NotSupported) {
-              reject(new PrintError("Feature not supported", 0));
-            } else {
-              resolve(pktIn);
-            }
-          }
-        };
-
-        timeout = setTimeout(() => {
-          this.off("packetreceived", listener);
-          reject(new Error(`Timeout waiting response (waited for ${Utils.bufToHex(packet.validResponseIds, ", ")})`));
-        }, timeoutMs ?? 1000);
-
-        this.on("packetreceived", listener);
-      });
-    });
   }
 
   public async sendRaw(data: Uint8Array, force?: boolean) {
