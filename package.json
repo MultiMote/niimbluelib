@@ -1,6 +1,6 @@
 {
   "name": "@mmote/niimbluelib",
-  "version": "0.0.1-alpha.18",
+  "version": "0.0.1-alpha.19",
   "description": "Library for the communication with NIIMBOT printers",
   "keywords": [
     "reverse-engineering",
@@ -10,7 +10,8 @@
     "niimbot-d110",
     "niimbot-b1",
     "bluetooth",
-    "serial"
+    "serial",
+    "capacitor"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
