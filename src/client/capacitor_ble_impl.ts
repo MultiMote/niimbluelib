@@ -11,6 +11,17 @@ import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
 
+interface NiimbotCapacitorBleClientConnectOptions {
+  /**
+   * Skip device picker dialog and connect to given device ID.
+   *
+   * On **Android** this is the BLE MAC address.
+   * 
+   * On **iOS** and **web** it is an identifier.
+   */
+  deviceId?: string;
+}
+
 /**
  * Uses [@capacitor-community/bluetooth-le](https://github.com/capacitor-community/bluetooth-le)
  *
@@ -22,7 +33,7 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
   private characteristicUUID?: string;
   private packetBuf = new Uint8Array();
 
-  public async connect(): Promise<ConnectionInfo> {
+  public async connect(options?: NiimbotCapacitorBleClientConnectOptions): Promise<ConnectionInfo> {
     await this.disconnect();
 
     await BleClient.initialize({ androidNeverForLocation: true });
@@ -33,7 +44,16 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       throw new Error("Bluetooth is not enabled");
     }
 
-    const device: BleDevice = await BleClient.requestDevice();
+    let device: BleDevice;
+
+    if (options?.deviceId !== undefined) {
+      device = {
+        deviceId: options.deviceId,
+        name: options.deviceId,
+      };
+    } else {
+      device = await BleClient.requestDevice();
+    }
 
     await BleClient.connect(device.deviceId, () => this.onBleDisconnect());
 
