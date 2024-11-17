@@ -149,7 +149,7 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       await Utils.sleep(this.packetIntervalMs);
 
       const dw = new DataView(data.buffer, data.byteOffset, data.byteLength);
-      await BleClient.write(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw);
+      await BleClient.writeWithoutResponse(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw);
 
       this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
