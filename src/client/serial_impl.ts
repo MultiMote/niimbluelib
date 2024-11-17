@@ -73,10 +73,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
             console.info(`<< serial chunk ${Utils.bufToHex(result.value)}`);
           }
 
-          const newBuf = new Uint8Array(buf.length + result.value.length);
-          newBuf.set(buf, 0);
-          newBuf.set(result.value, buf.length);
-          buf = newBuf;
+          buf = Utils.u8ArrayAppend(buf, result.value);
         }
 
         if (result.done) {

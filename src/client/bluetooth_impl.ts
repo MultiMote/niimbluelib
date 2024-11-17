@@ -65,10 +65,13 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
     channel.addEventListener("characteristicvaluechanged", (event: Event) => {
       const target = event.target as BluetoothRemoteGATTCharacteristic;
+
       const data = new Uint8Array(target.value!.buffer);
-      const packet = NiimbotPacket.fromBytes(data);
 
       this.emit("rawpacketreceived", new RawPacketReceivedEvent(data));
+
+      const packet = NiimbotPacket.fromBytes(data);
+
       this.emit("packetreceived", new PacketReceivedEvent(packet));
 
       if (!(packet.command in ResponseCommandId)) {

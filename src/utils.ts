@@ -1,3 +1,11 @@
+import { Capacitor } from "@capacitor/core";
+
+export interface AvailableTransports {
+  webSerial: boolean;
+  webBluetooth: boolean;
+  capacitorBle: boolean;
+}
+
 /**
  * Utility class for various common operations.
  * @category Helpers
@@ -126,6 +134,13 @@ export class Utils {
     return a.length === b.length && a.every((el, i) => el === b[i]);
   }
 
+  public static u8ArrayAppend(src: Uint8Array, data: Uint8Array): Uint8Array {
+    const newBuf = new Uint8Array(src.length + data.length);
+    newBuf.set(src, 0);
+    newBuf.set(data, src.length);
+    return newBuf;
+  }
+
   /**
    * Asynchronously pauses the execution for the specified amount of time.
    */
@@ -135,6 +150,7 @@ export class Utils {
 
   /**
    * Checks if the browser supports Bluetooth functionality.
+   * @deprecated use {@link getAvailableTransports}
    */
   public static isBluetoothSupported(): boolean {
     return typeof navigator.bluetooth?.requestDevice !== "undefined";
@@ -142,9 +158,21 @@ export class Utils {
 
   /**
    * Checks if the browser supports the Web Serial API for serial communication.
+   * @deprecated use {@link getAvailableTransports}
    */
   public static isSerialSupported(): boolean {
     return typeof navigator.serial?.requestPort !== "undefined";
+  }
+
+  /**
+   * Checks environment functionality
+   */
+  public static getAvailableTransports(): AvailableTransports {
+    return {
+      capacitorBle: Capacitor.getPlatform() !== "web",
+      webBluetooth: typeof navigator.bluetooth?.requestDevice !== "undefined",
+      webSerial: typeof navigator.serial?.requestPort !== "undefined",
+    };
   }
 }
 
