@@ -11,12 +11,15 @@ import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
 
-interface NiimbotCapacitorBleClientConnectOptions {
+/**
+  * @category Client
+  */
+export interface NiimbotCapacitorBleClientConnectOptions {
   /**
    * Skip device picker dialog and connect to given device ID.
    *
    * On **Android** this is the BLE MAC address.
-   * 
+   *
    * On **iOS** and **web** it is an identifier.
    */
   deviceId?: string;
