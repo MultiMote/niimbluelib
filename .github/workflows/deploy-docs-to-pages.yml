@@ -44,7 +44,7 @@ jobs:
         run: yarn install
 
       - name: Install typedoc
-        run: yarn add -D typedoc@0.26.11
+        run: yarn add -D typedoc@0.26.11 typedoc-plugin-include-example@1.4.1
 
       - name: Build
         run: yarn typedoc

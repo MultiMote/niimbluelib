@@ -1,4 +1,6 @@
 /**
+ * @includeExample example/main.js
+ *
  * @module API
  */
 

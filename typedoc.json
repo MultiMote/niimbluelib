@@ -9,4 +9,7 @@
   "excludeReferences": true,
   "out": "./docs/html",
   "projectDocuments": ["docs/documents/*.md"],
+  "plugin": [
+    "typedoc-plugin-include-example"
+  ]
 }
