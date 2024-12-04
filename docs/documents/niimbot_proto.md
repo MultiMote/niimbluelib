@@ -58,7 +58,7 @@ WIP
 
 ### Simple packet
 
-This packet has `Data length=1`, `Request ID` and `Data=1`.
+This packet has `Request ID`, `Data length=1`, and `Data=1`.
 
 Checksum will be same as `Request ID` because `N^1^1 == N`.
 
