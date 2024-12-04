@@ -19,6 +19,7 @@ export class B21V1PrintTask extends AbstractPrintTask {
 
     for (let i = 0; i < (quantity ?? 1); i++) {
       await this.abstraction.sendAll([
+        PacketGenerator.printClear(),
         PacketGenerator.pageStart(),
         PacketGenerator.setPageSizeV2(image.rows, image.cols),
         ...PacketGenerator.writeImageData(image, this.printheadPixels()),

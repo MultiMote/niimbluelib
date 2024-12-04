@@ -18,6 +18,7 @@ export class D110PrintTask extends AbstractPrintTask {
     this.checkAddPage(quantity ?? 1);
 
     return this.abstraction.sendAll([
+      PacketGenerator.printClear(),
       PacketGenerator.pageStart(),
       PacketGenerator.setPageSizeV2(image.rows, image.cols),
       PacketGenerator.setPrintQuantity(quantity ?? 1),
