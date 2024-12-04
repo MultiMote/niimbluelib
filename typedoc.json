@@ -8,7 +8,11 @@
   "treatValidationWarningsAsErrors": true,
   "excludeReferences": true,
   "out": "./docs/html",
-  "projectDocuments": ["docs/documents/*.md"],
+  "projectDocuments": [
+    "docs/documents/niimbot_hardware_interfacing.md",
+    "docs/documents/niimbot_proto.md",
+    "docs/documents/niimbot_print_tasks.md"
+  ],
   "plugin": [
     "typedoc-plugin-include-example"
   ]
