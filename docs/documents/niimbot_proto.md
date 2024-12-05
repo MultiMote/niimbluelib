@@ -116,7 +116,7 @@ Example:
        │  │     │        └─ Black pixel count (see above)
        │  │     └─ Row number is 3
        │  └─ Data length
-       └─ RfidInfo command
+       └─ PrintBitmapRowIndexed command
 ```
 
 ### PrintBitmapRow
@@ -134,12 +134,12 @@ Packet example:
        │  │  └──┤  └──┴──┤  │  └──┴──┴──┤  │
        │  │     │        │  │           │  └─ Checksum
        │  │     │        │  │           │
-       │  │     │        │  │           └─ Draw 32 pixels
+       │  │     │        │  │           └─ Draw 32 pixels (19 black, 13 empty)
        │  │     │        │  └─ Repeat count (repeat row 1 time)
-       │  │     │        └─ Black pixel count
+       │  │     │        └─ Black pixel count (19)
        │  │     └─ Row number is 0
        │  └─ Data length
-       └─ RfidInfo command
+       └─ PrintBitmapRow command
 
 ```
 
