@@ -6,6 +6,8 @@
 > The project is not affiliated with or endorsed by the original software or hardware vendor,
 > and is not intended to be used for commercial purposes without the consent of the vendor.
 
+[Documentation](https://multimote.github.io/niimbluelib/)
+
 NiimBlueLib is a library for the communication with NIIMBOT printers.
 Used in [NiimBlue](https://github.com/MultiMote/niimblue) project.
 
