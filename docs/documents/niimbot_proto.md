@@ -41,9 +41,9 @@ WIP
 | 0x59 | CalibrateHeight | 0x69 | |
 | 0x5a | PrintTestPage | 0x6a |✅|
 | 0x70 | WriteRFID | 0x71 | |
-| 0x83 | PrintBitmapRowIndexed | ⚠ one way | |
-| 0x84 | PrintEmptyRow | ⚠ one way | |
-| 0x85 | PrintBitmapRow | ⚠ one way | |
+| 0x83 | [PrintBitmapRowIndexed](#printbitmaprowindexed) | ⚠ one way | |
+| 0x84 | [PrintEmptyRow](#printemptyrow) | ⚠ one way | |
+| 0x85 | [PrintBitmapRow](#printbitmaprow) | ⚠ one way | |
 | 0x8e | LabelPositioningCalibration | 0x8f |✅|
 | 0xa3 | PrintStatus | 0xb3 |✅|
 | 0xa5 | PrinterStatusData | 0xb5 |✅|
@@ -66,14 +66,84 @@ Example (RfidInfo):
 
 ```
 55 55 1a 01 01 1a aa aa
-      │  │  │  │
-      │  │  │  └─ Checksum (h1a^h01^h01)
-      │  │  └─ Data
-      │  └─ Data length
-      └─ RfidInfo command
+       │  │  │  │
+       │  │  │  └─ Checksum (1a^01^01)
+       │  │  └─ Data
+       │  └─ Data length
+       └─ RfidInfo command
 ```
 
-## Packets example
+## Packet details (image data packets)
+
+See [print tasks](niimbot_print_tasks.md) to understand how to images are printed.
+
+### PrintEmptyRow
+
+Used to fill row with blank (white) pixels.
+
+Example:
+
+```
+55 55 84 03 00 04 02 81 aa aa
+       │  │  └──┤  │  │
+       │  │     │  │  └─ Checksum
+       │  │     │  └─ Repeat count (repeat row two times)
+       │  │     └─ Row number is 4
+       │  └─ Data length
+       └─ PrintEmptyRow command
+```
+
+### PrintBitmapRowIndexed
+
+Used when black pixel count is less than 7. Data is encoded with pixel indexes (unsigned 16-bit integers).
+
+`Black pixel count` segment is a mystery. It encoded with 3 bytes. Sum all of them equals total count of current row black pixels.
+
+Algorithm of this segment calculation you can see in {@link API.Utils.countPixelsForBitmapPacket} source code.
+Sometimes result match the original packets, sometimes not.
+
+Usually printer prints without problems when all of 3 bytes are zeros.
+
+Example:
+
+```
+55 55 83 0a 00 03 02 00 00 02 00 0a 01 40 c1 aa aa
+       │  │  └──┤  └──┴──┤  │  └──┤  └──┤  │
+       │  │     │        │  │     │     │  └─ Checksum
+       │  │     │        │  │     │     └─ Draw pixel at x=320
+       │  │     │        │  │     └─ Draw pixel at x=10
+       │  │     │        │  └─ Repeat count (repeat row two times)
+       │  │     │        └─ Black pixel count (see above)
+       │  │     └─ Row number is 3
+       │  └─ Data length
+       └─ RfidInfo command
+```
+
+### PrintBitmapRow
+
+Used to send full row segment that includes both black and white pixels.
+
+Image row example:
+
+![pixels](proto/pixels.png)
+
+Packet example:
+
+```
+55 55 85 0a 00 00 13 00 00 01 ff 00 df 0f b2 aa aa
+       │  │  └──┤  └──┴──┤  │  └──┴──┴──┤  │
+       │  │     │        │  │           │  └─ Checksum
+       │  │     │        │  │           │
+       │  │     │        │  │           └─ Draw 32 pixels
+       │  │     │        │  └─ Repeat count (repeat row 1 time)
+       │  │     │        └─ Black pixel count
+       │  │     └─ Row number is 0
+       │  └─ Data length
+       └─ RfidInfo command
+
+```
+
+## Other packets example
 
 * `55 55 40 01 0b 4a aa aa` - get device serial number
 * `55 55 1a 01 01 1a aa aa` - get rfid data

@@ -8,6 +8,7 @@
   "treatValidationWarningsAsErrors": true,
   "excludeReferences": true,
   "out": "./docs/html",
+  "sortEntryPoints": false,
   "projectDocuments": [
     "docs/documents/niimbot_hardware_interfacing.md",
     "docs/documents/niimbot_proto.md",
