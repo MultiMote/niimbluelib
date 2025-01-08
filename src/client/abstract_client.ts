@@ -100,7 +100,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    *
    * @throws {@link PrintError} when {@link ResponseCommandId.In_PrintError} or {@link ResponseCommandId.In_NotSupported} received.
    *
-   * @returns {NiimbotPacket} Printer response object.
+   * @returns {NiimbotPacket} Packet object.
    */
   public async sendPacketWaitResponse(packet: NiimbotPacket, timeoutMs: number = 1000): Promise<NiimbotPacket> {
     return this.mutex.runExclusive(async () => {
@@ -110,40 +110,57 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
         return new NiimbotPacket(ResponseCommandId.Invalid, []); // or undefined is better?
       }
 
-      return new Promise((resolve, reject) => {
-        let timeout: NodeJS.Timeout | undefined = undefined;
+      return this.waitForPacket(packet.validResponseIds, true, timeoutMs);
+    });
+  }
 
-        const listener = (evt: PacketReceivedEvent) => {
-          const pktIn = evt.packet;
-          const cmdIn = pktIn.command as ResponseCommandId;
+  /**
+   * Send wait for response for {@link timeoutMs} milliseconds.
+   *
+   * If {@link ids} is set, it will wait for packet with this command ids.
+   *
+   * @throws {@link PrintError} when {@link ResponseCommandId.In_PrintError} or {@link ResponseCommandId.In_NotSupported} received and {@link catchErrorPackets} is true.
+   *
+   * @returns {NiimbotPacket} Packet object.
+   */
+  public async waitForPacket(
+    ids: ResponseCommandId[] = [],
+    catchErrorPackets: boolean = true,
+    timeoutMs: number = 1000
+  ): Promise<NiimbotPacket> {
+    return new Promise((resolve, reject) => {
+      let timeout: NodeJS.Timeout | undefined = undefined;
 
-          if (
-            packet.validResponseIds.length === 0 ||
-            packet.validResponseIds.includes(cmdIn) ||
-            [ResponseCommandId.In_PrintError, ResponseCommandId.In_NotSupported].includes(cmdIn)
-          ) {
-            clearTimeout(timeout);
-            this.off("packetreceived", listener);
+      const listener = (evt: PacketReceivedEvent) => {
+        const pktIn = evt.packet;
+        const cmdIn = pktIn.command as ResponseCommandId;
 
-            if (cmdIn === ResponseCommandId.In_PrintError) {
-              Validators.u8ArrayLengthEquals(pktIn.data, 1);
-              const errorName = PrinterErrorCode[pktIn.data[0]] ?? "unknown";
-              reject(new PrintError(`Print error ${pktIn.data[0]}: ${errorName}`, pktIn.data[0]));
-            } else if (cmdIn === ResponseCommandId.In_NotSupported) {
-              reject(new PrintError("Feature not supported", 0));
-            } else {
-              resolve(pktIn);
-            }
-          }
-        };
-
-        timeout = setTimeout(() => {
+        if (
+          ids.length === 0 ||
+          ids.includes(cmdIn) ||
+          (catchErrorPackets && [ResponseCommandId.In_PrintError, ResponseCommandId.In_NotSupported].includes(cmdIn))
+        ) {
+          clearTimeout(timeout);
           this.off("packetreceived", listener);
-          reject(new Error(`Timeout waiting response (waited for ${Utils.bufToHex(packet.validResponseIds, ", ")})`));
-        }, timeoutMs ?? 1000);
 
-        this.on("packetreceived", listener);
-      });
+          if (cmdIn === ResponseCommandId.In_PrintError) {
+            Validators.u8ArrayLengthEquals(pktIn.data, 1);
+            const errorName = PrinterErrorCode[pktIn.data[0]] ?? "unknown";
+            reject(new PrintError(`Print error ${pktIn.data[0]}: ${errorName}`, pktIn.data[0]));
+          } else if (cmdIn === ResponseCommandId.In_NotSupported) {
+            reject(new PrintError("Feature not supported", 0));
+          } else {
+            resolve(pktIn);
+          }
+        }
+      };
+
+      timeout = setTimeout(() => {
+        this.off("packetreceived", listener);
+        reject(new Error(`Timeout waiting response (waited for ${Utils.bufToHex(ids, ", ")})`));
+      }, timeoutMs ?? 1000);
+
+      this.on("packetreceived", listener);
     });
   }
 
@@ -155,8 +172,6 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     if (data.byteLength === 0) {
       return;
     }
-
-    console.log("processRawPacket")
 
     if (data instanceof DataView) {
       data = new Uint8Array(data.buffer);
