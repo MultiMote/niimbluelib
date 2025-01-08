@@ -19,6 +19,7 @@ import {
   HeartbeatEvent,
   HeartbeatFailedEvent,
   PacketReceivedEvent,
+  RawPacketReceivedEvent,
 } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
@@ -65,6 +66,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   private heartbeatIntervalMs: number = 2_000;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
+  private packetBuf = new Uint8Array();
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = 10;
@@ -143,6 +145,42 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
         this.on("packetreceived", listener);
       });
     });
+  }
+
+  /**
+   * Convert raw bytes to packet objects and fire events. Defragmentation included.
+   * @param data Bytes to process.
+   */
+  protected processRawPacket(data: DataView | Uint8Array) {
+    if (data.byteLength === 0) {
+      return;
+    }
+
+    console.log("processRawPacket")
+
+    if (data instanceof DataView) {
+      data = new Uint8Array(data.buffer);
+    }
+
+    this.packetBuf = Utils.u8ArrayAppend(this.packetBuf, data);
+
+    try {
+      const packets: NiimbotPacket[] = NiimbotPacket.fromBytesMultiPacket(this.packetBuf);
+
+      if (packets.length > 0) {
+        this.emit("rawpacketreceived", new RawPacketReceivedEvent(this.packetBuf));
+
+        packets.forEach((p) => {
+          this.emit("packetreceived", new PacketReceivedEvent(p));
+        });
+
+        this.packetBuf = new Uint8Array();
+      }
+    } catch (_e) {
+      if (this.debug) {
+        console.info(`Incomplete packet, ignoring:${Utils.bufToHex(this.packetBuf)}`);
+      }
+    }
   }
 
   /**

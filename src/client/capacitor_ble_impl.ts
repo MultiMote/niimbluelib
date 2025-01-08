@@ -1,19 +1,12 @@
-import {
-  ConnectEvent,
-  DisconnectEvent,
-  PacketReceivedEvent,
-  RawPacketReceivedEvent,
-  RawPacketSentEvent,
-} from "../events";
+import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
-import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
 
 /**
-  * @category Client
-  */
+ * @category Client
+ */
 export interface NiimbotCapacitorBleClientConnectOptions {
   /**
    * Skip device picker dialog and connect to given device ID.
@@ -34,7 +27,6 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
   private deviceId?: string;
   private serviceUUID?: string;
   private characteristicUUID?: string;
-  private packetBuf = new Uint8Array();
 
   public async connect(options?: NiimbotCapacitorBleClientConnectOptions): Promise<ConnectionInfo> {
     await this.disconnect();
@@ -73,7 +65,7 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
     }
 
     await BleClient.startNotifications(this.deviceId, this.serviceUUID, this.characteristicUUID, (value: DataView) => {
-      this.onBlePacketReceived(value);
+      this.processRawPacket(value);
     });
 
     try {
@@ -114,32 +106,6 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       }
     }
     throw new Error("Unable to find suitable channel characteristic");
-  }
-
-  private onBlePacketReceived(dv: DataView) {
-    if (dv.byteLength === 0) {
-      return;
-    }
-
-    this.packetBuf = Utils.u8ArrayAppend(this.packetBuf, new Uint8Array(dv.buffer));
-
-    try {
-      const packets: NiimbotPacket[] = NiimbotPacket.fromBytesMultiPacket(this.packetBuf);
-
-      if (packets.length > 0) {
-        this.emit("rawpacketreceived", new RawPacketReceivedEvent(this.packetBuf));
-
-        packets.forEach((p) => {
-          this.emit("packetreceived", new PacketReceivedEvent(p));
-        });
-
-        this.packetBuf = new Uint8Array();
-      }
-    } catch (_e) {
-      if (this.debug) {
-        console.info(`Incomplete packet, ignoring:${Utils.bufToHex(this.packetBuf)}`);
-      }
-    }
   }
 
   private onBleDisconnect() {

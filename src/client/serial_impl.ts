@@ -1,6 +1,5 @@
-import { ConnectEvent, DisconnectEvent, PacketReceivedEvent, RawPacketReceivedEvent, RawPacketSentEvent } from "../events";
+import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
-import { NiimbotPacket } from "../packets/packet";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 
@@ -63,8 +62,6 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
   }
 
   private async waitSerialData() {
-    let buf = new Uint8Array();
-
     while (true) {
       try {
         const result = await this.reader!.read();
@@ -72,8 +69,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
           if (this.debug) {
             console.info(`<< serial chunk ${Utils.bufToHex(result.value)}`);
           }
-
-          buf = Utils.u8ArrayAppend(buf, result.value);
+          this.processRawPacket(result.value);
         }
 
         if (result.done) {
@@ -82,24 +78,6 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
         }
       } catch (_e) {
         break;
-      }
-
-      try {
-        const packets: NiimbotPacket[] = NiimbotPacket.fromBytesMultiPacket(buf);
-
-        if (packets.length > 0) {
-          this.emit("rawpacketreceived", new RawPacketReceivedEvent(buf));
-
-          packets.forEach((p) => {
-            this.emit("packetreceived", new PacketReceivedEvent(p));
-          });
-
-          buf = new Uint8Array();
-        }
-      } catch (_e) {
-        if (this.debug) {
-          console.info(`Incomplete packet, ignoring:${Utils.bufToHex(buf)}`);
-        }
       }
     }
   }

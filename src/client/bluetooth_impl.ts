@@ -1,7 +1,6 @@
-import { ConnectEvent, DisconnectEvent, PacketReceivedEvent, RawPacketReceivedEvent, RawPacketSentEvent } from "../events";
+import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
-import { NiimbotPacket } from "../packets/packet";
-import { ConnectResult, ResponseCommandId } from "../packets";
+import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 
 class BleConfiguration {
@@ -65,18 +64,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
     channel.addEventListener("characteristicvaluechanged", (event: Event) => {
       const target = event.target as BluetoothRemoteGATTCharacteristic;
-
-      const data = new Uint8Array(target.value!.buffer);
-
-      this.emit("rawpacketreceived", new RawPacketReceivedEvent(data));
-
-      const packet = NiimbotPacket.fromBytes(data);
-
-      this.emit("packetreceived", new PacketReceivedEvent(packet));
-
-      if (!(packet.command in ResponseCommandId)) {
-        console.warn(`Unknown response command: 0x${Utils.numberToHex(packet.command)}`);
-      }
+      this.processRawPacket(target.value!);
     });
 
     await channel.startNotifications();
