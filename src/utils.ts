@@ -120,11 +120,26 @@ export class Utils {
   }
 
   /**
+   * Converts a 32-bit unsigned integer to an array of two bytes (big endian).
+   */
+  public static u32ToBytes(n: number): [number, number, number, number] {
+    return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+  }
+
+  /**
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI16(arr: Uint8Array): number {
     Validators.u8ArrayLengthEquals(arr, 2);
-    return arr[0] * 256 + arr[1];
+    return new DataView(arr.buffer).getInt16(0, false);
+  }
+
+  /**
+   * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
+   */
+  public static bytesToI32(arr: Uint8Array): number {
+    Validators.u8ArrayLengthEquals(arr, 4);
+    return new DataView(arr.buffer).getInt32(0, false);
   }
 
   /**
@@ -173,6 +188,21 @@ export class Utils {
       webBluetooth: typeof navigator.bluetooth?.requestDevice !== "undefined",
       webSerial: typeof navigator.serial?.requestPort !== "undefined",
     };
+  }
+
+  /** Find check array has subarray at index */
+  public static hasSubarrayAtPos<T>(arr: ArrayLike<T>, sub: ArrayLike<T>, pos: number): boolean {
+    if (pos > arr.length - sub.length) {
+      return false;
+    }
+
+    for (let i = 0; i < sub.length; i++) {
+      if (arr[pos + i] !== sub[i]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
 

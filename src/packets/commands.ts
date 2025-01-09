@@ -41,6 +41,11 @@ export enum RequestCommandId {
   /** same as GetVolumeLevel??? */
   WriteRFID = 0x70,
   PrintTestPage = 0x5a,
+  StartFirmwareUpgrade = 0xf5,
+  FirmwareCrc = 0x91,
+  FirmwareCommit = 0x92,
+  FirmwareChunk = 0x9b,
+  FirmwareNoMoreChunks = 0x9c,
 }
 
 /**
@@ -98,6 +103,11 @@ export enum ResponseCommandId {
   In_PrinterPageIndex = 0xe0,
   In_PrintTestPage = 0x6a,
   In_WriteRFID = 0x71,
+  In_StartFirmwareUpgrade = 0xf6,
+  In_RequestFirmwareCrc = 0x90,
+  In_RequestFirmwareChunk = 0x9a,
+  In_FirmwareCheckResult = 0x9d,
+  In_FirmwareResult = 0x9e,
 }
 
 import TX = RequestCommandId;
@@ -154,4 +164,14 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.AntiFake]: [RX.In_AntiFake],
   [TX.WriteRFID]: [RX.In_WriteRFID],
   [TX.PrintTestPage]: [RX.In_PrintTestPage],
+  [TX.StartFirmwareUpgrade]: [RX.In_StartFirmwareUpgrade],
+  [TX.FirmwareCrc]: null,
+  [TX.FirmwareChunk]: null,
+  [TX.FirmwareNoMoreChunks]: null,
+  [TX.FirmwareCommit]: null,
+};
+
+export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
+  tx: [TX.FirmwareChunk, TX.FirmwareCrc, TX.FirmwareNoMoreChunks, TX.FirmwareCommit],
+  rx: [RX.In_RequestFirmwareCrc, RX.In_RequestFirmwareChunk, RX.In_FirmwareCheckResult, RX.In_FirmwareResult],
 };

@@ -10,13 +10,14 @@ import {
   SoundSettingsType,
 } from ".";
 import { NiimbotAbstractClient } from "../client";
-import { PacketReceivedEvent, PrintProgressEvent } from "../events";
+import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "../events";
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
-import { NiimbotPacket } from "./packet";
+import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
+import CRC32 from "crc-32";
 
 /**
  * @category Packets
@@ -453,7 +454,7 @@ export class Abstraction {
       this.statusPollTimer = setInterval(() => {
         this.printEnd()
           .then((printEndDone: boolean) => {
-            if(!printEndDone) {
+            if (!printEndDone) {
               this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
             } else {
               this.client.emit("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
@@ -484,6 +485,58 @@ export class Abstraction {
     const response = await this.send(PacketGenerator.labelPositioningCalibration(value));
     Validators.u8ArrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
+  }
+
+  public async firmwareUpgrade(data: Uint8Array, version: string): Promise<void> {
+    const crc = CRC32.buf(data);
+    await this.send(PacketGenerator.startFirmwareUpgrade(version));
+
+    await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareCrc], true, 5_000);
+
+    await this.send(PacketGenerator.sendFirmwareChecksum(crc));
+
+    const chunkSize = 200;
+    const totalChunks = Math.floor(data.byteLength / chunkSize);
+    console.log("Chunks to send:", totalChunks);
+
+    // Send chunks
+    while (true) {
+      const p = await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareChunk], true, 5_000);
+
+      if (!(p instanceof NiimbotCrc32Packet)) {
+        throw new Error("Not a firmware packet");
+      }
+
+      if (p.chunkNumber * chunkSize >= data.length) {
+        console.log("No more chunks");
+        break;
+      }
+
+      const part = data.slice(p.chunkNumber * chunkSize, p.chunkNumber * chunkSize + chunkSize);
+
+      await this.send(PacketGenerator.sendFirmwareChunk(p.chunkNumber, part));
+
+      this.client.emit("firmwareprogress", new FirmwareProgressEvent(p.chunkNumber, totalChunks));
+    }
+
+    await this.send(PacketGenerator.firmwareNoMoreChunks());
+
+    const uploadResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareCheckResult], true, 5_000);
+    Validators.u8ArrayLengthEquals(uploadResult.data, 1);
+
+    if (uploadResult.data[0] !== 1) {
+      throw new Error("Firmware check error (maybe CRC does not match)");
+    }
+
+    await this.send(PacketGenerator.firmwareCommit());
+
+    const firmwareResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareResult], true, 5_000);
+
+    Validators.u8ArrayLengthEquals(firmwareResult.data, 1);
+
+    if (firmwareResult.data[0] !== 1) {
+      throw new Error("Firmware error");
+    }
   }
 
   public newPrintTask(name: PrintTaskName, options?: Partial<PrintOptions>): AbstractPrintTask {

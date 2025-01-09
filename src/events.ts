@@ -119,7 +119,7 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
 }
 
 /**
- * Fired progress received (during {@link AbstractPrintTask.waitForFinished}).
+ * Fired on print progress received during {@link AbstractPrintTask.waitForFinished}.
  * @category Events
  */
 export class PrintProgressEvent extends NiimbotEvent {
@@ -142,6 +142,21 @@ export class PrintProgressEvent extends NiimbotEvent {
 }
 
 /**
+ * Fired on firmware upload progress during {@link Abstraction.firmwareUpgrade}.
+ * @category Events
+ */
+export class FirmwareProgressEvent extends NiimbotEvent {
+  currentChunk: number;
+  totalChunks: number;
+
+  constructor(currentChunk: number, totalChunks: number) {
+    super("firmwareprogress");
+    this.currentChunk = currentChunk;
+    this.totalChunks = totalChunks;
+  }
+}
+
+/**
  * Event list for {@link NiimbotAbstractClient}.
  * @category Events
  */
@@ -156,4 +171,5 @@ export type ClientEventMap = {
   heartbeatfailed: (event: HeartbeatFailedEvent) => void;
   printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
   printprogress: (event: PrintProgressEvent) => void;
+  firmwareprogress: (event: FirmwareProgressEvent) => void;
 };

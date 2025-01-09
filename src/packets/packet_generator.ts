@@ -8,6 +8,7 @@ import {
   SoundSettingsItemType,
   SoundSettingsType,
   commandsMap,
+  NiimbotCrc32Packet,
 } from ".";
 import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
 import { Utils } from "../utils";
@@ -244,5 +245,39 @@ export class PacketGenerator {
 
   public static labelPositioningCalibration(value: number): NiimbotPacket {
     return this.mapped(TX.LabelPositioningCalibration, [value]);
+  }
+
+  public static startFirmwareUpgrade(version: string): NiimbotPacket {
+    if(!/^\d+\.\d+$/.test(version)) {
+      throw new Error("Invalid version format (x.x expected)");
+    }
+
+    const [a, b] = version.split(".").map(p => parseInt(p));
+
+    return this.mapped(TX.StartFirmwareUpgrade, [a, b]);
+  }
+
+  public static sendFirmwareChecksum(crc: number): NiimbotPacket {
+    const p = new NiimbotCrc32Packet(TX.FirmwareCrc, 0, [...Utils.u32ToBytes(crc)]);
+    p.oneWay = true;
+    return p;
+  }
+
+  public static sendFirmwareChunk(idx: number, data: Uint8Array): NiimbotPacket {
+    const p = new NiimbotCrc32Packet(TX.FirmwareChunk, idx, data);
+    p.oneWay = true;
+    return p;
+  }
+
+  public static firmwareNoMoreChunks(): NiimbotPacket {
+    const p = new NiimbotCrc32Packet(TX.FirmwareNoMoreChunks, 0, [1]);
+    p.oneWay = true;
+    return p;
+  }
+
+  public static firmwareCommit(): NiimbotPacket {
+    const p = new NiimbotCrc32Packet(TX.FirmwareCommit, 0, [1]);
+    p.oneWay = true;
+    return p;
   }
 }

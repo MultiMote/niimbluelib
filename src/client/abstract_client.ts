@@ -7,6 +7,7 @@ import {
   ConnectResult,
   LabelType,
   NiimbotPacket,
+  PacketParser,
   PrinterErrorCode,
   PrintError,
   ResponseCommandId,
@@ -75,7 +76,10 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     super();
     this.abstraction = new Abstraction(this);
     this.on("connect", () => this.startHeartbeat());
-    this.on("disconnect", () => this.stopHeartbeat());
+    this.on("disconnect", () => {
+      this.stopHeartbeat();
+      this.packetBuf = new Uint8Array();
+    });
   }
 
   /**
@@ -179,8 +183,13 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
     this.packetBuf = Utils.u8ArrayAppend(this.packetBuf, data);
 
+    if (this.packetBuf.length > 1 && !Utils.hasSubarrayAtPos(this.packetBuf, NiimbotPacket.HEAD, 0)) {
+      console.warn("Dropping invalid buffer", Utils.bufToHex(this.packetBuf));
+      this.packetBuf = new Uint8Array();
+    }
+
     try {
-      const packets: NiimbotPacket[] = NiimbotPacket.fromBytesMultiPacket(this.packetBuf);
+      const packets: NiimbotPacket[] = PacketParser.parsePacketBundle(this.packetBuf);
 
       if (packets.length > 0) {
         this.emit("rawpacketreceived", new RawPacketReceivedEvent(this.packetBuf));
@@ -193,7 +202,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       }
     } catch (_e) {
       if (this.debug) {
-        console.info(`Incomplete packet, ignoring:${Utils.bufToHex(this.packetBuf)}`);
+        console.info(`Incomplete packet, ignoring:${Utils.bufToHex(this.packetBuf)}`, _e);
       }
     }
   }
