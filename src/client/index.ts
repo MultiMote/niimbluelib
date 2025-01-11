@@ -1,4 +1,4 @@
-import { NiimbotAbstractClient, ConnectionInfo, PrinterInfo } from "./abstract_client";
+import { NiimbotAbstractClient, ConnectionInfo } from "./abstract_client";
 import { NiimbotBluetoothClient } from "./bluetooth_impl";
 import { NiimbotCapacitorBleClient, NiimbotCapacitorBleClientConnectOptions } from "./capacitor_ble_impl";
 import { NiimbotSerialClient } from "./serial_impl";
@@ -21,7 +21,6 @@ export const instantiateClient = (t: NiimbotClientType): NiimbotAbstractClient =
 export {
   NiimbotAbstractClient,
   ConnectionInfo,
-  PrinterInfo,
   NiimbotBluetoothClient,
   NiimbotCapacitorBleClient,
   NiimbotCapacitorBleClientConnectOptions,

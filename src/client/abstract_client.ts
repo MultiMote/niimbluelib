@@ -2,14 +2,10 @@ import { EventEmitter } from "eventemitter3";
 import { Mutex } from "async-mutex";
 import {
   Abstraction,
-  AutoShutdownTime,
-  BatteryChargeLevel,
   ConnectResult,
-  LabelType,
   NiimbotPacket,
   PacketParser,
   PrinterErrorCode,
-  PrintError,
   ResponseCommandId,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
@@ -24,6 +20,7 @@ import {
 } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
+import { PrinterInfo, PrintError } from "../packets/dto";
 
 /**
  * Represents the connection result information.
@@ -34,24 +31,6 @@ export type ConnectionInfo = {
   deviceName?: string;
   result: ConnectResult;
 };
-
-/**
- * Interface representing printer information.
- *
- * @category Client
- */
-export interface PrinterInfo {
-  connectResult?: ConnectResult;
-  protocolVersion?: number;
-  modelId?: number;
-  serial?: string;
-  mac?: string;
-  charge?: BatteryChargeLevel;
-  autoShutdownTime?: AutoShutdownTime;
-  labelType?: LabelType;
-  softwareVersion?: string;
-  hardwareVersion?: string;
-}
 
 /**
  * Abstract class representing a client with common functionality for interacting with a printer.

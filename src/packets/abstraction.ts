@@ -7,7 +7,6 @@ import {
   PrinterInfoType,
   ResponseCommandId,
   SoundSettingsItemType,
-  SoundSettingsType,
 } from ".";
 import { NiimbotAbstractClient } from "../client";
 import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "../events";
@@ -15,72 +14,10 @@ import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
+import { HeartbeatData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
-
-/**
- * @category Packets
- */
-export class PrintError extends Error {
-  public readonly reasonId: number;
-
-  constructor(message: string, reasonId: number) {
-    super(message);
-    this.reasonId = reasonId;
-  }
-}
-
-/**
- * @category Packets
- */
-export interface PrintStatus {
-  /** 0 – n */
-  page: number;
-  /** 0 – 100 */
-  pagePrintProgress: number;
-  /** 0 – 100 */
-  pageFeedProgress: number;
-}
-/**
- * @category Packets
- */
-export interface RfidInfo {
-  tagPresent: boolean;
-  uuid: string;
-  barCode: string;
-  serialNumber: string;
-  allPaper: number;
-  usedPaper: number;
-  consumablesType: LabelType;
-}
-
-/**
- * @category Packets
- **/
-export interface HeartbeatData {
-  paperState: number;
-  rfidReadState: number;
-  lidClosed: boolean;
-  powerLevel: BatteryChargeLevel;
-}
-
-/**
- * @category Packets
- */
-export interface SoundSettings {
-  category: SoundSettingsType;
-  item: SoundSettingsItemType;
-  value: boolean;
-}
-
-/**
- * @category Packets
- */
-export interface PrinterStatusData {
-  supportColor: number;
-  protocolVersion: number;
-}
 
 /**
  * Packet sender and parser.
