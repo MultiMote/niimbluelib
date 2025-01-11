@@ -287,19 +287,11 @@ export class Abstraction {
     Validators.u8ArrayLengthEquals(packet.data, 2);
 
     // todo: find how to determine format
-    /*
-    let version = 0;
-    const model = this.client.getModelMetadata()?.model;
 
-    if (model !== undefined && PrinterModel[model]?.startsWith("B")) {
-      version = packet.data[1] / 100 + packet.data[0];
-    } else {
-      version = (packet.data[0] * 256 + packet.data[1]) / 100.0;
-    }
+    let v1 = packet.data[1] / 100 + packet.data[0];
+    let v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
 
-    return version.toFixed(2);\
-    */
-    return `0x${Utils.bufToHex(packet.data, "")}`;
+    return `0x${Utils.bufToHex(packet.data, "")} (${v1.toFixed(2)} or ${v2.toFixed(2)})`;
   }
 
   /** May be wrong, version format varies between models */
@@ -308,19 +300,11 @@ export class Abstraction {
     Validators.u8ArrayLengthEquals(packet.data, 2);
 
     // todo: find how to determine format
-    /*
-    let version = 0;
-    const model = this.client.getModelMetadata()?.model;
 
-    if (model !== undefined && PrinterModel[model]?.startsWith("B")) {
-      version = packet.data[1] / 100 + packet.data[0];
-    } else {
-      version = (packet.data[0] * 256 + packet.data[1]) / 100.0;
-    }
+    let v1 = packet.data[1] / 100 + packet.data[0];
+    let v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
 
-    return version.toFixed(2);
-    */
-    return `0x${Utils.bufToHex(packet.data, "")}`;
+    return `0x${Utils.bufToHex(packet.data, "")} (${v1.toFixed(2)} or ${v2.toFixed(2)})`;
   }
 
   public async setAutoShutDownTime(time: AutoShutdownTime): Promise<void> {
