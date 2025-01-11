@@ -17,7 +17,8 @@ export class NiimbotEvent {
  * @category Events
  */
 export class ConnectEvent extends NiimbotEvent {
-  info: ConnectionInfo;
+  readonly info: ConnectionInfo;
+
   constructor(info: ConnectionInfo) {
     super("connect");
     this.info = info;
@@ -39,7 +40,8 @@ export class DisconnectEvent extends NiimbotEvent {
  * @category Events
  */
 export class PacketReceivedEvent extends NiimbotEvent {
-  packet: NiimbotPacket;
+  readonly packet: NiimbotPacket;
+
   constructor(packet: NiimbotPacket) {
     super("packetreceived");
     this.packet = packet;
@@ -51,7 +53,8 @@ export class PacketReceivedEvent extends NiimbotEvent {
  * @category Events
  */
 export class PacketSentEvent extends NiimbotEvent {
-  packet: NiimbotPacket;
+  readonly packet: NiimbotPacket;
+
   constructor(packet: NiimbotPacket) {
     super("packetsent");
     this.packet = packet;
@@ -63,7 +66,8 @@ export class PacketSentEvent extends NiimbotEvent {
  * @category Events
  */
 export class RawPacketSentEvent extends NiimbotEvent {
-  data: Uint8Array;
+  readonly data: Uint8Array;
+
   constructor(data: Uint8Array) {
     super("rawpacketsent");
     this.data = data;
@@ -75,7 +79,8 @@ export class RawPacketSentEvent extends NiimbotEvent {
  * @category Events
  */
 export class RawPacketReceivedEvent extends NiimbotEvent {
-  data: Uint8Array;
+  readonly data: Uint8Array;
+
   constructor(data: Uint8Array) {
     super("rawpacketreceived");
     this.data = data;
@@ -87,7 +92,8 @@ export class RawPacketReceivedEvent extends NiimbotEvent {
  * @category Events
  */
 export class HeartbeatEvent extends NiimbotEvent {
-  data: HeartbeatData;
+  readonly data: HeartbeatData;
+
   constructor(data: HeartbeatData) {
     super("heartbeat");
     this.data = data;
@@ -99,7 +105,8 @@ export class HeartbeatEvent extends NiimbotEvent {
  * @category Events
  */
 export class HeartbeatFailedEvent extends NiimbotEvent {
-  failedAttempts: number;
+  readonly failedAttempts: number;
+
   constructor(failedAttempts: number) {
     super("heartbeatfailed");
     this.failedAttempts = failedAttempts;
@@ -111,7 +118,8 @@ export class HeartbeatFailedEvent extends NiimbotEvent {
  * @category Events
  */
 export class PrinterInfoFetchedEvent extends NiimbotEvent {
-  info: PrinterInfo;
+  readonly info: PrinterInfo;
+
   constructor(info: PrinterInfo) {
     super("printerinfofetched");
     this.info = info;
@@ -124,13 +132,13 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
  */
 export class PrintProgressEvent extends NiimbotEvent {
   /** 0 – n */
-  page: number;
+  readonly page: number;
 
-  pagesTotal: number;
+  readonly pagesTotal: number;
   /** 0 – 100 */
-  pagePrintProgress: number;
+  readonly pagePrintProgress: number;
   /** 0 – 100 */
-  pageFeedProgress: number;
+  readonly pageFeedProgress: number;
 
   constructor(page: number, pagesTotal: number, pagePrintProgress: number, pageFeedProgress: number) {
     super("printprogress");
@@ -146,8 +154,8 @@ export class PrintProgressEvent extends NiimbotEvent {
  * @category Events
  */
 export class FirmwareProgressEvent extends NiimbotEvent {
-  currentChunk: number;
-  totalChunks: number;
+  readonly currentChunk: number;
+  readonly totalChunks: number;
 
   constructor(currentChunk: number, totalChunks: number) {
     super("firmwareprogress");
