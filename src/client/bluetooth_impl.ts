@@ -2,26 +2,17 @@ import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
 import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
+import { modelsLibrary } from "../printer_models";
 
-class BleConfiguration {
-  public static readonly SERVICE: string = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
-  public static readonly CHARACTERISTIC: string = "bef8d6c9-9c21-4c9e-b632-bd58c1009f9f";
-  public static readonly FILTER: BluetoothLEScanFilter[] = [
-    { namePrefix: "A" },
-    { namePrefix: "B" },
-    { namePrefix: "D" },
-    { namePrefix: "E" },
-    { namePrefix: "F" },
-    { namePrefix: "H" },
-    { namePrefix: "J" },
-    { namePrefix: "K" },
-    { namePrefix: "M" },
-    { namePrefix: "N" },
-    { namePrefix: "P" },
-    { namePrefix: "S" },
-    { namePrefix: "T" },
-    { namePrefix: "Z" },
-    { services: [BleConfiguration.SERVICE] },
+const getAllModelFirstLetters = (): string[] => [...new Set(modelsLibrary.map((m) => m.model[0]))];
+
+/**
+ * @category Client
+ */
+export class BleDefaultConfiguration {
+  public static readonly SERVICES: string[] = ["e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
+  public static readonly NAME_FILTERS: BluetoothLEScanFilter[] = [
+    ...getAllModelFirstLetters().map((l) => ({ namePrefix: l })),
   ];
 }
 
@@ -33,13 +24,26 @@ class BleConfiguration {
 export class NiimbotBluetoothClient extends NiimbotAbstractClient {
   private gattServer?: BluetoothRemoteGATTServer = undefined;
   private channel?: BluetoothRemoteGATTCharacteristic = undefined;
+  private serviceUuidFilter: string[] = BleDefaultConfiguration.SERVICES;
+
+  public getServiceUuidFilter(): string[] {
+    return this.serviceUuidFilter;
+  }
+
+  public setServiceUuidFilter(ids: string[]): void {
+    this.serviceUuidFilter = ids;
+  }
 
   public async connect(): Promise<ConnectionInfo> {
     await this.disconnect();
 
     const options: RequestDeviceOptions = {
-      filters: BleConfiguration.FILTER,
+      filters: [
+        ...BleDefaultConfiguration.NAME_FILTERS,
+        { services: this.serviceUuidFilter ?? BleDefaultConfiguration.SERVICES },
+      ],
     };
+
     const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options);
 
     if (device.gatt === undefined) {
@@ -58,9 +62,16 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
     const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect();
 
-    const service: BluetoothRemoteGATTService = await gattServer.getPrimaryService(BleConfiguration.SERVICE);
+    const channel: BluetoothRemoteGATTCharacteristic | undefined = await this.findSuitableBluetoothCharacteristic(
+      gattServer
+    );
 
-    const channel: BluetoothRemoteGATTCharacteristic = await service.getCharacteristic(BleConfiguration.CHARACTERISTIC);
+    if (channel === undefined) {
+      gattServer.disconnect();
+      throw new Error("Suitable device characteristic not found");
+    }
+
+    console.log(`Found suitable characteristic ${channel.uuid}`);
 
     channel.addEventListener("characteristicvaluechanged", (event: Event) => {
       const target = event.target as BluetoothRemoteGATTCharacteristic;
@@ -88,6 +99,27 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.emit("connect", new ConnectEvent(result));
 
     return result;
+  }
+
+  private async findSuitableBluetoothCharacteristic(
+    gattServer: BluetoothRemoteGATTServer
+  ): Promise<BluetoothRemoteGATTCharacteristic | undefined> {
+    const services: BluetoothRemoteGATTService[] = await gattServer.getPrimaryServices();
+
+    for (const service of services) {
+      if (service.uuid.length < 5) {
+        continue;
+      }
+
+      const characteristics: BluetoothRemoteGATTCharacteristic[] = await service.getCharacteristics();
+
+      for (const c of characteristics) {
+        if (c.properties.notify && c.properties.writeWithoutResponse) {
+          return c;
+        }
+      }
+    }
+    return undefined;
   }
 
   public isConnected(): boolean {
