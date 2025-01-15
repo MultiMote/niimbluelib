@@ -1,4 +1,4 @@
-import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId } from "../dist/index.js";
+import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
 import { spawn } from "child_process";
 
 const TSHARK_PATH = "C:\\Program Files\\Wireshark\\tshark.exe";
@@ -54,8 +54,8 @@ spawned.on("close", (code) => {
     let comment = "";
 
     try {
-      const data = Utils.hexToBuf(hexData);
-      const packets = NiimbotPacket.fromBytesMultiPacket(data);
+      const data = Utils.hexToBuf(hexData.startsWith("03") ? hexData.substring(2) : hexData);
+      const packets = PacketParser.parsePacketBundle(data);
 
       if (packets.length === 0) {
         comment = "Parse error (no packets found)";
@@ -79,7 +79,7 @@ spawned.on("close", (code) => {
         } else {
           comment += ResponseCommandId[packet.command] ?? "???";
         }
-        
+
         if (display === "data") {
           comment += `(${packet.dataLength}: ${Utils.bufToHex(packet.data)}); `;
         } else {

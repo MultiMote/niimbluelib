@@ -1,4 +1,4 @@
-import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId } from "../dist/index.js";
+import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
 import fs from "fs";
 
 // usage: yarn parse-text-dump <path> [data | min | min-out | print-task]
@@ -29,8 +29,8 @@ for (const line of lines) {
   let comment = "";
 
   try {
-    const data = Utils.hexToBuf(hexData);
-    const packets = NiimbotPacket.fromBytesMultiPacket(data);
+    const data = Utils.hexToBuf(hexData.startsWith("03") ? hexData.substring(2) : hexData);
+    const packets = PacketParser.parsePacketBundle(data);
 
     if (packets.length === 0) {
       comment = "Parse error (no packets found)";
