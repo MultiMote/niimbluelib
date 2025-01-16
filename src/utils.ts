@@ -6,6 +6,8 @@ export interface AvailableTransports {
   capacitorBle: boolean;
 }
 
+type PixelCountResult = { total: number; a: number; b: number; c: number };
+
 /**
  * Utility class for various common operations.
  * @category Helpers
@@ -72,42 +74,40 @@ export class Utils {
   /**
    * Count non-zero bits in the byte array.
    *
-   * Not efficient, but readable.
+   * If data length is more than `printhead size / 8`, counts are [0, LL, HH] of total `1` bit count
    *
-   * The algorithm is obtained by reverse engineering and I don't understand what's going on here.
+   * Otherwise data splitted to the three chunks (last chunk sizes can be lesser, base chunk size is `printhead size / 8 / 3`)
+   * and `1` bit count calculated from each chunk.
    *
-   * Sometimes these values match original packets, sometimes not.
    **/
-  public static countPixelsForBitmapPacket(
-    arr: Uint8Array,
-    printheadSize: number
-  ): { total: number; a: number; b: number; c: number } {
+  public static countPixelsForBitmapPacket(buf: Uint8Array, printheadPixels: number): PixelCountResult {
     let total: number = 0;
-    let a: number = 0;
-    let b: number = 0;
-    let c: number = 0;
-    let xPos: number = 0;
+    let partCounts: [number, number, number] = [0, 0, 0];
+    let chunkSize: number = Math.floor(printheadPixels / 8 / 3);
+    // todo: in dumps of different printers, for 384 pixels width, sometimes split enabled, sometimes not
+    let split: boolean = buf.byteLength < chunkSize * 3; // Is data fits to the three chunks
 
-    const printheadSizeDiv3: number = printheadSize / 3;
+    buf.forEach((value: number, byteN: number) => {
+      const chunkIdx: number = Math.floor(byteN / chunkSize);
 
-    arr.forEach((value: number) => {
-      //for (let bitN = 0; bitN < 8; bitN++) {
-      for (let bitN: number = 7; bitN >= 0; bitN--) {
-        const isBlack: boolean = (value & (1 << bitN)) !== 0;
-        if (isBlack) {
-          if (xPos < printheadSizeDiv3) {
-            a++;
-          } else if (xPos < printheadSizeDiv3 * 2) {
-            b++;
-          } else {
-            c++;
-          }
+      for (let bitN = 0; bitN < 8; bitN++) {
+        // is black
+        if ((value & (1 << bitN)) !== 0) {
           total++;
+          if (split) {
+            partCounts[chunkIdx]++;
+          }
         }
-        xPos++;
       }
     });
-    return { total, a, b, c };
+
+    if (split) {
+      const [a, b, c] = partCounts;
+      return { total, a, b, c };
+    }
+
+    const [c, b] = this.u16ToBytes(total);
+    return { total, a: 0, b, c };
   }
 
   /**
