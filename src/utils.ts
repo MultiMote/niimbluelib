@@ -6,7 +6,10 @@ export interface AvailableTransports {
   capacitorBle: boolean;
 }
 
-type PixelCountResult = { total: number; a: number; b: number; c: number };
+export interface PixelCountResult {
+  total: number;
+  parts: [number, number, number];
+}
 
 /**
  * Utility class for various common operations.
@@ -74,18 +77,40 @@ export class Utils {
   /**
    * Count non-zero bits in the byte array.
    *
+   * For `split` mode:
+   *
    * If data length is more than `printhead size / 8`, counts are [0, LL, HH] of total `1` bit count
    *
    * Otherwise data splitted to the three chunks (last chunk sizes can be lesser, base chunk size is `printhead size / 8 / 3`)
    * and `1` bit count calculated from each chunk.
    *
+   * For `total` mode:
+   *
+   * Return total number of pixel in little-endian format: `[0, LL, HH]`
+   *
    **/
-  public static countPixelsForBitmapPacket(buf: Uint8Array, printheadPixels: number): PixelCountResult {
+  public static countPixelsForBitmapPacket(
+    buf: Uint8Array,
+    printheadPixels: number,
+    mode: "auto" | "split" | "total" = "auto"
+  ): PixelCountResult {
     let total: number = 0;
-    let partCounts: [number, number, number] = [0, 0, 0];
-    let chunkSize: number = Math.floor(printheadPixels / 8 / 3);
-    // todo: in dumps of different printers, for 384 pixels width, sometimes split enabled, sometimes not
-    let split: boolean = buf.byteLength < chunkSize * 3; // Is data fits to the three chunks
+    let parts: [number, number, number] = [0, 0, 0];
+    let chunkSize: number = Math.floor(printheadPixels / 8 / 3); // Every byte can store 8 pixels
+    let split: boolean = buf.byteLength <= chunkSize * 3; // Is data fits to the three chunks
+
+    if (mode === "total") {
+      split = false;
+    } else if (mode === "split") {
+      if (buf.byteLength > chunkSize * 3) {
+        console.warn(
+          `Can't use split mode: buffer size (${buf.byteLength}) is large than chunk size * 3 (${chunkSize * 3}), ` +
+            "maybe printheadPixels is set incorrectly"
+        );
+      } else {
+        split = true;
+      }
+    }
 
     buf.forEach((value: number, byteN: number) => {
       const chunkIdx: number = Math.floor(byteN / chunkSize);
@@ -94,20 +119,31 @@ export class Utils {
         // is black
         if ((value & (1 << bitN)) !== 0) {
           total++;
-          if (split) {
-            partCounts[chunkIdx]++;
+
+          if (!split) {
+            continue;
+          }
+
+          if (chunkIdx > 2) {
+            console.warn(`Overflow (chunk index ${chunkIdx})`);
+            continue;
+          }
+
+          parts[chunkIdx]++;
+
+          if (parts[chunkIdx] > 255) {
+            console.warn("Pixel count overflow");
           }
         }
       }
     });
 
     if (split) {
-      const [a, b, c] = partCounts;
-      return { total, a, b, c };
+      return { total, parts };
     }
 
     const [c, b] = this.u16ToBytes(total);
-    return { total, a: 0, b, c };
+    return { total, parts: [0, b, c] };
   }
 
   /**

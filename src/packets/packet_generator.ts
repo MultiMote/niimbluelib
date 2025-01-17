@@ -179,18 +179,8 @@ export class PacketGenerator {
   }
 
   public static printBitmapRow(pos: number, repeats: number, data: Uint8Array, printheadPixels?: number): NiimbotPacket {
-    const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
-    // Black pixel count. Not sure what role it plays in printing.
-    // There is two formats of this part
-    // 1. <count> <count> <count> (sum must equals number of pixels, every number calculated by algorithm based on printhead resolution)
-    // 2. <0> <countH> <countL> (big endian)
-    let header: number[] = [0, ...Utils.u16ToBytes(total)];
-
-    if (printheadPixels !== undefined) {
-      header = [a, b, c];
-    }
-
-    return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...header, repeats, ...data]);
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
+    return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...data]);
   }
 
   /** Printer powers off if black pixel count > 6 */
@@ -201,20 +191,14 @@ export class PacketGenerator {
     data: Uint8Array,
     printheadPixels?: number
   ): NiimbotPacket {
-    const { total, a, b, c } = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
     const indexes: Uint8Array = ImageEncoder.indexPixels(data);
 
-    if (total > 6) {
-      throw new Error(`Black pixel count > 6 (${total})`);
+    if (counts.total > 6) {
+      throw new Error(`Black pixel count > 6 (${counts.total})`);
     }
 
-    let header: number[] = [0, ...Utils.u16ToBytes(total)];
-
-    if (printheadPixels !== undefined) {
-      header = [a, b, c];
-    }
-
-    return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...header, repeats, ...indexes]);
+    return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...indexes]);
   }
 
   public static printClear(): NiimbotPacket {
