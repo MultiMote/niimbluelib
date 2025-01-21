@@ -41,7 +41,7 @@ export class PacketParser {
       //           |     |
       //          size  crc
 
-      if (firmwareExchangePackets.rx.includes(cmd)) {
+      if (firmwareExchangePackets.rx.includes(cmd) || firmwareExchangePackets.tx.includes(cmd)) {
         cls = NiimbotCrc32Packet;
         sizePos = 5;
         crcSize = 4;
