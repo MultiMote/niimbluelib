@@ -18,22 +18,28 @@ export class B21V1PrintTask extends AbstractPrintTask {
     this.checkAddPage(quantity ?? 1);
 
     for (let i = 0; i < (quantity ?? 1); i++) {
-      await this.abstraction.sendAll([
-        PacketGenerator.printClear(),
-        PacketGenerator.pageStart(),
-        PacketGenerator.setPageSizeV2(image.rows, image.cols),
-        ...PacketGenerator.writeImageData(image, this.printheadPixels()),
-        PacketGenerator.pageEnd(),
-      ], this.printOptions.pageTimeoutMs);
+      await this.abstraction.sendAll(
+        [
+          // PacketGenerator.printClear(),
+          PacketGenerator.pageStart(),
+          PacketGenerator.setPageSizeV2(image.rows, image.cols),
+          ...PacketGenerator.writeImageData(image, {
+            countsMode: "total",
+            enableCheckLine: true,
+            printheadPixels: this.printheadPixels(),
+          }),
+          PacketGenerator.pageEnd(),
+        ],
+        this.printOptions.pageTimeoutMs
+      );
     }
   }
 
   override waitForFinished(): Promise<void> {
     this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
 
-    return this.abstraction.waitUntilPrintFinishedByPrintEndPoll(
-      this.printOptions.totalPages,
-      this.printOptions.statusPollIntervalMs
-    ).finally(() => this.abstraction.setDefaultPacketTimeout());
+    return this.abstraction
+      .waitUntilPrintFinishedByPrintEndPoll(this.printOptions.totalPages, this.printOptions.statusPollIntervalMs)
+      .finally(() => this.abstraction.setDefaultPacketTimeout());
   }
 }

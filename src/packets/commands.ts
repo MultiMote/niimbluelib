@@ -55,7 +55,7 @@ export enum RequestCommandId {
  * @category Packets
  **/
 export enum ResponseCommandId {
-  Invalid = -1,
+  In_Invalid = -1,
   In_NotSupported = 0x00,
   In_Connect = 0xc2,
   In_CalibrateHeight = 0x69,

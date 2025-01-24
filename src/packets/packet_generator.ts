@@ -10,8 +10,19 @@ import {
   commandsMap,
   NiimbotCrc32Packet,
 } from ".";
-import { EncodedImage, ImageEncoder, ImageRow } from "../image_encoder";
+import { EncodedImage, ImageEncoder } from "../image_encoder";
 import { Utils } from "../utils";
+
+export interface ImagePacketsGenerateOptions {
+  /** Mode for "black pixel count" section of bitmap packet. */
+  countsMode?: "auto" | "split" | "total";
+  /** Disable PrintBitmapRowIndexed packet. */
+  noIndexPacket?: boolean;
+  /** Send PrinterCheckLine every 200 line. */
+  enableCheckLine?: boolean;
+  /** Printer head resolution. Used for "black pixel count" section calculation. */
+  printheadPixels?: number;
+}
 
 /**
  * A helper class that generates various types of packets.
@@ -178,8 +189,14 @@ export class PacketGenerator {
     return this.mapped(TX.PrintEmptyRow, [...Utils.u16ToBytes(pos), repeats]);
   }
 
-  public static printBitmapRow(pos: number, repeats: number, data: Uint8Array, printheadPixels?: number): NiimbotPacket {
-    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
+  public static printBitmapRow(
+    pos: number,
+    repeats: number,
+    data: Uint8Array,
+    printheadPixels: number,
+    countsMode: "auto" | "split" | "total" = "auto"
+  ): NiimbotPacket {
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels, countsMode);
     return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...data]);
   }
 
@@ -189,9 +206,10 @@ export class PacketGenerator {
     pos: number,
     repeats: number,
     data: Uint8Array,
-    printheadPixels?: number
+    printheadPixels: number,
+    countsMode: "auto" | "split" | "total" = "auto"
   ): NiimbotPacket {
-    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0);
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0, countsMode);
     const indexes: Uint8Array = ImageEncoder.indexPixels(data);
 
     if (counts.total > 6) {
@@ -209,18 +227,50 @@ export class PacketGenerator {
     return this.mapped(TX.WriteRFID, data);
   }
 
-  public static writeImageData(image: EncodedImage, printheadPixels?: number): NiimbotPacket[] {
-    return image.rowsData.map((p: ImageRow) => {
-      if (p.dataType === "pixels") {
-        if (p.blackPixelsCount > 6) {
-          return this.printBitmapRow(p.rowNumber, p.repeat, p.rowData!, printheadPixels);
+  public static checkLine(line: number): NiimbotPacket {
+    return this.mapped(TX.PrinterCheckLine, [...Utils.u16ToBytes(line), 0x01]);
+  }
+
+  public static writeImageData(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
+    let out: NiimbotPacket[] = [];
+
+    for (const d of image.rowsData) {
+      if (d.dataType === "pixels") {
+        if (d.blackPixelsCount <= 6 && !options?.noIndexPacket) {
+          out.push(
+            this.printBitmapRowIndexed(
+              d.rowNumber,
+              d.repeat,
+              d.rowData!,
+              options?.printheadPixels ?? 0,
+              options?.countsMode ?? "auto"
+            )
+          );
         } else {
-          return this.printBitmapRowIndexed(p.rowNumber, p.repeat, p.rowData!, printheadPixels);
+          out.push(
+            this.printBitmapRow(
+              d.rowNumber,
+              d.repeat,
+              d.rowData!,
+              options?.printheadPixels ?? 0,
+              options?.countsMode ?? "auto"
+            )
+          );
         }
-      } else {
-        return this.printEmptySpace(p.rowNumber, p.repeat);
+        continue;
       }
-    });
+
+      if (d.dataType === "check" && options?.enableCheckLine) {
+        out.push(this.checkLine(d.rowNumber));
+        continue;
+      }
+
+      if (d.dataType === "void") {
+        out.push(this.printEmptySpace(d.rowNumber, d.repeat));
+      }
+    }
+
+    return out;
   }
 
   public static printTestPage(): NiimbotPacket {
@@ -232,11 +282,11 @@ export class PacketGenerator {
   }
 
   public static startFirmwareUpgrade(version: string): NiimbotPacket {
-    if(!/^\d+\.\d+$/.test(version)) {
+    if (!/^\d+\.\d+$/.test(version)) {
       throw new Error("Invalid version format (x.x expected)");
     }
 
-    const [a, b] = version.split(".").map(p => parseInt(p));
+    const [a, b] = version.split(".").map((p) => parseInt(p));
 
     return this.mapped(TX.StartFirmwareUpgrade, [a, b]);
   }

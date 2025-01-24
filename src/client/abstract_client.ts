@@ -90,7 +90,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       await this.sendPacket(packet, true);
 
       if (packet.oneWay) {
-        return new NiimbotPacket(ResponseCommandId.Invalid, []); // or undefined is better?
+        return new NiimbotPacket(ResponseCommandId.In_Invalid, []); // or undefined is better?
       }
 
       return this.waitForPacket(packet.validResponseIds, true, timeoutMs);

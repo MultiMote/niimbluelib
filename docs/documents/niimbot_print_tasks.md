@@ -57,10 +57,10 @@ PrintStart [1(u8)]
 Page:
 
 ```
-PrintClear [1(u8)]
 PageStart [1(u8)]
 SetPageSize [rows(u16), cols(u16)]
 PrintEmptyRow | PrintBitmapRow | PrintBitmapRowIndexed
+PrinterCheckLine [line(u16), 1(u8)] - after every 200 lines (data example: 00c701, 018f01, 025701, 031f01, ...)
 PageEnd [1(u8)]
 ```
 

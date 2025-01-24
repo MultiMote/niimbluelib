@@ -2,7 +2,7 @@ import { Utils } from ".";
 
 /** @category Image encoder */
 export type ImageRow = {
-  dataType: "void" | "pixels";
+  dataType: "void" | "pixels" | "check";
   rowNumber: number;
   repeat: number;
   blackPixelsCount: number;
@@ -83,14 +83,31 @@ export class ImageEncoder {
         } else {
           rowsData.push(newPart);
         }
+
+        const sendRowCheck = row % 200 === 199;
+
+        if (sendRowCheck) {
+          rowsData.push({
+            dataType: "check",
+            rowNumber: row,
+            repeat: 0,
+            rowData: undefined,
+            blackPixelsCount: 0,
+          });
+        }
       }
     }
-
+    
     return { cols, rows, rowsData };
   }
 
   /** printDirection = "left" rotates image to 90 degrees clockwise */
-  public static isPixelNonWhite(iData: ImageData, x: number, y: number, printDirection: PrintDirection = "left"): boolean {
+  public static isPixelNonWhite(
+    iData: ImageData,
+    x: number,
+    y: number,
+    printDirection: PrintDirection = "left"
+  ): boolean {
     let idx = y * iData.width + x;
 
     if (printDirection === "left") {
