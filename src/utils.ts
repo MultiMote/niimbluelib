@@ -75,14 +75,14 @@ export class Utils {
   }
 
   /**
-   * Count non-zero bits in the byte array.
+   * Count `non-zero` bits in the byte array.
    *
    * For `split` mode:
    *
-   * If data length is more than `printhead size / 8`, counts are [0, LL, HH] of total `1` bit count
+   * If data length is more than `printhead size / 8`, counts are [0, LL, HH] of total `non-zero` bit count
    *
    * Otherwise data splitted to the three chunks (last chunk sizes can be lesser, base chunk size is `printhead size / 8 / 3`)
-   * and `1` bit count calculated from each chunk.
+   * and `non-zero` bit count calculated from each chunk.
    *
    * For `total` mode:
    *

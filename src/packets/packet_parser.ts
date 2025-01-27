@@ -73,7 +73,7 @@ export class PacketParser {
 
       chunks.push({ cls, raw: buf.slice(0, tailEnd) });
 
-      // Cut form start
+      // Cut from start
       buf = buf.slice(tailEnd);
     }
 

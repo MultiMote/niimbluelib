@@ -11,9 +11,11 @@
 NiimBlueLib is a library for the communication with NIIMBOT printers.
 Used in [NiimBlue](https://github.com/MultiMote/niimblue) project.
 
+NiimBlueLib provides the most accurate open source implementation of the NIIMBOT printers protocol.
+
 This project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
 
-Сheck out the experimеntal [niimbluelib-headless](https://github.com/MultiMote/niimbluelib-headless) for CLI use cases.
+Check out the experimental [niimbluelib-headless](https://github.com/MultiMote/niimbluelib-headless) for CLI use cases.
 
 ### Installation
 

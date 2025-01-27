@@ -126,10 +126,7 @@ Example:
 
 Used when black pixel count is less than 7. Data is encoded with pixel indexes (unsigned 16-bit integers).
 
-`Black pixel count` segment is a mystery. It encoded with 3 bytes. Sum all of them equals total count of current row black pixels.
-
-Algorithm of this segment calculation you can see in {@link API.Utils.countPixelsForBitmapPacket} source code.
-Sometimes result match the original packets, sometimes not.
+Information about `Black pixel count` segment can be found in {@link API.Utils.countPixelsForBitmapPacket} function docs.
 
 Usually printer prints without problems when all of 3 bytes are zeros.
 
