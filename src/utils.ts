@@ -79,14 +79,18 @@ export class Utils {
    *
    * For `split` mode:
    *
-   * If data length is more than `printhead size / 8`, counts are [0, LL, HH] of total `non-zero` bit count
-   *
-   * Otherwise data splitted to the three chunks (last chunk sizes can be lesser, base chunk size is `printhead size / 8 / 3`)
+   * Data splitted to the three chunks (last chunk sizes can be lesser, base chunk size is `printhead size / 8 / 3`)
    * and `non-zero` bit count calculated from each chunk.
+   *
+   * If data size is more than `printheadPixels / 8`, only `total` mode can be used.
    *
    * For `total` mode:
    *
    * Return total number of pixel in little-endian format: `[0, LL, HH]`
+   *
+   * For `auto` mode:
+   *
+   * By default `split` mode used. If it is not available, `total` mode used.
    *
    **/
   public static countPixelsForBitmapPacket(
