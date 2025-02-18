@@ -40,7 +40,7 @@ WIP
 | 0x03 | PageStart | 0x04 |✅| |
 | 0x05 | PrinterLog | 0x06 |✅| |
 | 0x0b | AntiFake | 0x0c |✅| |
-| 0x13 | SetPageSize | 0x14 | | |
+| 0x13 | [SetPageSize](#setpagesize) | 0x14 | | |
 | 0x15 | PrintQuantity | 0x16 | | |
 | 0x1a | RfidInfo | 0x1b |✅| |
 | 0x1c | RfidInfo2 | 0x1d |✅| |
@@ -151,6 +151,62 @@ Can have different format depending on the model.
        │  │     └─ Total pages (sum of page quantity of each page)
        │  └─ Data length
        └─ PrintStart command
+```
+
+## SetPageSize
+
+Can have different format depending on the model.
+Column count must be less or equal printhead size.
+
+## 2 bytes
+
+```
+55 55 13 02 00 f0 XX aa aa
+       │  │  └──┤  │
+       │  │     │  └─ Checksum
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
+```
+
+## 4 bytes
+
+```
+55 55 13 04 00 f0 01 80 XX aa aa
+       │  │  └──┤  └──┤  │
+       │  │     │     │  └─ Checksum
+       │  │     │     └─ Column count (384px)
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
+```
+
+## 6 bytes
+
+```
+55 55 13 06 00 f0 01 80 00 01 XX aa aa
+       │  │  └──┤  └──┤  └──┤  │
+       │  │     │     │     │  └─ Checksum
+       │  │     │     │     └─ Copies count
+       │  │     │     └─ Column count (384px)
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
+```
+
+## 9 bytes
+
+```
+55 55 13 09 00 f0 01 80 00 01 00 00 00 XX aa aa
+       │  │  └──┤  └──┤  └──┤  └──┤  │  │
+       │  │     │     │     │     │  │  └─ Checksum
+       │  │     │     │     │     │  └─ Is divide (0 or 1, unknown use)
+       │  │     │     │     │     └─ Some size (unknown use)
+       │  │     │     │     └─ Copies count (1)
+       │  │     │     └─ Column count (384px)
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
 ```
 
 ## Packet details (image data packets)
