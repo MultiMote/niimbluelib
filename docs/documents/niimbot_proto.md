@@ -36,7 +36,7 @@ WIP
 
 | Request ID | Name | Response ID(s) | [Simple](#simple-packet) | CRC32 |
 |------|------------|------|-|-|
-| 0x01 | PrintStart | 0x02 |✅| |
+| 0x01 | [PrintStart](#printstart) | 0x02 | | |
 | 0x03 | PageStart | 0x04 |✅| |
 | 0x05 | PrinterLog | 0x06 |✅| |
 | 0x0b | AntiFake | 0x0c |✅| |
@@ -102,6 +102,57 @@ Example (RfidInfo):
        └─ RfidInfo command
 ```
 
+### PrintStart
+
+Can have different format depending on the model.
+
+#### 1 byte (used in D11, B21, D110)
+
+```
+55 55 02 01 01 XX aa aa
+       │  │  │  │
+       │  │  │  └─ Checksum
+       │  │  └─ Always 1
+       │  └─ Data length
+       └─ PrintStart command
+```
+
+#### 2 bytes
+
+```
+55 55 02 02 00 01 XX aa aa
+       │  │  └──┤  │
+       │  │     │  └─ Checksum
+       │  │     └─ Total pages (sum of page quantity of each page)
+       │  └─ Data length
+       └─ PrintStart command
+```
+
+#### 7 bytes (used in B1 and newer printers)
+
+```
+55 55 02 07 00 01 00 00 00 00 00 XX aa aa
+       │  │  └──┤  └──┴──┴──┘  │  │
+       │  │     │   Always 0   │  └─ Checksum
+       │  │     │              └─ Page color (unknown use)
+       │  │     └─ Total pages (sum of page quantity of each page)
+       │  └─ Data length
+       └─ PrintStart command
+```
+
+#### 8 bytes
+
+```
+55 55 02 08 00 01 00 00 00 00 00 00 XX aa aa
+       │  │  └──┤  └──┴──┴──┘  │  │  │
+       │  │     │   Always 0   │  │  └─ Checksum
+       │  │     │              │  └─ Quality (unknown use)
+       │  │     │              └─ Page color (unknown use)
+       │  │     └─ Total pages (sum of page quantity of each page)
+       │  └─ Data length
+       └─ PrintStart command
+```
+
 ## Packet details (image data packets)
 
 See [print tasks](niimbot_print_tasks.md) to understand how to images are printed.
@@ -113,7 +164,7 @@ Used to fill row with blank (white) pixels.
 Example:
 
 ```
-55 55 84 03 00 04 02 81 aa aa
+55 55 84 03 00 04 02 XX aa aa
        │  │  └──┤  │  │
        │  │     │  │  └─ Checksum
        │  │     │  └─ Repeat count (repeat row two times)
@@ -133,7 +184,7 @@ Usually printer prints without problems when all of 3 bytes are zeros.
 Example:
 
 ```
-55 55 83 0a 00 03 02 00 00 02 00 0a 01 40 c1 aa aa
+55 55 83 0a 00 03 02 00 00 02 00 0a 01 40 XX aa aa
        │  │  └──┤  └──┴──┤  │  └──┤  └──┤  │
        │  │     │        │  │     │     │  └─ Checksum
        │  │     │        │  │     │     └─ Draw pixel at x=320
@@ -156,7 +207,7 @@ Image row example:
 Packet example:
 
 ```
-55 55 85 0a 00 00 13 00 00 01 ff 00 df 0f b2 aa aa
+55 55 85 0a 00 00 13 00 00 01 ff 00 df 0f XX aa aa
        │  │  └──┤  └──┴──┤  │  └──┴──┴──┤  │
        │  │     │        │  │           │  └─ Checksum
        │  │     │        │  │           │

@@ -16,5 +16,6 @@
   ],
   "plugin": [
     "typedoc-plugin-include-example"
-  ]
+  ],
+  "customCss": "./docs/tweaks.css"
 }
