@@ -153,12 +153,12 @@ Can have different format depending on the model.
        └─ PrintStart command
 ```
 
-## SetPageSize
+### SetPageSize
 
 Can have different format depending on the model.
 Column count must be less or equal printhead size.
 
-## 2 bytes
+#### 2 bytes
 
 ```
 55 55 13 02 00 f0 XX aa aa
@@ -169,7 +169,7 @@ Column count must be less or equal printhead size.
        └─ SetPageSize command
 ```
 
-## 4 bytes
+#### 4 bytes
 
 ```
 55 55 13 04 00 f0 01 80 XX aa aa
@@ -181,7 +181,7 @@ Column count must be less or equal printhead size.
        └─ SetPageSize command
 ```
 
-## 6 bytes
+#### 6 bytes
 
 ```
 55 55 13 06 00 f0 01 80 00 01 XX aa aa
@@ -194,7 +194,7 @@ Column count must be less or equal printhead size.
        └─ SetPageSize command
 ```
 
-## 9 bytes
+#### 9 bytes
 
 ```
 55 55 13 09 00 f0 01 80 00 01 00 00 00 XX aa aa
