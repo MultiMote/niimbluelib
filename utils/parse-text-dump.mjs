@@ -1,7 +1,7 @@
 import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
 import fs from "fs";
 
-// usage: yarn parse-text-dump <path> [data | min | min-out | print-task]
+// usage: npm run parse-text-dump <path> [data | min | min-out | print-task]
 //
 // input file example:
 //

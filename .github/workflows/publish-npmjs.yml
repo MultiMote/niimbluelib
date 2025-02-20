@@ -22,12 +22,14 @@ jobs:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
           scope: '@mmote'
+          cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
       - name: Publish
         run: npm publish --provenance --access public

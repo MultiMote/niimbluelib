@@ -1,5 +1,5 @@
 /* AUTO-GENERATED FILE. DO NOT EDIT! */
-/* use 'yarn gen-printer-models' to generate */
+/* use 'npm run gen-printer-models' to generate */
 
 import { PrintDirection } from "./image_encoder";
 import { LabelType as LT } from "./packets";

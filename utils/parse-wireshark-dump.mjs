@@ -1,10 +1,10 @@
-import { Utils, NiimbotPacket, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
+import { Utils, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
 import { spawn } from "child_process";
 
 const TSHARK_PATH = "C:\\Program Files\\Wireshark\\tshark.exe";
 
 if (process.argv.length < 4 || !["usb", "ble"].includes(process.argv[2])) {
-  console.error("usage: yarn parse-dump <ble|usb> <filename> [min|min-out]");
+  console.error("usage: npm run parse-dump <ble|usb> <filename> [min|min-out]");
 }
 
 const capType = process.argv[2];

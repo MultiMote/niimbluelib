@@ -33,21 +33,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: yarn
-          cache-dependency-path: ./yarn.lock
+          cache: npm
+          cache-dependency-path: ./package-lock.json
 
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Install typedoc
-        run: yarn add -D typedoc@0.26.11 typedoc-plugin-include-example@1.4.1
+        run: npm install -D typedoc@0.26.11 typedoc-plugin-include-example@1.4.1
 
       - name: Build
-        run: yarn typedoc
+        run: npx typedoc
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

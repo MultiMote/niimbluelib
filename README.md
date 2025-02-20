@@ -19,10 +19,8 @@ Check out the experimental [niimbluelib-headless](https://github.com/MultiMote/n
 
 ### Installation
 
-Yarn:
-
 ```bash
-yarn add @mmote/niimbluelib --exact
+npm install -E @mmote/niimbluelib
 ```
 
 ### Usage example

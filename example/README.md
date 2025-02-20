@@ -3,11 +3,11 @@
 Install dependencies
 
 ```bash
-yarn install
+npm i
 ```
 
 Start dev server
 
 ```bash
-yarn dev
+npm run dev
 ```
