@@ -32,46 +32,46 @@ WIP
 * **Checksum** - crc32 checksum of all bytes from **Command** to the last byte of **Data** (inclusive).
 * **Tail** - always 2 bytes (`0xAA` `0xAA`).
 
-## List of packets
+## List of packet commands
 
-| Request ID | Name | Response ID(s) | [Simple](#simple-packet) | CRC32 |
-|------|------------|------|-|-|
-| 0x01 | [PrintStart](#printstart) | 0x02 | | |
-| 0x03 | PageStart | 0x04 |✅| |
-| 0x05 | PrinterLog | 0x06 |✅| |
-| 0x0b | AntiFake | 0x0c |✅| |
-| 0x13 | [SetPageSize](#setpagesize) | 0x14 | | |
-| 0x15 | PrintQuantity | 0x16 | | |
-| 0x1a | RfidInfo | 0x1b |✅| |
-| 0x1c | RfidInfo2 | 0x1d |✅| |
-| 0x20 | PrintClear | 0x30 |✅| |
-| 0x21 | SetDensity | 0x31 | | |
-| 0x23 | SetLabelType | 0x33 | | |
-| 0x27 | SetAutoShutdownTime | 0x37 | | |
-| 0x28 | PrinterReset | 0x38 |✅| |
-| 0x40 | PrinterInfo | 0x4f, 0x47, 0x4d, 0x4a, 0x41, 0x4c, 0x43, 0x46, 0x48, 0x4b, 0x49, 0x42 | | |
-| 0x54 | RfidSuccessTimes | 0x64 |✅| |
-| 0x58 | SoundSettings | 0x68 | | |
-| 0x59 | CalibrateHeight | 0x69 | | |
-| 0x5a | PrintTestPage | 0x6a |✅| |
-| 0x70 | WriteRFID | 0x71 | | |
-| 0x83 | [PrintBitmapRowIndexed](#printbitmaprowindexed) | ⚠ one way | | |
-| 0x84 | [PrintEmptyRow](#printemptyrow) | ⚠ one way | | |
-| 0x85 | [PrintBitmapRow](#printbitmaprow) | ⚠ one way | | |
-| 0x8e | LabelPositioningCalibration | 0x8f |✅| |
-| 0x91 | FirmwareCrc | ⚠ one way | |✅|
-| 0x92 | FirmwareCommit | ⚠ one way | |✅|
-| 0x9b | FirmwareChunk | ⚠ one way | |✅|
-| 0x9c | FirmwareNoMoreChunks | ⚠ one way | |✅|
-| 0xa3 | PrintStatus | 0xb3 |✅| |
-| 0xa5 | PrinterStatusData | 0xb5 |✅| |
-| 0xaf | PrinterConfig | 0xbf | | |
-| 0xc1 | Connect | 0xc2 |✅| |
-| 0xda | CancelPrint | 0xd0 |✅| |
-| 0xdc | Heartbeat | 0xde, 0xdf, 0xdd, 0xd9 | | |
-| 0xe3 | PageEnd | 0xe4 |✅| |
-| 0xf3 | PrintEnd | 0xf4 |✅| |
-| 0xf5 | StartFirmwareUpgrade | 0xf6 | | |
+| Request ID | Name | Response ID(s) | [Simple OUT](#simple-request-packet) | [Simple IN](#simple-response-packet) | CRC32 |
+|------|------------|------|-|-|-|
+| 0x01 | [PrintStart](#printstart)        | 0x02 |❌|✅|❌|
+| 0x03 | PageStart                        | 0x04 |✅|✅|❌|
+| 0x05 | PrinterLog                       | 0x06 |✅|❌|❌|
+| 0x0b | AntiFake                         | 0x0c |✅|❌|❌|
+| 0x13 | [SetPageSize](#setpagesize)      | 0x14 |❌|✅|❌|
+| 0x15 | PrintQuantity                    | 0x16 |❌|✅|❌|
+| 0x1a | RfidInfo                         | 0x1b |✅|❌|❌|
+| 0x1c | RfidInfo2                        | 0x1d |✅|❌|❌|
+| 0x20 | PrintClear                       | 0x30 |✅|✅|❌|
+| 0x21 | SetDensity                       | 0x31 |❌|✅|❌|
+| 0x23 | SetLabelType                     | 0x33 |❌|✅|❌|
+| 0x27 | SetAutoShutdownTime              | 0x37 |❌|✅|❌|
+| 0x28 | PrinterReset                     | 0x38 |✅|❌|❌|
+| 0x40 | PrinterInfo                      | 0x4f, 0x47, 0x4d, 0x4a, 0x41, 0x4c, 0x43, 0x46, 0x48, 0x4b, 0x49, 0x42 |✅|❌|❌|
+| 0x54 | RfidSuccessTimes                 | 0x64 |✅|❌|❌|
+| 0x58 | SoundSettings                    | 0x68 |❌|❌|❌|
+| 0x59 | CalibrateHeight                  | 0x69 |❌|❓ |❌|
+| 0x5a | PrintTestPage                    | 0x6a |✅|✅|❌|
+| 0x70 | WriteRFID                        | 0x71 |❓|❓ |❌|
+| 0x83 | [PrintBitmapRowIndexed](#printbitmaprowindexed) |❌|❌|❌|❌|
+| 0x84 | [PrintEmptyRow](#printemptyrow)  |  ❌  |❌|❌|❌|
+| 0x85 | [PrintBitmapRow](#printbitmaprow)|  ❌  |❌|❌|❌|
+| 0x8e | LabelPositioningCalibration | 0x8f |✅|✅|❌|
+| 0x91 | FirmwareCrc                      |  ❌  |❌|❌|✅|
+| 0x92 | FirmwareCommit                   |  ❌  |❌|❌|✅|
+| 0x9b | FirmwareChunk                    |  ❌  |❌|❌|✅|
+| 0x9c | FirmwareNoMoreChunks             |  ❌  |❌|❌|✅|
+| 0xa3 | PrintStatus                      | 0xb3 |✅|❌|❌|
+| 0xa5 | PrinterStatusData                | 0xb5 |✅|❌|❌|
+| 0xaf | PrinterConfig                    | 0xbf |❌|❌|❌|
+| 0xc1 | Connect                          | 0xc2 |✅|❌|❌|
+| 0xda | CancelPrint                      | 0xd0 |✅|✅|❌|
+| 0xdc | Heartbeat                        | 0xde, 0xdf, 0xdd, 0xd9 |❌|❌|❌|
+| 0xe3 | PageEnd                          | 0xe4 |✅|✅|❌|
+| 0xf3 | PrintEnd                         | 0xf4 |✅|✅|❌|
+| 0xf5 | StartFirmwareUpgrade             | 0xf6 |❌|✅|❌|
 
 Comes from printer only:
 
@@ -85,7 +85,7 @@ Comes from printer only:
 
 ## Packet details
 
-### Simple packet
+### Simple request packet
 
 This packet has `Request ID`, `Data length=1`, and `Data=1`.
 
@@ -100,6 +100,21 @@ Example (RfidInfo):
        │  │  └─ Data
        │  └─ Data length
        └─ RfidInfo command
+```
+
+### Simple response packet
+
+Same format as [simple request packet](#simple-response-packet).
+
+Example (In_SetDensity):
+
+```
+55 55 31 01 01 31 aa aa
+       │  │  │  │
+       │  │  │  └─ Checksum (31^01^01)
+       │  │  └─ Data (1 - success, 0 - error)
+       │  └─ Data length
+       └─ In_SetDensity command
 ```
 
 ### PrintStart
