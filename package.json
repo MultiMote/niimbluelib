@@ -31,13 +31,21 @@
     "parse-wireshark-dump": "npm run build && node utils/parse-wireshark-dump.mjs",
     "parse-text-dump": "npm run build && node utils/parse-text-dump.mjs",
     "clean": "node clean-dist.mjs",
-    "gen-printer-models": "node utils/gen-printer-models.js > src/printer_models.ts"
+    "gen-printer-models": "node utils/gen-printer-models.js > src/printer_models.ts",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
+    "lint": "eslint --fix --ignore-pattern \"utils/*\" ."
   },
   "devDependencies": {
+    "@eslint/js": "^9.23.0",
     "@types/node": "^20.14.2",
     "@types/w3c-web-serial": "^1.0.6",
     "@types/web-bluetooth": "^0.0.20",
-    "typescript": "^5.4.5"
+    "eslint": "^9.23.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
+    "prettier": "3.5.3",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.28.0"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^6.0.2",

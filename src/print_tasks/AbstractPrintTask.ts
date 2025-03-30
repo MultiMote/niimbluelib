@@ -1,6 +1,6 @@
-import { EncodedImage } from "../image_encoder";
-import { LabelType } from "../packets";
-import { Abstraction } from "../packets/abstraction";
+import { EncodedImage } from '../image_encoder'
+import { LabelType } from '../packets'
+import { Abstraction } from '../packets/abstraction'
 
 /**
  * Print options for print tasks.
@@ -8,23 +8,23 @@ import { Abstraction } from "../packets/abstraction";
  */
 export type PrintOptions = {
   /** Printer label type */
-  labelType: LabelType;
+  labelType: LabelType
 
   /** Print density */
-  density: number;
+  density: number
 
   /** How many pages will be printed */
-  totalPages: number;
+  totalPages: number
 
   /** Used in {@link AbstractPrintTask.waitForFinished} where status is received by polling */
-  statusPollIntervalMs: number;
+  statusPollIntervalMs: number
 
   /** Used in {@link AbstractPrintTask.waitForFinished} */
-  statusTimeoutMs: number;
+  statusTimeoutMs: number
 
   /** Used in {@link AbstractPrintTask.printPage} */
-  pageTimeoutMs: number;
-};
+  pageTimeoutMs: number
+}
 
 /** Default print options for print tasks. */
 const printOptionsDefaults: PrintOptions = {
@@ -34,7 +34,7 @@ const printOptionsDefaults: PrintOptions = {
   statusPollIntervalMs: 300,
   statusTimeoutMs: 5_000,
   pageTimeoutMs: 10_000,
-};
+}
 
 /**
  * Different printer models have different print algorithms. Print task defines this algorithm.
@@ -61,35 +61,45 @@ const printOptionsDefaults: PrintOptions = {
  * @category Print tasks
  **/
 export abstract class AbstractPrintTask {
-  protected abstraction: Abstraction;
-  protected printOptions: PrintOptions;
-  protected pagesPrinted: number;
+  protected abstraction: Abstraction
+  protected printOptions: PrintOptions
+  protected pagesPrinted: number
 
   constructor(abstraction: Abstraction, printOptions?: Partial<PrintOptions>) {
-    this.abstraction = abstraction;
-    this.pagesPrinted = 0;
+    this.abstraction = abstraction
+    this.pagesPrinted = 0
 
     this.printOptions = {
       ...printOptionsDefaults,
       ...printOptions,
-    };
+    }
   }
 
   /** Check added pages not does not exceed {@link pagesPrinted} */
   protected checkAddPage(quantity: number) {
     if (this.pagesPrinted + quantity > (this.printOptions.totalPages ?? 1)) {
-      throw new Error("Trying to print too many pages (task totalPages may not be set correctly)");
+      throw new Error('Trying to print too many pages (task totalPages may not be set correctly)')
     }
   }
 
   /** Prepare print (set label type, density, print start, ...) */
-  abstract printInit(): Promise<void>;
+  abstract printInit(): Promise<void>
   /** Print image with a specified number of copies */
-  abstract printPage(image: EncodedImage, quantity?: number): Promise<void>;
+  abstract printPage(image: EncodedImage, quantity?: number): Promise<void>
   /** Wait for print is finished */
-  abstract waitForFinished(): Promise<void>;
+  abstract waitForFinished(page: number): Promise<boolean>
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  waitForFinishedCancellable(page: number, shouldCancel: () => boolean): Promise<boolean> {
+    return this.waitForFinished(page)
+  }
+
+  cleanupPrint(): Promise<void> {
+    return Promise.resolve()
+  }
+
   /** Printer's printhead resolution in pixels */
   protected printheadPixels(): number | undefined {
-    return this.abstraction.getClient().getModelMetadata()?.printheadPixels;
+    return this.abstraction.getClient().getModelMetadata()?.printheadPixels
   }
 }

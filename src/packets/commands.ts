@@ -46,7 +46,7 @@ export enum RequestCommandId {
   FirmwareCommit = 0x92,
   FirmwareChunk = 0x9b,
   FirmwareNoMoreChunks = 0x9c,
-  PrinterCheckLine = 0x86
+  PrinterCheckLine = 0x86,
 }
 
 /**
@@ -113,8 +113,8 @@ export enum ResponseCommandId {
   In_ResetTimeout = 0xc6,
 }
 
-import TX = RequestCommandId;
-import RX = ResponseCommandId;
+import TX = RequestCommandId
+import RX = ResponseCommandId
 
 /**
  * Map request id to response id. null meant no response expected (one way).
@@ -172,10 +172,13 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.FirmwareChunk]: null,
   [TX.FirmwareNoMoreChunks]: null,
   [TX.FirmwareCommit]: null,
-  [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine]
-};
+  [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine],
+}
 
-export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
+export const firmwareExchangePackets: {
+  tx: RequestCommandId[]
+  rx: ResponseCommandId[]
+} = {
   tx: [TX.FirmwareChunk, TX.FirmwareCrc, TX.FirmwareNoMoreChunks, TX.FirmwareCommit],
   rx: [RX.In_RequestFirmwareCrc, RX.In_RequestFirmwareChunk, RX.In_FirmwareCheckResult, RX.In_FirmwareResult],
-};
+}

@@ -1,107 +1,107 @@
-import { Utils, RequestCommandId, ResponseCommandId, PacketParser } from "../dist/index.js";
-import { spawn } from "child_process";
+import { Utils, RequestCommandId, ResponseCommandId, PacketParser } from '../dist/index.js'
+import { spawn } from 'child_process'
 
-const TSHARK_PATH = "C:\\Program Files\\Wireshark\\tshark.exe";
+const TSHARK_PATH = 'C:\\Program Files\\Wireshark\\tshark.exe'
 
-if (process.argv.length < 4 || !["usb", "ble"].includes(process.argv[2])) {
-  console.error("usage: npm run parse-dump <ble|usb> <filename> [min|min-out]");
+if (process.argv.length < 4 || !['usb', 'ble'].includes(process.argv[2])) {
+  console.error('usage: npm run parse-dump <ble|usb> <filename> [min|min-out]')
 }
 
-const capType = process.argv[2];
-const capPath = process.argv[3];
-const args = ["-2", "-r", capPath, "-P", "-T", "fields", "-e", /*"frame.time_relative"*/ "frame.time_delta"];
-const display = process.argv.length > 4 ? process.argv[4] : "";
+const capType = process.argv[2]
+const capPath = process.argv[3]
+const args = ['-2', '-r', capPath, '-P', '-T', 'fields', '-e', /*"frame.time_relative"*/ 'frame.time_delta']
+const display = process.argv.length > 4 ? process.argv[4] : ''
 
-if (capType === "ble") {
-  args.push("-R", "btspp.data", "-e", "hci_h4.direction", "-e", "btspp.data");
+if (capType === 'ble') {
+  args.push('-R', 'btspp.data', '-e', 'hci_h4.direction', '-e', 'btspp.data')
 } else {
-  args.push("-R", "usb.capdata", "-e", "usb.dst", "-e", "usb.capdata");
+  args.push('-R', 'usb.capdata', '-e', 'usb.dst', '-e', 'usb.capdata')
 }
 
-const spawned = spawn(TSHARK_PATH, args);
+const spawned = spawn(TSHARK_PATH, args)
 
-let output = "";
+let output = ''
 
-spawned.stdout.on("data", (data) => {
-  output += data.toString();
-});
+spawned.stdout.on('data', data => {
+  output += data.toString()
+})
 
-spawned.stderr.on("data", (data) => {
-  console.error(data);
-});
+spawned.stderr.on('data', data => {
+  console.error(data)
+})
 
-spawned.on("close", (code) => {
-  console.log(`child process exited with code ${code}`);
+spawned.on('close', code => {
+  console.log(`child process exited with code ${code}`)
 
   if (code !== 0) {
-    console.error(output);
-    return;
+    console.error(output)
+    return
   }
 
-  const lines = output.split(/\r?\n/);
-  let printStarted = false;
+  const lines = output.split(/\r?\n/)
+  let printStarted = false
 
   for (const line of lines) {
-    const splitted = line.split("\t");
+    const splitted = line.split('\t')
 
     if (splitted.length !== 3) {
-      continue;
+      continue
     }
 
-    let [time, direction, hexData] = splitted;
-    direction = ["host", "0x01"].includes(direction) ? "<<" : ">>";
+    let [time, direction, hexData] = splitted
+    direction = ['host', '0x01'].includes(direction) ? '<<' : '>>'
 
-    let comment = "";
+    let comment = ''
 
     try {
-      const data = Utils.hexToBuf(hexData.startsWith("03") ? hexData.substring(2) : hexData);
-      const packets = PacketParser.parsePacketBundle(data);
+      const data = Utils.hexToBuf(hexData.startsWith('03') ? hexData.substring(2) : hexData)
+      const packets = PacketParser.parsePacketBundle(data)
 
       if (packets.length === 0) {
-        comment = "Parse error (no packets found)";
+        comment = 'Parse error (no packets found)'
       } else if (packets.length > 1) {
-        comment = `Multi-packet (x${packets.length}); `;
+        comment = `Multi-packet (x${packets.length}); `
       }
 
       for (const packet of packets) {
-        if (direction === ">>") {
-          comment += RequestCommandId[packet.command] ?? "???";
+        if (direction === '>>') {
+          comment += RequestCommandId[packet.command] ?? '???'
           if (packet.command === RequestCommandId.PrintStart) {
-            printStarted = true;
-            const versions = { 1: "v1", 2: "v3", 7: "v4", 8: "v5" };
-            comment += "_" + versions[packet.dataLength];
+            printStarted = true
+            const versions = { 1: 'v1', 2: 'v3', 7: 'v4', 8: 'v5' }
+            comment += '_' + versions[packet.dataLength]
           } else if (packet.command === RequestCommandId.SetPageSize) {
-            const versions = { 2: "v1", 4: "v2", 6: "v3", 8: "v5" };
-            comment += "_" + versions[packet.dataLength];
-          }else if (packet.command === RequestCommandId.PrintEnd) {
-            printStarted = false;
+            const versions = { 2: 'v1', 4: 'v2', 6: 'v3', 8: 'v5' }
+            comment += '_' + versions[packet.dataLength]
+          } else if (packet.command === RequestCommandId.PrintEnd) {
+            printStarted = false
           }
         } else {
-          comment += ResponseCommandId[packet.command] ?? "???";
+          comment += ResponseCommandId[packet.command] ?? '???'
         }
 
-        if (display === "data") {
-          comment += `(${packet.dataLength}: ${Utils.bufToHex(packet.data)}); `;
+        if (display === 'data') {
+          comment += `(${packet.dataLength}: ${Utils.bufToHex(packet.data)}); `
         } else {
-          comment += `(${packet.dataLength}); `;
+          comment += `(${packet.dataLength}); `
         }
       }
-    } catch (e) {
-      comment = "Invalid packet";
+    } catch {
+      comment = 'Invalid packet'
     }
 
-    if (display === "min") {
-        console.log(`${direction} ${comment}`);
-    } else if (display === "min-out") {
-      if (direction === ">>") {
-        console.log(`${direction} ${comment}`);
+    if (display === 'min') {
+      console.log(`${direction} ${comment}`)
+    } else if (display === 'min-out') {
+      if (direction === '>>') {
+        console.log(`${direction} ${comment}`)
       }
-    } else if (display === "print-task") {
-      if (direction === ">>" && printStarted) {
-        console.log(`${direction} ${comment}`);
+    } else if (display === 'print-task') {
+      if (direction === '>>' && printStarted) {
+        console.log(`${direction} ${comment}`)
       }
     } else {
-      console.log(`[${time}] ${direction} ${hexData}\t// ${comment}`);
+      console.log(`[${time}] ${direction} ${hexData}\t// ${comment}`)
     }
   }
-});
+})

@@ -1,19 +1,19 @@
-import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient } from ".";
-import { ConnectResult } from "../packets";
-import { Utils } from "../utils";
-import { modelsLibrary } from "../printer_models";
+import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from '../events'
+import { ConnectionInfo, NiimbotAbstractClient } from '.'
+import { ConnectResult } from '../packets'
+import { Utils } from '../utils'
+import { modelsLibrary } from '../printer_models'
 
-const getAllModelFirstLetters = (): string[] => [...new Set(modelsLibrary.map((m) => m.model[0]))];
+const getAllModelFirstLetters = (): string[] => [...new Set(modelsLibrary.map(m => m.model[0]))]
 
 /**
  * @category Client
  */
 export class BleDefaultConfiguration {
-  public static readonly SERVICES: string[] = ["e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
+  public static readonly SERVICES: string[] = ['e7810a71-73ae-499d-8c15-faa9aef0c3f2']
   public static readonly NAME_FILTERS: BluetoothLEScanFilter[] = [
-    ...getAllModelFirstLetters().map((l) => ({ namePrefix: l })),
-  ];
+    ...getAllModelFirstLetters().map(l => ({ namePrefix: l })),
+  ]
 }
 
 /**
@@ -22,133 +22,134 @@ export class BleDefaultConfiguration {
  * @category Client
  */
 export class NiimbotBluetoothClient extends NiimbotAbstractClient {
-  private gattServer?: BluetoothRemoteGATTServer = undefined;
-  private channel?: BluetoothRemoteGATTCharacteristic = undefined;
-  private serviceUuidFilter: string[] = BleDefaultConfiguration.SERVICES;
+  private gattServer?: BluetoothRemoteGATTServer = undefined
+  private channel?: BluetoothRemoteGATTCharacteristic = undefined
+  private serviceUuidFilter: string[] = BleDefaultConfiguration.SERVICES
 
   public getServiceUuidFilter(): string[] {
-    return this.serviceUuidFilter;
+    return this.serviceUuidFilter
   }
 
   public setServiceUuidFilter(ids: string[]): void {
-    this.serviceUuidFilter = ids;
+    this.serviceUuidFilter = ids
   }
 
   public async connect(): Promise<ConnectionInfo> {
-    await this.disconnect();
+    await this.disconnect()
 
     const options: RequestDeviceOptions = {
       filters: [
         ...BleDefaultConfiguration.NAME_FILTERS,
-        { services: this.serviceUuidFilter ?? BleDefaultConfiguration.SERVICES },
+        {
+          services: this.serviceUuidFilter ?? BleDefaultConfiguration.SERVICES,
+        },
       ],
-    };
+    }
 
-    const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options);
+    const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options)
 
     if (device.gatt === undefined) {
-      throw new Error("Device has no Bluetooth Generic Attribute Profile");
+      throw new Error('Device has no Bluetooth Generic Attribute Profile')
     }
 
     const disconnectListener = () => {
-      this.gattServer = undefined;
-      this.channel = undefined;
-      this.info = {};
-      this.emit("disconnect", new DisconnectEvent());
-      device.removeEventListener("gattserverdisconnected", disconnectListener);
-    };
-
-    device.addEventListener("gattserverdisconnected", disconnectListener);
-
-    const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect();
-
-    const channel: BluetoothRemoteGATTCharacteristic | undefined = await this.findSuitableBluetoothCharacteristic(
-      gattServer
-    );
-
-    if (channel === undefined) {
-      gattServer.disconnect();
-      throw new Error("Suitable device characteristic not found");
+      this.gattServer = undefined
+      this.channel = undefined
+      this.info = {}
+      this.emit('disconnect', new DisconnectEvent())
+      device.removeEventListener('gattserverdisconnected', disconnectListener)
     }
 
-    console.log(`Found suitable characteristic ${channel.uuid}`);
+    device.addEventListener('gattserverdisconnected', disconnectListener)
 
-    channel.addEventListener("characteristicvaluechanged", (event: Event) => {
-      const target = event.target as BluetoothRemoteGATTCharacteristic;
-      this.processRawPacket(target.value!);
-    });
+    const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect()
 
-    await channel.startNotifications();
+    const channel: BluetoothRemoteGATTCharacteristic | undefined =
+      await this.findSuitableBluetoothCharacteristic(gattServer)
 
-    this.gattServer = gattServer;
-    this.channel = channel;
+    if (channel === undefined) {
+      gattServer.disconnect()
+      throw new Error('Suitable device characteristic not found')
+    }
+
+    console.log(`Found suitable characteristic ${channel.uuid}`)
+
+    channel.addEventListener('characteristicvaluechanged', (event: Event) => {
+      const target = event.target as BluetoothRemoteGATTCharacteristic
+      this.processRawPacket(target.value!)
+    })
+
+    await channel.startNotifications()
+
+    this.gattServer = gattServer
+    this.channel = channel
 
     try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
+      await this.initialNegotiate()
+      await this.fetchPrinterInfo()
     } catch (e) {
-      console.error("Unable to fetch printer info.");
-      console.error(e);
+      console.error('Unable to fetch printer info.')
+      console.error(e)
     }
 
     const result: ConnectionInfo = {
       deviceName: device.name,
       result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
-    };
+    }
 
-    this.emit("connect", new ConnectEvent(result));
+    this.emit('connect', new ConnectEvent(result))
 
-    return result;
+    return result
   }
 
   private async findSuitableBluetoothCharacteristic(
-    gattServer: BluetoothRemoteGATTServer
+    gattServer: BluetoothRemoteGATTServer,
   ): Promise<BluetoothRemoteGATTCharacteristic | undefined> {
-    const services: BluetoothRemoteGATTService[] = await gattServer.getPrimaryServices();
+    const services: BluetoothRemoteGATTService[] = await gattServer.getPrimaryServices()
 
     for (const service of services) {
       if (service.uuid.length < 5) {
-        continue;
+        continue
       }
 
-      const characteristics: BluetoothRemoteGATTCharacteristic[] = await service.getCharacteristics();
+      const characteristics: BluetoothRemoteGATTCharacteristic[] = await service.getCharacteristics()
 
       for (const c of characteristics) {
         if (c.properties.notify && c.properties.writeWithoutResponse) {
-          return c;
+          return c
         }
       }
     }
-    return undefined;
+    return undefined
   }
 
   public isConnected(): boolean {
-    return this.gattServer !== undefined && this.channel !== undefined;
+    return this.gattServer !== undefined && this.channel !== undefined
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+   
   public async disconnect() {
-    this.stopHeartbeat();
-    this.gattServer?.disconnect();
-    this.gattServer = undefined;
-    this.channel = undefined;
-    this.info = {};
+    this.stopHeartbeat()
+    this.gattServer?.disconnect()
+    this.gattServer = undefined
+    this.channel = undefined
+    this.info = {}
   }
 
   public async sendRaw(data: Uint8Array, force?: boolean) {
     const send = async () => {
       if (this.channel === undefined) {
-        throw new Error("Channel is closed");
+        throw new Error('Channel is closed')
       }
-      await Utils.sleep(this.packetIntervalMs);
-      await this.channel.writeValueWithoutResponse(data);
-      this.emit("rawpacketsent", new RawPacketSentEvent(data));
-    };
+      await Utils.sleep(this.packetIntervalMs)
+      await this.channel.writeValueWithoutResponse(data)
+      this.emit('rawpacketsent', new RawPacketSentEvent(data))
+    }
 
     if (force) {
-      await send();
+      await send()
     } else {
-      await this.mutex.runExclusive(send);
+      await this.mutex.runExclusive(send)
     }
   }
 }

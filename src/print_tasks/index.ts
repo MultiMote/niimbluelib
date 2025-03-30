@@ -1,9 +1,10 @@
-import { PrinterModel as M } from "../printer_models";
-import { B1PrintTask } from "./B1PrintTask";
-import { B21V1PrintTask } from "./B21V1PrintTask";
-import { D110PrintTask } from "./D110PrintTask";
-import { OldD11PrintTask } from "./OldD11PrintTask";
-import { V5PrintTask } from "./V5PrintTask";
+import { PrinterModel as M } from '../printer_models'
+import { B1PrintTask } from './B1PrintTask'
+import { B21V1PrintTask } from './B21V1PrintTask'
+import { D110PrintTask } from './D110PrintTask'
+import { OldD11PrintTask } from './OldD11PrintTask'
+import { V5PrintTask } from './V5PrintTask'
+import { M2PrintTask } from './M2PrintTask'
 
 /**
  * Define available print tasks.
@@ -15,27 +16,28 @@ export const printTasks = {
   B1: B1PrintTask,
   B21_V1: B21V1PrintTask,
   V5: V5PrintTask,
-};
+  M2: M2PrintTask,
+}
 
 /**
  * Available print task name type.
  * @category Print tasks
  */
-export type PrintTaskName = keyof typeof printTasks;
+export type PrintTaskName = keyof typeof printTasks
 
 /**
  * List of available print task names.
  * @category Print tasks
  */
-export const printTaskNames = Object.keys(printTasks) as PrintTaskName[];
+export const printTaskNames = Object.keys(printTasks) as PrintTaskName[]
 
 /** @category Printer model library */
 export type ModelWithProtocol = {
   /** Model */
-  m: M;
+  m: M
   /** Protocol version */
-  v: number;
-};
+  v: number
+}
 
 /**
  * Define print tasks for models.
@@ -48,23 +50,24 @@ export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol |
   B21_V1: [M.B21, M.B21_L2B, M.B21_C2B],
   D110: [M.B21S, M.B21S_C2B, M.D110, { m: M.D11, v: 1 }, { m: M.D11, v: 2 }],
   B1: [M.D11_H, M.D110_M, M.B1],
-};
+  M2: [M.M2_H],
+}
 
 /**
  * Search print task.
  * @category Print tasks
  */
 export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName | undefined => {
-  const tasks = Object.keys(modelPrintTasks) as PrintTaskName[];
+  const tasks = Object.keys(modelPrintTasks) as PrintTaskName[]
 
-  const foundExact = tasks.find((key) =>
+  const foundExact = tasks.find(key =>
     modelPrintTasks[key]?.find(
-      (o: ModelWithProtocol | M) => typeof o === "object" && o.v === protocolVersion && o.m === model
-    )
-  );
+      (o: ModelWithProtocol | M) => typeof o === 'object' && o.v === protocolVersion && o.m === model,
+    ),
+  )
 
-  return foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
-};
+  return foundExact ?? tasks.find(key => modelPrintTasks[key]?.includes(model))
+}
 
-export { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";
-export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, V5PrintTask };
+export { AbstractPrintTask, type PrintOptions } from './AbstractPrintTask'
+export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, V5PrintTask }

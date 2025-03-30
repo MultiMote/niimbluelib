@@ -14,8 +14,6 @@
     "docs/documents/niimbot_proto.md",
     "docs/documents/niimbot_print_tasks.md"
   ],
-  "plugin": [
-    "typedoc-plugin-include-example"
-  ],
+  "plugin": ["typedoc-plugin-include-example"],
   "customCss": "./docs/tweaks.css"
 }

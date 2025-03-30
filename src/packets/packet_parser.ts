@@ -1,5 +1,5 @@
-import { firmwareExchangePackets, NiimbotCrc32Packet, NiimbotPacket } from ".";
-import { Utils } from "../utils";
+import { firmwareExchangePackets, NiimbotCrc32Packet, NiimbotPacket } from '.'
+import { Utils } from '../utils'
 
 /**
  * Packet parsers.
@@ -16,25 +16,28 @@ export class PacketParser {
    * @returns list of packet objects
    */
   public static parsePacketBundle(buf: Uint8Array): NiimbotPacket[] {
-    type PacketClass = typeof NiimbotPacket | typeof NiimbotCrc32Packet;
-    type ChunkType = { cls: typeof NiimbotPacket | typeof NiimbotCrc32Packet; raw: Uint8Array };
-    const chunks: ChunkType[] = [];
-    const bufLength: number = buf.byteLength;
+    type PacketClass = typeof NiimbotPacket | typeof NiimbotCrc32Packet
+    type ChunkType = {
+      cls: typeof NiimbotPacket | typeof NiimbotCrc32Packet
+      raw: Uint8Array
+    }
+    const chunks: ChunkType[] = []
+    const bufLength: number = buf.byteLength
 
     while (buf.byteLength > 0) {
       if (!Utils.hasSubarrayAtPos(buf, NiimbotPacket.HEAD, 0)) {
-        break;
+        break
       }
 
       if (buf.byteLength < 3) {
-        break;
+        break
       }
 
-      const cmd: number = buf[2];
-      let cls: PacketClass = NiimbotPacket;
+      const cmd: number = buf[2]
+      let cls: PacketClass = NiimbotPacket
 
-      let sizePos: number = 3;
-      let crcSize: number = 1;
+      let sizePos: number = 3
+      let crcSize: number = 1
       //  0  1  2  3  4  5  6  7
       // -----------------------
       // 55 55 4a 01 04 4f aa aa
@@ -42,9 +45,9 @@ export class PacketParser {
       //          size  crc
 
       if (firmwareExchangePackets.rx.includes(cmd) || firmwareExchangePackets.tx.includes(cmd)) {
-        cls = NiimbotCrc32Packet;
-        sizePos = 5;
-        crcSize = 4;
+        cls = NiimbotCrc32Packet
+        sizePos = 5
+        crcSize = 4
         //  0  1  2  3  4  5  6  7  8  9 10 11 12
         // --------------------------------------
         // 55 55 9a 00 80 01 01 d2 bd d2 fb aa aa
@@ -53,36 +56,36 @@ export class PacketParser {
       }
 
       if (buf.byteLength <= sizePos) {
-        break;
+        break
       }
 
-      const size: number = buf[sizePos];
+      const size: number = buf[sizePos]
 
       if (buf.byteLength <= sizePos + size + crcSize + NiimbotPacket.TAIL.byteLength) {
-        break;
+        break
       }
 
-      const tailPos: number = sizePos + size + crcSize + 1;
+      const tailPos: number = sizePos + size + crcSize + 1
 
       if (!Utils.hasSubarrayAtPos(buf, NiimbotPacket.TAIL, tailPos)) {
-        console.warn("Invalid tail");
-        break;
+        console.warn('Invalid tail')
+        break
       }
 
-      let tailEnd: number = tailPos + NiimbotPacket.TAIL.byteLength;
+      const tailEnd: number = tailPos + NiimbotPacket.TAIL.byteLength
 
-      chunks.push({ cls, raw: buf.slice(0, tailEnd) });
+      chunks.push({ cls, raw: buf.slice(0, tailEnd) })
 
       // Cut from start
-      buf = buf.slice(tailEnd);
+      buf = buf.slice(tailEnd)
     }
 
-    const chunksDataLen: number = chunks.reduce((acc: number, c: ChunkType) => acc + c.raw.length, 0);
+    const chunksDataLen: number = chunks.reduce((acc: number, c: ChunkType) => acc + c.raw.length, 0)
 
     if (bufLength !== chunksDataLen) {
-      throw new Error(`Splitted chunks data length not equals buffer length (${bufLength} !== ${chunksDataLen})`);
+      throw new Error(`Splitted chunks data length not equals buffer length (${bufLength} !== ${chunksDataLen})`)
     }
 
-    return chunks.map((c) => c.cls.fromBytes(c.raw));
+    return chunks.map(c => c.cls.fromBytes(c.raw))
   }
 }

@@ -1,14 +1,14 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor } from '@capacitor/core'
 
 export interface AvailableTransports {
-  webSerial: boolean;
-  webBluetooth: boolean;
-  capacitorBle: boolean;
+  webSerial: boolean
+  webBluetooth: boolean
+  capacitorBle: boolean
 }
 
 export interface PixelCountResult {
-  total: number;
-  parts: [number, number, number];
+  total: number
+  parts: [number, number, number]
 }
 
 /**
@@ -20,58 +20,58 @@ export class Utils {
    * Converts a given number to its hexadecimal representation.
    */
   public static numberToHex(n: number): string {
-    const hex = n.toString(16);
-    return hex.length === 1 ? `0${hex}` : hex;
+    const hex = n.toString(16)
+    return hex.length === 1 ? `0${hex}` : hex
   }
 
   /**
    * Converts a DataView, Uint8Array, or number array to a hexadecimal string with byte separator.
    */
-  public static bufToHex(buf: DataView | Uint8Array | number[], separator: string = " "): string {
-    const arr: number[] = buf instanceof DataView ? this.dataViewToNumberArray(buf) : Array.from(buf);
-    return arr.map((n) => Utils.numberToHex(n)).join(separator);
+  public static bufToHex(buf: DataView | Uint8Array | number[], separator: string = ' '): string {
+    const arr: number[] = buf instanceof DataView ? this.dataViewToNumberArray(buf) : Array.from(buf)
+    return arr.map(n => Utils.numberToHex(n)).join(separator)
   }
 
   /**
    * Converts a hexadecimal string to a Uint8Array buffer.
    */
   public static hexToBuf(str: string): Uint8Array {
-    const match = str.match(/[\da-f]{2}/gi);
+    const match = str.match(/[\da-f]{2}/gi)
 
     if (!match) {
-      return new Uint8Array();
+      return new Uint8Array()
     }
 
     return new Uint8Array(
-      match.map((h) => {
-        return parseInt(h, 16);
-      })
-    );
+      match.map(h => {
+        return parseInt(h, 16)
+      }),
+    )
   }
 
   /**
    * Converts a DataView object to an array of numbers.
    */
   public static dataViewToNumberArray(dw: DataView): number[] {
-    const a: number[] = [];
+    const a: number[] = []
     for (let i = 0; i < dw.byteLength; i++) {
-      a.push(dw.getUint8(i));
+      a.push(dw.getUint8(i))
     }
-    return a;
+    return a
   }
 
   /**
    * Converts a DataView object to a Uint8Array
    */
   public static dataViewToU8Array(dw: DataView): Uint8Array {
-    return Uint8Array.from(this.dataViewToNumberArray(dw));
+    return Uint8Array.from(this.dataViewToNumberArray(dw))
   }
 
   /**
    * Converts a Uint8Array to a string using TextDecoder.
    */
   public static u8ArrayToString(arr: Uint8Array): string {
-    return new TextDecoder().decode(arr);
+    return new TextDecoder().decode(arr)
   }
 
   /**
@@ -96,111 +96,111 @@ export class Utils {
   public static countPixelsForBitmapPacket(
     buf: Uint8Array,
     printheadPixels: number,
-    mode: "auto" | "split" | "total" = "auto"
+    mode: 'auto' | 'split' | 'total' = 'auto',
   ): PixelCountResult {
-    let total: number = 0;
-    let parts: [number, number, number] = [0, 0, 0];
-    let chunkSize: number = Math.floor(printheadPixels / 8 / 3); // Every byte can store 8 pixels
-    let split: boolean = buf.byteLength <= chunkSize * 3; // Is data fits to the three chunks
+    let total: number = 0
+    const parts: [number, number, number] = [0, 0, 0]
+    const chunkSize: number = Math.floor(printheadPixels / 8 / 3) // Every byte can store 8 pixels
+    let split: boolean = buf.byteLength <= chunkSize * 3 // Is data fits to the three chunks
 
-    if (mode === "total") {
-      split = false;
-    } else if (mode === "split") {
+    if (mode === 'total') {
+      split = false
+    } else if (mode === 'split') {
       if (buf.byteLength > chunkSize * 3) {
         console.warn(
           `Can't use split mode: buffer size (${buf.byteLength}) is large than chunk size * 3 (${chunkSize * 3}), ` +
-            "maybe printheadPixels is set incorrectly"
-        );
+            'maybe printheadPixels is set incorrectly',
+        )
       } else {
-        split = true;
+        split = true
       }
     }
 
     buf.forEach((value: number, byteN: number) => {
-      const chunkIdx: number = Math.floor(byteN / chunkSize);
+      const chunkIdx: number = Math.floor(byteN / chunkSize)
 
       for (let bitN = 0; bitN < 8; bitN++) {
         // is black
         if ((value & (1 << bitN)) !== 0) {
-          total++;
+          total++
 
           if (!split) {
-            continue;
+            continue
           }
 
           if (chunkIdx > 2) {
-            console.warn(`Overflow (chunk index ${chunkIdx})`);
-            continue;
+            console.warn(`Overflow (chunk index ${chunkIdx})`)
+            continue
           }
 
-          parts[chunkIdx]++;
+          parts[chunkIdx]++
 
           if (parts[chunkIdx] > 255) {
-            console.warn("Pixel count overflow");
+            console.warn('Pixel count overflow')
           }
         }
       }
-    });
+    })
 
     if (split) {
-      return { total, parts };
+      return { total, parts }
     }
 
-    const [c, b] = this.u16ToBytes(total);
-    return { total, parts: [0, b, c] };
+    const [c, b] = this.u16ToBytes(total)
+    return { total, parts: [0, b, c] }
   }
 
   /**
    * Converts a 16-bit unsigned integer to an array of two bytes (big endian).
    */
   public static u16ToBytes(n: number): [number, number] {
-    const h = (n >> 8) & 0xff;
-    const l = n % 256 & 0xff;
-    return [h, l];
+    const h = (n >> 8) & 0xff
+    const l = n % 256 & 0xff
+    return [h, l]
   }
 
   /**
    * Converts a 32-bit unsigned integer to an array of two bytes (big endian).
    */
   public static u32ToBytes(n: number): [number, number, number, number] {
-    return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+    return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]
   }
 
   /**
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI16(arr: Uint8Array): number {
-    Validators.u8ArrayLengthEquals(arr, 2);
-    return new DataView(arr.buffer).getInt16(0, false);
+    Validators.u8ArrayLengthEquals(arr, 2)
+    return new DataView(arr.buffer).getInt16(0, false)
   }
 
   /**
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI32(arr: Uint8Array): number {
-    Validators.u8ArrayLengthEquals(arr, 4);
-    return new DataView(arr.buffer).getInt32(0, false);
+    Validators.u8ArrayLengthEquals(arr, 4)
+    return new DataView(arr.buffer).getInt32(0, false)
   }
 
   /**
    * Compares two Uint8Arrays to check if they are equal.
    */
   public static u8ArraysEqual(a: Uint8Array, b: Uint8Array): boolean {
-    return a.length === b.length && a.every((el, i) => el === b[i]);
+    return a.length === b.length && a.every((el, i) => el === b[i])
   }
 
   public static u8ArrayAppend(src: Uint8Array, data: Uint8Array): Uint8Array {
-    const newBuf = new Uint8Array(src.length + data.length);
-    newBuf.set(src, 0);
-    newBuf.set(data, src.length);
-    return newBuf;
+    const newBuf = new Uint8Array(src.length + data.length)
+    newBuf.set(src, 0)
+    newBuf.set(data, src.length)
+    return newBuf
   }
 
   /**
    * Asynchronously pauses the execution for the specified amount of time.
    */
   public static sleep(ms: number): Promise<undefined> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   /**
@@ -208,7 +208,7 @@ export class Utils {
    * @deprecated use {@link getAvailableTransports}
    */
   public static isBluetoothSupported(): boolean {
-    return typeof navigator.bluetooth?.requestDevice !== "undefined";
+    return typeof navigator.bluetooth?.requestDevice !== 'undefined'
   }
 
   /**
@@ -216,7 +216,7 @@ export class Utils {
    * @deprecated use {@link getAvailableTransports}
    */
   public static isSerialSupported(): boolean {
-    return typeof navigator.serial?.requestPort !== "undefined";
+    return typeof navigator.serial?.requestPort !== 'undefined'
   }
 
   /**
@@ -224,25 +224,25 @@ export class Utils {
    */
   public static getAvailableTransports(): AvailableTransports {
     return {
-      capacitorBle: Capacitor.getPlatform() !== "web",
-      webBluetooth: typeof navigator.bluetooth?.requestDevice !== "undefined",
-      webSerial: typeof navigator.serial?.requestPort !== "undefined",
-    };
+      capacitorBle: Capacitor.getPlatform() !== 'web',
+      webBluetooth: typeof navigator.bluetooth?.requestDevice !== 'undefined',
+      webSerial: typeof navigator.serial?.requestPort !== 'undefined',
+    }
   }
 
   /** Find check array has subarray at index */
   public static hasSubarrayAtPos<T>(arr: ArrayLike<T>, sub: ArrayLike<T>, pos: number): boolean {
     if (pos > arr.length - sub.length) {
-      return false;
+      return false
     }
 
     for (let i = 0; i < sub.length; i++) {
       if (arr[pos + i] !== sub[i]) {
-        return false;
+        return false
       }
     }
 
-    return true;
+    return true
   }
 }
 
@@ -256,7 +256,7 @@ export class Validators {
    */
   public static u8ArraysEqual(arr: Uint8Array, b: Uint8Array, message?: string): void {
     if (!Utils.u8ArraysEqual(arr, b)) {
-      throw new Error(message ?? "Arrays must be equal");
+      throw new Error(message ?? 'Arrays must be equal')
     }
   }
   /**
@@ -264,7 +264,7 @@ export class Validators {
    */
   public static u8ArrayLengthEquals(arr: Uint8Array, len: number, message?: string): void {
     if (arr.length !== len) {
-      throw new Error(message ?? `Array length must be ${len}`);
+      throw new Error(message ?? `Array length must be ${len}`)
     }
   }
   /**
@@ -273,7 +273,7 @@ export class Validators {
    */
   public static u8ArrayLengthAtLeast(arr: Uint8Array, len: number, message?: string): void {
     if (arr.length < len) {
-      throw new Error(message ?? `Array length must be at least ${len}`);
+      throw new Error(message ?? `Array length must be at least ${len}`)
     }
   }
 }

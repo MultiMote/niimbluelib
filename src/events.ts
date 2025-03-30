@@ -1,14 +1,14 @@
-import { ConnectionInfo, PrinterInfo, NiimbotAbstractClient, AbstractPrintTask, NiimbotPacket, HeartbeatData } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData } from '.'
 
 /**
  * Base client event
  * @category Events
  */
 export class NiimbotEvent {
-  readonly type: string;
+  readonly type: string
 
   constructor(type: string) {
-    this.type = type;
+    this.type = type
   }
 }
 
@@ -17,11 +17,11 @@ export class NiimbotEvent {
  * @category Events
  */
 export class ConnectEvent extends NiimbotEvent {
-  readonly info: ConnectionInfo;
+  readonly info: ConnectionInfo
 
   constructor(info: ConnectionInfo) {
-    super("connect");
-    this.info = info;
+    super('connect')
+    this.info = info
   }
 }
 
@@ -31,7 +31,7 @@ export class ConnectEvent extends NiimbotEvent {
  */
 export class DisconnectEvent extends NiimbotEvent {
   constructor() {
-    super("disconnect");
+    super('disconnect')
   }
 }
 
@@ -40,11 +40,11 @@ export class DisconnectEvent extends NiimbotEvent {
  * @category Events
  */
 export class PacketReceivedEvent extends NiimbotEvent {
-  readonly packet: NiimbotPacket;
+  readonly packet: NiimbotPacket
 
   constructor(packet: NiimbotPacket) {
-    super("packetreceived");
-    this.packet = packet;
+    super('packetreceived')
+    this.packet = packet
   }
 }
 
@@ -53,11 +53,11 @@ export class PacketReceivedEvent extends NiimbotEvent {
  * @category Events
  */
 export class PacketSentEvent extends NiimbotEvent {
-  readonly packet: NiimbotPacket;
+  readonly packet: NiimbotPacket
 
   constructor(packet: NiimbotPacket) {
-    super("packetsent");
-    this.packet = packet;
+    super('packetsent')
+    this.packet = packet
   }
 }
 
@@ -66,11 +66,11 @@ export class PacketSentEvent extends NiimbotEvent {
  * @category Events
  */
 export class RawPacketSentEvent extends NiimbotEvent {
-  readonly data: Uint8Array;
+  readonly data: Uint8Array
 
   constructor(data: Uint8Array) {
-    super("rawpacketsent");
-    this.data = data;
+    super('rawpacketsent')
+    this.data = data
   }
 }
 
@@ -79,11 +79,11 @@ export class RawPacketSentEvent extends NiimbotEvent {
  * @category Events
  */
 export class RawPacketReceivedEvent extends NiimbotEvent {
-  readonly data: Uint8Array;
+  readonly data: Uint8Array
 
   constructor(data: Uint8Array) {
-    super("rawpacketreceived");
-    this.data = data;
+    super('rawpacketreceived')
+    this.data = data
   }
 }
 
@@ -92,11 +92,11 @@ export class RawPacketReceivedEvent extends NiimbotEvent {
  * @category Events
  */
 export class HeartbeatEvent extends NiimbotEvent {
-  readonly data: HeartbeatData;
+  readonly data: HeartbeatData
 
   constructor(data: HeartbeatData) {
-    super("heartbeat");
-    this.data = data;
+    super('heartbeat')
+    this.data = data
   }
 }
 
@@ -105,11 +105,11 @@ export class HeartbeatEvent extends NiimbotEvent {
  * @category Events
  */
 export class HeartbeatFailedEvent extends NiimbotEvent {
-  readonly failedAttempts: number;
+  readonly failedAttempts: number
 
   constructor(failedAttempts: number) {
-    super("heartbeatfailed");
-    this.failedAttempts = failedAttempts;
+    super('heartbeatfailed')
+    this.failedAttempts = failedAttempts
   }
 }
 
@@ -118,11 +118,11 @@ export class HeartbeatFailedEvent extends NiimbotEvent {
  * @category Events
  */
 export class PrinterInfoFetchedEvent extends NiimbotEvent {
-  readonly info: PrinterInfo;
+  readonly info: PrinterInfo
 
   constructor(info: PrinterInfo) {
-    super("printerinfofetched");
-    this.info = info;
+    super('printerinfofetched')
+    this.info = info
   }
 }
 
@@ -132,20 +132,20 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
  */
 export class PrintProgressEvent extends NiimbotEvent {
   /** 0 – n */
-  readonly page: number;
+  readonly page: number
 
-  readonly pagesTotal: number;
+  readonly pagesTotal: number
   /** 0 – 100 */
-  readonly pagePrintProgress: number;
+  readonly pagePrintProgress: number
   /** 0 – 100 */
-  readonly pageFeedProgress: number;
+  readonly pageFeedProgress: number
 
   constructor(page: number, pagesTotal: number, pagePrintProgress: number, pageFeedProgress: number) {
-    super("printprogress");
-    this.page = page;
-    this.pagesTotal = pagesTotal;
-    this.pagePrintProgress = pagePrintProgress;
-    this.pageFeedProgress = pageFeedProgress;
+    super('printprogress')
+    this.page = page
+    this.pagesTotal = pagesTotal
+    this.pagePrintProgress = pagePrintProgress
+    this.pageFeedProgress = pageFeedProgress
   }
 }
 
@@ -154,13 +154,13 @@ export class PrintProgressEvent extends NiimbotEvent {
  * @category Events
  */
 export class FirmwareProgressEvent extends NiimbotEvent {
-  readonly currentChunk: number;
-  readonly totalChunks: number;
+  readonly currentChunk: number
+  readonly totalChunks: number
 
   constructor(currentChunk: number, totalChunks: number) {
-    super("firmwareprogress");
-    this.currentChunk = currentChunk;
-    this.totalChunks = totalChunks;
+    super('firmwareprogress')
+    this.currentChunk = currentChunk
+    this.totalChunks = totalChunks
   }
 }
 
@@ -169,15 +169,15 @@ export class FirmwareProgressEvent extends NiimbotEvent {
  * @category Events
  */
 export type ClientEventMap = {
-  connect: (event: ConnectEvent) => void;
-  disconnect: (event: DisconnectEvent) => void;
-  rawpacketsent: (event: RawPacketSentEvent) => void;
-  rawpacketreceived: (event: RawPacketReceivedEvent) => void;
-  packetreceived: (event: PacketReceivedEvent) => void;
-  packetsent: (event: PacketSentEvent) => void;
-  heartbeat: (event: HeartbeatEvent) => void;
-  heartbeatfailed: (event: HeartbeatFailedEvent) => void;
-  printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
-  printprogress: (event: PrintProgressEvent) => void;
-  firmwareprogress: (event: FirmwareProgressEvent) => void;
-};
+  connect: (event: ConnectEvent) => void
+  disconnect: (event: DisconnectEvent) => void
+  rawpacketsent: (event: RawPacketSentEvent) => void
+  rawpacketreceived: (event: RawPacketReceivedEvent) => void
+  packetreceived: (event: PacketReceivedEvent) => void
+  packetsent: (event: PacketSentEvent) => void
+  heartbeat: (event: HeartbeatEvent) => void
+  heartbeatfailed: (event: HeartbeatFailedEvent) => void
+  printerinfofetched: (event: PrinterInfoFetchedEvent) => void
+  printprogress: (event: PrintProgressEvent) => void
+  firmwareprogress: (event: FirmwareProgressEvent) => void
+}

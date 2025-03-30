@@ -1,27 +1,27 @@
 import {
   AutoShutdownTime,
+  commandsMap,
   HeartbeatType,
+  NiimbotCrc32Packet,
   NiimbotPacket,
   PrinterInfoType,
   RequestCommandId as TX,
   ResponseCommandId as RX,
   SoundSettingsItemType,
   SoundSettingsType,
-  commandsMap,
-  NiimbotCrc32Packet,
-} from ".";
-import { EncodedImage, ImageEncoder } from "../image_encoder";
-import { Utils } from "../utils";
+} from '.'
+import { EncodedImage, ImageEncoder } from '../image_encoder'
+import { Utils } from '../utils'
 
 export interface ImagePacketsGenerateOptions {
   /** Mode for "black pixel count" section of bitmap packet. */
-  countsMode?: "auto" | "split" | "total";
+  countsMode?: 'auto' | 'split' | 'total'
   /** Disable PrintBitmapRowIndexed packet. */
-  noIndexPacket?: boolean;
+  noIndexPacket?: boolean
   /** Send PrinterCheckLine every 200 line. */
-  enableCheckLine?: boolean;
+  enableCheckLine?: boolean
   /** Printer head resolution. Used for "black pixel count" section calculation. */
-  printheadPixels?: number;
+  printheadPixels?: number
 }
 
 /**
@@ -34,59 +34,59 @@ export class PacketGenerator {
    * Sends `0x01` as payload by default.
    */
   public static mapped(sendCmd: TX, data: Uint8Array | number[] = [1]): NiimbotPacket {
-    const respIds: RX[] | null = commandsMap[sendCmd];
+    const respIds: RX[] | null = commandsMap[sendCmd]
 
     if (respIds === null) {
-      const p = new NiimbotPacket(sendCmd, data);
-      p.oneWay = true;
-      return p;
+      const p = new NiimbotPacket(sendCmd, data)
+      p.oneWay = true
+      return p
     }
 
-    return new NiimbotPacket(sendCmd, data, respIds);
+    return new NiimbotPacket(sendCmd, data, respIds)
   }
 
   public static connect(): NiimbotPacket {
-    return this.mapped(TX.Connect);
+    return this.mapped(TX.Connect)
   }
 
   public static getPrinterStatusData(): NiimbotPacket {
-    return this.mapped(TX.PrinterStatusData);
+    return this.mapped(TX.PrinterStatusData)
   }
 
   public static rfidInfo(): NiimbotPacket {
-    return this.mapped(TX.RfidInfo);
+    return this.mapped(TX.RfidInfo)
   }
 
   public static setAutoShutDownTime(time: AutoShutdownTime): NiimbotPacket {
-    return this.mapped(TX.SetAutoShutdownTime, [time]);
+    return this.mapped(TX.SetAutoShutdownTime, [time])
   }
 
   public static getPrinterInfo(type: PrinterInfoType): NiimbotPacket {
-    return this.mapped(TX.PrinterInfo, [type]);
+    return this.mapped(TX.PrinterInfo, [type])
   }
 
   public static setSoundSettings(soundType: SoundSettingsItemType, on: boolean): NiimbotPacket {
-    return this.mapped(TX.SoundSettings, [SoundSettingsType.SetSound, soundType, on ? 1 : 0]);
+    return this.mapped(TX.SoundSettings, [SoundSettingsType.SetSound, soundType, on ? 1 : 0])
   }
 
   public static getSoundSettings(soundType: SoundSettingsItemType): NiimbotPacket {
-    return this.mapped(TX.SoundSettings, [SoundSettingsType.GetSoundState, soundType, 1]);
+    return this.mapped(TX.SoundSettings, [SoundSettingsType.GetSoundState, soundType, 1])
   }
 
   public static heartbeat(type: HeartbeatType): NiimbotPacket {
-    return this.mapped(TX.Heartbeat, [type]);
+    return this.mapped(TX.Heartbeat, [type])
   }
 
   public static setDensity(value: number): NiimbotPacket {
-    return this.mapped(TX.SetDensity, [value]);
+    return this.mapped(TX.SetDensity, [value])
   }
 
   public static setLabelType(value: number): NiimbotPacket {
-    return this.mapped(TX.SetLabelType, [value]);
+    return this.mapped(TX.SetLabelType, [value])
   }
 
   public static setPageSizeV1(rows: number): NiimbotPacket {
-    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows)]);
+    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows)])
   }
 
   /**
@@ -98,7 +98,7 @@ export class PacketGenerator {
    * @param cols Width in pixels
    */
   public static setPageSizeV2(rows: number, cols: number): NiimbotPacket {
-    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols)]);
+    return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols)])
   }
 
   /**
@@ -111,7 +111,7 @@ export class PacketGenerator {
       ...Utils.u16ToBytes(rows),
       ...Utils.u16ToBytes(cols),
       ...Utils.u16ToBytes(copiesCount),
-    ]);
+    ])
   }
 
   /** Meaning of two last args is unknown */
@@ -120,7 +120,7 @@ export class PacketGenerator {
     cols: number,
     copiesCount: number,
     someSize: number,
-    isDivide: boolean
+    isDivide: boolean,
   ): NiimbotPacket {
     return this.mapped(TX.SetPageSize, [
       ...Utils.u16ToBytes(rows),
@@ -128,20 +128,20 @@ export class PacketGenerator {
       ...Utils.u16ToBytes(copiesCount),
       ...Utils.u16ToBytes(someSize),
       isDivide ? 1 : 0,
-    ]);
+    ])
   }
 
   public static setPrintQuantity(quantity: number): NiimbotPacket {
-    return this.mapped(TX.PrintQuantity, [...Utils.u16ToBytes(quantity)]);
+    return this.mapped(TX.PrintQuantity, [...Utils.u16ToBytes(quantity)])
   }
 
   public static printStatus(): NiimbotPacket {
-    return this.mapped(TX.PrintStatus);
+    return this.mapped(TX.PrintStatus)
   }
 
   /** Reset printer settings (sound and maybe some other settings). */
   public static printerReset(): NiimbotPacket {
-    return this.mapped(TX.PrinterReset);
+    return this.mapped(TX.PrinterReset)
   }
 
   /**
@@ -150,11 +150,11 @@ export class PacketGenerator {
    * D110 behavior: ordinary.
    * */
   public static printStart(): NiimbotPacket {
-    return this.mapped(TX.PrintStart);
+    return this.mapped(TX.PrintStart)
   }
 
   public static printStartV3(totalPages: number): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages)]);
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages)])
   }
 
   /**
@@ -166,27 +166,27 @@ export class PacketGenerator {
    * @param totalPages Declare how many pages will be printed
    */
   public static printStartV4(totalPages: number, pageColor: number = 0): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor]);
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor])
   }
 
   public static printStartV5(totalPages: number, pageColor: number = 0, quality: number = 0): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality]);
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality])
   }
 
   public static printEnd(): NiimbotPacket {
-    return this.mapped(TX.PrintEnd);
+    return this.mapped(TX.PrintEnd)
   }
 
   public static pageStart(): NiimbotPacket {
-    return this.mapped(TX.PageStart);
+    return this.mapped(TX.PageStart)
   }
 
   public static pageEnd(): NiimbotPacket {
-    return this.mapped(TX.PageEnd);
+    return this.mapped(TX.PageEnd)
   }
 
   public static printEmptySpace(pos: number, repeats: number): NiimbotPacket {
-    return this.mapped(TX.PrintEmptyRow, [...Utils.u16ToBytes(pos), repeats]);
+    return this.mapped(TX.PrintEmptyRow, [...Utils.u16ToBytes(pos), repeats])
   }
 
   public static printBitmapRow(
@@ -194,10 +194,10 @@ export class PacketGenerator {
     repeats: number,
     data: Uint8Array,
     printheadPixels: number,
-    countsMode: "auto" | "split" | "total" = "auto"
+    countsMode: 'auto' | 'split' | 'total' = 'auto',
   ): NiimbotPacket {
-    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels, countsMode);
-    return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...data]);
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels, countsMode)
+    return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...data])
   }
 
   /** Printer powers off if black pixel count > 6 */
@@ -207,35 +207,35 @@ export class PacketGenerator {
     repeats: number,
     data: Uint8Array,
     printheadPixels: number,
-    countsMode: "auto" | "split" | "total" = "auto"
+    countsMode: 'auto' | 'split' | 'total' = 'auto',
   ): NiimbotPacket {
-    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0, countsMode);
-    const indexes: Uint8Array = ImageEncoder.indexPixels(data);
+    const counts = Utils.countPixelsForBitmapPacket(data, printheadPixels ?? 0, countsMode)
+    const indexes: Uint8Array = ImageEncoder.indexPixels(data)
 
     if (counts.total > 6) {
-      throw new Error(`Black pixel count > 6 (${counts.total})`);
+      throw new Error(`Black pixel count > 6 (${counts.total})`)
     }
 
-    return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...indexes]);
+    return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...indexes])
   }
 
   public static printClear(): NiimbotPacket {
-    return this.mapped(TX.PrintClear);
+    return this.mapped(TX.PrintClear)
   }
 
   public static writeRfid(data: Uint8Array): NiimbotPacket {
-    return this.mapped(TX.WriteRFID, data);
+    return this.mapped(TX.WriteRFID, data)
   }
 
   public static checkLine(line: number): NiimbotPacket {
-    return this.mapped(TX.PrinterCheckLine, [...Utils.u16ToBytes(line), 0x01]);
+    return this.mapped(TX.PrinterCheckLine, [...Utils.u16ToBytes(line), 0x01])
   }
 
   public static writeImageData(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
-    let out: NiimbotPacket[] = [];
+    const out: NiimbotPacket[] = []
 
     for (const d of image.rowsData) {
-      if (d.dataType === "pixels") {
+      if (d.dataType === 'pixels') {
         if (d.blackPixelsCount <= 6 && !options?.noIndexPacket) {
           out.push(
             this.printBitmapRowIndexed(
@@ -243,9 +243,9 @@ export class PacketGenerator {
               d.repeat,
               d.rowData!,
               options?.printheadPixels ?? 0,
-              options?.countsMode ?? "auto"
-            )
-          );
+              options?.countsMode ?? 'auto',
+            ),
+          )
         } else {
           out.push(
             this.printBitmapRow(
@@ -253,65 +253,65 @@ export class PacketGenerator {
               d.repeat,
               d.rowData!,
               options?.printheadPixels ?? 0,
-              options?.countsMode ?? "auto"
-            )
-          );
+              options?.countsMode ?? 'auto',
+            ),
+          )
         }
-        continue;
+        continue
       }
 
-      if (d.dataType === "check" && options?.enableCheckLine) {
-        out.push(this.checkLine(d.rowNumber));
-        continue;
+      if (d.dataType === 'check' && options?.enableCheckLine) {
+        out.push(this.checkLine(d.rowNumber))
+        continue
       }
 
-      if (d.dataType === "void") {
-        out.push(this.printEmptySpace(d.rowNumber, d.repeat));
+      if (d.dataType === 'void') {
+        out.push(this.printEmptySpace(d.rowNumber, d.repeat))
       }
     }
 
-    return out;
+    return out
   }
 
   public static printTestPage(): NiimbotPacket {
-    return this.mapped(TX.PrintTestPage);
+    return this.mapped(TX.PrintTestPage)
   }
 
   public static labelPositioningCalibration(value: number): NiimbotPacket {
-    return this.mapped(TX.LabelPositioningCalibration, [value]);
+    return this.mapped(TX.LabelPositioningCalibration, [value])
   }
 
   public static startFirmwareUpgrade(version: string): NiimbotPacket {
     if (!/^\d+\.\d+$/.test(version)) {
-      throw new Error("Invalid version format (x.x expected)");
+      throw new Error('Invalid version format (x.x expected)')
     }
 
-    const [a, b] = version.split(".").map((p) => parseInt(p));
+    const [a, b] = version.split('.').map(p => parseInt(p))
 
-    return this.mapped(TX.StartFirmwareUpgrade, [a, b]);
+    return this.mapped(TX.StartFirmwareUpgrade, [a, b])
   }
 
   public static sendFirmwareChecksum(crc: number): NiimbotPacket {
-    const p = new NiimbotCrc32Packet(TX.FirmwareCrc, 0, [...Utils.u32ToBytes(crc)]);
-    p.oneWay = true;
-    return p;
+    const p = new NiimbotCrc32Packet(TX.FirmwareCrc, 0, [...Utils.u32ToBytes(crc)])
+    p.oneWay = true
+    return p
   }
 
   public static sendFirmwareChunk(idx: number, data: Uint8Array): NiimbotPacket {
-    const p = new NiimbotCrc32Packet(TX.FirmwareChunk, idx, data);
-    p.oneWay = true;
-    return p;
+    const p = new NiimbotCrc32Packet(TX.FirmwareChunk, idx, data)
+    p.oneWay = true
+    return p
   }
 
   public static firmwareNoMoreChunks(): NiimbotPacket {
-    const p = new NiimbotCrc32Packet(TX.FirmwareNoMoreChunks, 0, [1]);
-    p.oneWay = true;
-    return p;
+    const p = new NiimbotCrc32Packet(TX.FirmwareNoMoreChunks, 0, [1])
+    p.oneWay = true
+    return p
   }
 
   public static firmwareCommit(): NiimbotPacket {
-    const p = new NiimbotCrc32Packet(TX.FirmwareCommit, 0, [1]);
-    p.oneWay = true;
-    return p;
+    const p = new NiimbotCrc32Packet(TX.FirmwareCommit, 0, [1])
+    p.oneWay = true
+    return p
   }
 }

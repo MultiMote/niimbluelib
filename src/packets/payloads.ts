@@ -1,6 +1,3 @@
-import { modelsLibrary } from "../printer_models";
-import { RequestCommandId, ResponseCommandId } from "./commands";
-
 /**
  * Sent with {@link RequestCommandId.PrinterInfo}
  * @category Packets
@@ -41,7 +38,7 @@ export enum SoundSettingsItemType {
  **/
 export enum LabelType {
   Invalid = 0,
-  /** Default for most of label printers */
+  /** Default for most label printers */
   WithGaps = 1,
   Black = 2,
   Continuous = 3,

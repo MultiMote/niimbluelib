@@ -1,28 +1,32 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
+import { defineConfig } from 'eslint/config'
+import globals from 'globals'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
-export default [
-  { files: ["**/*.{ts}"] },
+export default defineConfig([
+  { files: ['**/*.{js,mjs,cjs,ts}'] },
   {
-    languageOptions: {
-      globals: globals.browser,
-      parserOptions: {
-        project: "tsconfig.json",
-      },
-    },
+    files: ['**/*.{js,mjs,cjs,ts}'],
+    languageOptions: { globals: globals.browser },
   },
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  { ignores: ["dist/*", "dumps/*", "**/*.{mjs,js}"] },
+  {
+    files: ['**/*.{js,mjs,cjs,ts}'],
+    plugins: { js },
+    extends: ['js/recommended'],
+  },
+  tseslint.configs.recommended,
+  eslintConfigPrettier,
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": [
-        "error",
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-undef': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
         {
-          caughtErrorsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: '^_',
         },
       ],
     },
   },
-];
+])

@@ -1,8 +1,8 @@
-import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient } from ".";
-import { ConnectResult } from "../packets";
-import { Utils } from "../utils";
-import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
+import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from '../events'
+import { ConnectionInfo, NiimbotAbstractClient } from '.'
+import { ConnectResult } from '../packets'
+import { Utils } from '../utils'
+import { BleCharacteristic, BleClient, BleDevice, BleService } from '@capacitor-community/bluetooth-le'
 
 /**
  * @category Client
@@ -15,7 +15,7 @@ export interface NiimbotCapacitorBleClientConnectOptions {
    *
    * On **iOS** and **web** it is an identifier.
    */
-  deviceId?: string;
+  deviceId?: string
 }
 
 /**
@@ -24,128 +24,128 @@ export interface NiimbotCapacitorBleClientConnectOptions {
  * @category Client
  */
 export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
-  private deviceId?: string;
-  private serviceUUID?: string;
-  private characteristicUUID?: string;
+  private deviceId?: string
+  private serviceUUID?: string
+  private characteristicUUID?: string
 
   public async connect(options?: NiimbotCapacitorBleClientConnectOptions): Promise<ConnectionInfo> {
-    await this.disconnect();
+    await this.disconnect()
 
-    await BleClient.initialize({ androidNeverForLocation: true });
+    await BleClient.initialize({ androidNeverForLocation: true })
 
-    const bluetoothEnabled = await BleClient.isEnabled();
+    const bluetoothEnabled = await BleClient.isEnabled()
 
     if (!bluetoothEnabled) {
-      throw new Error("Bluetooth is not enabled");
+      throw new Error('Bluetooth is not enabled')
     }
 
-    let device: BleDevice;
+    let device: BleDevice
 
     if (options?.deviceId !== undefined) {
       device = {
         deviceId: options.deviceId,
         name: options.deviceId,
-      };
+      }
     } else {
-      device = await BleClient.requestDevice();
+      device = await BleClient.requestDevice()
     }
 
-    await BleClient.connect(device.deviceId, () => this.onBleDisconnect());
+    await BleClient.connect(device.deviceId, () => this.onBleDisconnect())
 
     const { service, characteristic } = await this.findSuitableCharacteristic(device.deviceId).finally(() =>
-      this.onBleDisconnect()
-    );
+      this.onBleDisconnect(),
+    )
 
-    this.deviceId = device.deviceId;
-    this.serviceUUID = service;
-    this.characteristicUUID = characteristic;
+    this.deviceId = device.deviceId
+    this.serviceUUID = service
+    this.characteristicUUID = characteristic
 
     if (this.debug) {
-      console.log("Suitable channel found:", { service, characteristic });
+      console.log('Suitable channel found:', { service, characteristic })
     }
 
     await BleClient.startNotifications(this.deviceId, this.serviceUUID, this.characteristicUUID, (value: DataView) => {
-      this.processRawPacket(value);
-    });
+      this.processRawPacket(value)
+    })
 
     try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
+      await this.initialNegotiate()
+      await this.fetchPrinterInfo()
     } catch (e) {
-      console.error("Unable to fetch printer info.");
-      console.error(e);
+      console.error('Unable to fetch printer info.')
+      console.error(e)
     }
 
     const result: ConnectionInfo = {
       deviceName: device.name,
       result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
-    };
+    }
 
-    this.emit("connect", new ConnectEvent(result));
+    this.emit('connect', new ConnectEvent(result))
 
-    return result;
+    return result
   }
 
   private async findSuitableCharacteristic(devId: string): Promise<{ service: string; characteristic: string }> {
-    const services: BleService[] = await BleClient.getServices(devId);
+    const services: BleService[] = await BleClient.getServices(devId)
 
     for (const service of services) {
       if (service.uuid.length < 5) {
-        continue;
+        continue
       }
 
-      const characteristics: BleCharacteristic[] = service.characteristics;
+      const characteristics: BleCharacteristic[] = service.characteristics
 
       for (const ch of characteristics) {
         if (ch.properties.notify && ch.properties.writeWithoutResponse) {
           return {
             characteristic: ch.uuid,
             service: service.uuid,
-          };
+          }
         }
       }
     }
-    throw new Error("Unable to find suitable channel characteristic");
+    throw new Error('Unable to find suitable channel characteristic')
   }
 
   private onBleDisconnect() {
-    this.deviceId = undefined;
-    this.serviceUUID = undefined;
-    this.characteristicUUID = undefined;
-    this.info = {};
-    this.emit("disconnect", new DisconnectEvent());
+    this.deviceId = undefined
+    this.serviceUUID = undefined
+    this.characteristicUUID = undefined
+    this.info = {}
+    this.emit('disconnect', new DisconnectEvent())
   }
 
   public isConnected(): boolean {
-    return this.deviceId !== undefined;
+    return this.deviceId !== undefined
   }
 
   public async disconnect() {
-    this.stopHeartbeat();
+    this.stopHeartbeat()
     if (this.deviceId !== undefined) {
-      await BleClient.stopNotifications(this.deviceId, this.serviceUUID!, this.characteristicUUID!);
-      await BleClient.disconnect(this.deviceId);
+      await BleClient.stopNotifications(this.deviceId, this.serviceUUID!, this.characteristicUUID!)
+      await BleClient.disconnect(this.deviceId)
     }
-    this.deviceId = undefined;
-    this.info = {};
+    this.deviceId = undefined
+    this.info = {}
   }
 
   public async sendRaw(data: Uint8Array, force?: boolean) {
     const send = async () => {
       if (!this.isConnected()) {
-        throw new Error("Channel is closed");
+        throw new Error('Channel is closed')
       }
-      await Utils.sleep(this.packetIntervalMs);
+      await Utils.sleep(this.packetIntervalMs)
 
-      const dw = new DataView(data.buffer, data.byteOffset, data.byteLength);
-      await BleClient.writeWithoutResponse(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw);
+      const dw = new DataView(data.buffer, data.byteOffset, data.byteLength)
+      await BleClient.writeWithoutResponse(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw)
 
-      this.emit("rawpacketsent", new RawPacketSentEvent(data));
-    };
+      this.emit('rawpacketsent', new RawPacketSentEvent(data))
+    }
     if (force) {
-      await send();
+      await send()
     } else {
-      await this.mutex.runExclusive(send);
+      await this.mutex.runExclusive(send)
     }
   }
 }
