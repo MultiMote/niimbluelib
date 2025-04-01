@@ -15,7 +15,7 @@ NiimBlueLib provides the most accurate open source implementation of the NIIMBOT
 
 This project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
 
-Check out the experimental [niimbluelib-headless](https://github.com/MultiMote/niimbluelib-headless) for CLI use cases.
+Also check out [niimblue-node](https://github.com/MultiMote/niimblue-node) for CLI use cases.
 
 ### Installation
 
