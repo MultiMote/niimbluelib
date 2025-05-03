@@ -10,7 +10,7 @@ export class B21V1PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStart(),
+      PacketGenerator.printStart1b(),
     ]);
   }
 
@@ -22,7 +22,7 @@ export class B21V1PrintTask extends AbstractPrintTask {
         [
           // PacketGenerator.printClear(),
           PacketGenerator.pageStart(),
-          PacketGenerator.setPageSizeV2(image.rows, image.cols),
+          PacketGenerator.setPageSize4b(image.rows, image.cols),
           ...PacketGenerator.writeImageData(image, {
             countsMode: "total",
             enableCheckLine: true,

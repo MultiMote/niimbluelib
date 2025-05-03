@@ -10,7 +10,7 @@ export class D110PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStart(),
+      PacketGenerator.printStart1b(),
     ]);
   }
 
@@ -21,7 +21,7 @@ export class D110PrintTask extends AbstractPrintTask {
       [
         PacketGenerator.printClear(),
         PacketGenerator.pageStart(),
-        PacketGenerator.setPageSizeV2(image.rows, image.cols),
+        PacketGenerator.setPageSize4b(image.rows, image.cols),
         PacketGenerator.setPrintQuantity(quantity ?? 1),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),

@@ -3,7 +3,7 @@ import { B1PrintTask } from "./B1PrintTask";
 import { B21V1PrintTask } from "./B21V1PrintTask";
 import { D110PrintTask } from "./D110PrintTask";
 import { OldD11PrintTask } from "./OldD11PrintTask";
-import { V5PrintTask } from "./V5PrintTask";
+import { D110MV4PrintTask } from "./D110MV4PrintTask";
 
 /**
  * Define available print tasks.
@@ -14,7 +14,7 @@ export const printTasks = {
   D110: D110PrintTask,
   B1: B1PrintTask,
   B21_V1: B21V1PrintTask,
-  V5: V5PrintTask,
+  D110M_V4: D110MV4PrintTask,
 };
 
 /**
@@ -48,6 +48,7 @@ export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol |
   B21_V1: [M.B21, M.B21_L2B, M.B21_C2B],
   D110: [M.B21S, M.B21S_C2B, M.D110, { m: M.D11, v: 1 }, { m: M.D11, v: 2 }],
   B1: [M.D11_H, M.D110_M, M.B1],
+  D110M_V4: [{ m: M.D110_M, v: 4 }],
 };
 
 /**
@@ -67,4 +68,4 @@ export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName
 };
 
 export { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";
-export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, V5PrintTask };
+export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, D110MV4PrintTask as V5PrintTask };

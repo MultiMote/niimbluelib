@@ -46,7 +46,15 @@ export enum RequestCommandId {
   FirmwareCommit = 0x92,
   FirmwareChunk = 0x9b,
   FirmwareNoMoreChunks = 0x9c,
-  PrinterCheckLine = 0x86
+  PrinterCheckLine = 0x86,
+  GetCurrentTimeFormat = 0x12,
+  /**
+   * setPrinterTime: 85, 85, 7, 2, 2, 1, 6, -86, -86
+   * sendCompressMode: 85, 85, 7, 4, b, b2, b3, b4
+   * setPrinterTime: 85, 85, 7, 8, 1, b, b2, b3, b4, b5, b6, b7, b10, -86, -86
+  */
+  PrinterConfig2 = 0x07,
+  GetKeyFunction = 0x09
 }
 
 /**
@@ -111,6 +119,9 @@ export enum ResponseCommandId {
   In_FirmwareResult = 0x9e,
   /** Sent before {@link ResponseCommandId.In_PrinterCheckLine } */
   In_ResetTimeout = 0xc6,
+  In_GetCurrentTimeFormat = 0x11,
+  In_PrinterConfig2 = 0x08,
+  In_GetKeyFunction = 0x0a
 }
 
 import TX = RequestCommandId;
@@ -172,7 +183,10 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.FirmwareChunk]: null,
   [TX.FirmwareNoMoreChunks]: null,
   [TX.FirmwareCommit]: null,
-  [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine]
+  [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine],
+  [TX.GetCurrentTimeFormat]: [RX.In_GetCurrentTimeFormat],
+  [TX.PrinterConfig2]: [RX.In_PrinterConfig2],
+  [TX.GetKeyFunction]: [RX.In_GetKeyFunction]
 };
 
 export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {

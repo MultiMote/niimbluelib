@@ -57,6 +57,10 @@ export class PacketGenerator {
     return this.mapped(TX.RfidInfo);
   }
 
+  public static antiFake(queryType: number): NiimbotPacket {
+    return this.mapped(TX.AntiFake, [queryType]);
+  }
+
   public static setAutoShutDownTime(time: AutoShutdownTime): NiimbotPacket {
     return this.mapped(TX.SetAutoShutdownTime, [time]);
   }
@@ -85,19 +89,19 @@ export class PacketGenerator {
     return this.mapped(TX.SetLabelType, [value]);
   }
 
-  public static setPageSizeV1(rows: number): NiimbotPacket {
+  public static setPageSize2b(rows: number): NiimbotPacket {
     return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows)]);
   }
 
   /**
-   * B1 behavior: strange, first print is blank or printer prints many copies (use {@link setPageSizeV3} instead)
+   * B1 behavior: strange, first print is blank or printer prints many copies (use {@link setPageSize6b} instead)
    *
    * D110 behavior: ordinary.
    *
    * @param rows Height in pixels
    * @param cols Width in pixels
    */
-  public static setPageSizeV2(rows: number, cols: number): NiimbotPacket {
+  public static setPageSize4b(rows: number, cols: number): NiimbotPacket {
     return this.mapped(TX.SetPageSize, [...Utils.u16ToBytes(rows), ...Utils.u16ToBytes(cols)]);
   }
 
@@ -106,7 +110,7 @@ export class PacketGenerator {
    * @param cols Width in pixels
    * @param copiesCount Page instances
    */
-  public static setPageSizeV3(rows: number, cols: number, copiesCount: number): NiimbotPacket {
+  public static setPageSize6b(rows: number, cols: number, copiesCount: number): NiimbotPacket {
     return this.mapped(TX.SetPageSize, [
       ...Utils.u16ToBytes(rows),
       ...Utils.u16ToBytes(cols),
@@ -114,20 +118,25 @@ export class PacketGenerator {
     ]);
   }
 
-  /** Meaning of two last args is unknown */
-  public static setPageSizeV4(
+  /** First seen on D110M v4 */
+  public static setPageSize13b(
     rows: number,
     cols: number,
     copiesCount: number,
-    someSize: number,
-    isDivide: boolean
+    cutHeight: number = 0,
+    cutType: number = 0,
+    sendAll: number = 0,
+    partHeight: number = 0,
   ): NiimbotPacket {
     return this.mapped(TX.SetPageSize, [
       ...Utils.u16ToBytes(rows),
       ...Utils.u16ToBytes(cols),
       ...Utils.u16ToBytes(copiesCount),
-      ...Utils.u16ToBytes(someSize),
-      isDivide ? 1 : 0,
+      ...Utils.u16ToBytes(cutHeight),
+      cutType,
+      0x00,
+      sendAll,
+      ...Utils.u16ToBytes(partHeight),
     ]);
   }
 
@@ -149,11 +158,11 @@ export class PacketGenerator {
    *
    * D110 behavior: ordinary.
    * */
-  public static printStart(): NiimbotPacket {
+  public static printStart1b(): NiimbotPacket {
     return this.mapped(TX.PrintStart);
   }
 
-  public static printStartV3(totalPages: number): NiimbotPacket {
+  public static printStart2b(totalPages: number): NiimbotPacket {
     return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages)]);
   }
 
@@ -165,12 +174,13 @@ export class PacketGenerator {
    *
    * @param totalPages Declare how many pages will be printed
    */
-  public static printStartV4(totalPages: number, pageColor: number = 0): NiimbotPacket {
+  public static printStart7b(totalPages: number, pageColor: number = 0): NiimbotPacket {
     return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor]);
   }
 
-  public static printStartV5(totalPages: number, pageColor: number = 0, quality: number = 0): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality]);
+  /** First seen on D110M v4 */
+  public static printStart9b(totalPages: number, pageColor: number = 0, quality: number = 0, someFlag: boolean = false): NiimbotPacket {
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality, someFlag ? 0x01 : 0x00]);
   }
 
   public static printEnd(): NiimbotPacket {

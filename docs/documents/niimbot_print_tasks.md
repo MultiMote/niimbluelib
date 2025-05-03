@@ -133,3 +133,35 @@ PrintEnd [1(u8)]
 ```
 
 pageColor is 0
+
+
+## D110M_V4
+
+Print progress is fetched by continuously sending `PrintStatus`.
+
+Init:
+
+```
+SetDensity [density(u8)]
+SetLabelType [type(u8)]
+PrintStart [totalPages(u16), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 1(u8), 0(u8)]
+```
+
+Page:
+
+```
+PageStart [1(u8)]
+SetPageSize [rows(u16), cols(u16), copiesCount(u16), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8)]
+PrintEmptyRow | PrintBitmapRow | PrintBitmapRowIndexed
+PageEnd [1(u8)]
+```
+
+End:
+
+```
+(status poll)
+PrintEnd [1(u8)]
+```
+
+pageColor is 0
+

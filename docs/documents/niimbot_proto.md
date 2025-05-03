@@ -140,7 +140,7 @@ Can have different format depending on the model.
 #### 2 bytes
 
 ```
-55 55 02 02 00 01 XX aa aa
+55 55 01 02 00 01 XX aa aa
        │  │  └──┤  │
        │  │     │  └─ Checksum
        │  │     └─ Total pages (sum of page quantity of each page)
@@ -151,7 +151,7 @@ Can have different format depending on the model.
 #### 7 bytes (used in B1 and newer printers)
 
 ```
-55 55 02 07 00 01 00 00 00 00 00 XX aa aa
+55 55 01 07 00 01 00 00 00 00 00 XX aa aa
        │  │  └──┤  └──┴──┴──┘  │  │
        │  │     │   Always 0   │  └─ Checksum
        │  │     │              └─ Page color (unknown use)
@@ -160,12 +160,13 @@ Can have different format depending on the model.
        └─ PrintStart command
 ```
 
-#### 8 bytes
+#### 9 bytes
 
 ```
-55 55 02 08 00 01 00 00 00 00 00 00 XX aa aa
-       │  │  └──┤  └──┴──┴──┘  │  │  │
-       │  │     │   Always 0   │  │  └─ Checksum
+55 55 01 09 00 01 00 00 00 00 00 00 00 XX aa aa
+       │  │  └──┤  └──┴──┴──┘  │  │  │  │
+       │  │     │   Always 0   │  │  │  └─ Checksum
+       │  │     │              │  │  └─ Some flag (unknown use)
        │  │     │              │  └─ Quality (unknown use)
        │  │     │              └─ Page color (unknown use)
        │  │     └─ Total pages (sum of page quantity of each page)

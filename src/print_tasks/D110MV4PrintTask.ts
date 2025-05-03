@@ -5,12 +5,17 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
 /**
  * @category Print tasks
  */
-export class V5PrintTask extends AbstractPrintTask {
+export class D110MV4PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
     return this.abstraction.sendAll([
+      PacketGenerator.antiFake(1),
+      PacketGenerator.antiFake(2),
+      PacketGenerator.antiFake(3),
+      PacketGenerator.rfidInfo(),
+      
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStartV5(this.printOptions.totalPages, 0, 0),
+      PacketGenerator.printStart9b(this.printOptions.totalPages, 0, 1),
     ]);
   }
 
@@ -20,7 +25,7 @@ export class V5PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll(
       [
         PacketGenerator.pageStart(),
-        PacketGenerator.setPageSizeV4(image.rows, image.cols, quantity ?? 1, 0, false),
+        PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
