@@ -1,0 +1,42 @@
+name: Deploy docs to Cloudflare Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches:
+      - gitea
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install typedoc
+        run: npm install -D typedoc@0.26.11 typedoc-plugin-include-example@1.4.1
+
+      - name: Build
+        run: npx typedoc
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy docs/html --project-name=niim-docs
+

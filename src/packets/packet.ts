@@ -1,5 +1,5 @@
 import { Utils, Validators } from "../utils";
-import { firmwareExchangePackets, RequestCommandId, ResponseCommandId } from ".";
+import { RequestCommandId, ResponseCommandId } from ".";
 import CRC32 from "crc-32";
 
 /**
