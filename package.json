@@ -40,8 +40,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@capacitor-community/bluetooth-le": "^6.0.2",
-    "@capacitor/core": "^6.0.0",
+    "@capacitor-community/bluetooth-le": "^7.1.0",
+    "@capacitor/core": "^7.2.0",
     "async-mutex": "^0.5.0",
     "crc-32": "^1.2.2",
     "eventemitter3": "^5.0.1"
