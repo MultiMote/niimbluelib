@@ -8,11 +8,6 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
 export class D110MV4PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
     return this.abstraction.sendAll([
-      PacketGenerator.antiFake(1),
-      PacketGenerator.antiFake(2),
-      PacketGenerator.antiFake(3),
-      PacketGenerator.rfidInfo(),
-      
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
       PacketGenerator.printStart9b(this.printOptions.totalPages, 0, 1),
