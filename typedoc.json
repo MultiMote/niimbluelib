@@ -12,7 +12,8 @@
   "projectDocuments": [
     "docs/documents/niimbot_hardware_interfacing.md",
     "docs/documents/niimbot_proto.md",
-    "docs/documents/niimbot_print_tasks.md"
+    "docs/documents/niimbot_print_tasks.md",
+    "docs/documents/niimbot_models.md"
   ],
   "plugin": [
     "typedoc-plugin-include-example"
