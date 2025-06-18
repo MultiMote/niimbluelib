@@ -151,7 +151,7 @@ export class Abstraction {
     info.allPaper = r.readI16();
     info.usedPaper = r.readI16();
     info.consumablesType = r.readI8() as LabelType;
-    r.end();
+    // r.end(); // some extra data can exist
 
     return info;
   }
