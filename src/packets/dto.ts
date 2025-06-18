@@ -53,6 +53,7 @@ export interface RfidInfo {
   allPaper: number;
   usedPaper: number;
   consumablesType: LabelType;
+  capacity?: number;
 }
 
 /**
