@@ -137,30 +137,30 @@ pageColor is 0
 
 ## D110M_V4
 
-Print progress is fetched by continuously sending `PrintStatus`.
+Print progress is fetched by continuously sending `PrintStatus`. PageStart command is not used.
+When printer responds In_PrinterCheckLine after sending bitmap data packet, PrintStatus.
 
 Init:
 
 ```
-SetDensity [density(u8)]
-SetLabelType [type(u8)]
-PrintStart [totalPages(u16), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 1(u8), 0(u8)]
+SetDensity [1b]
+SetLabelType [1b]
+PrintStart [9b]
 ```
 
 Page:
 
 ```
-PageStart [1(u8)]
-SetPageSize [rows(u16), cols(u16), copiesCount(u16), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8), 0(u8)]
-PrintEmptyRow | PrintBitmapRow | PrintBitmapRowIndexed
-PageEnd [1(u8)]
+SetPageSize [13b]
+PrintEmptyRow [3b] | PrintBitmapRow [dyn] | PrintBitmapRowIndexed [dyn] | (status poll)
+PageEnd [1b]
 ```
 
 End:
 
 ```
+PrintEnd [1b]
 (status poll)
-PrintEnd [1(u8)]
 ```
 
 pageColor is 0
@@ -168,7 +168,7 @@ pageColor is 0
 
 ## B21_PRO
 
-Print progress is fetched by continuously sending `PrintStatus`. B21_PRO do not use PrintStart/PrintEnd commands.
+Print progress is fetched by continuously sending `PrintStatus`. PageStart command is not used.
 When printer responds In_PrinterCheckLine after sending bitmap data packet, you can send PrintStatus.
 
 Init:
@@ -184,6 +184,7 @@ Page:
 ```
 SetPageSize [11b]
 PrintEmptyRow [3b] | PrintBitmapRow [dyn] | PrintBitmapRowIndexed [dyn] | (status poll)
+PageEnd [1b]
 ```
 
 End:
