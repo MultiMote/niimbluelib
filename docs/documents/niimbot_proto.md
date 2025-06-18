@@ -40,6 +40,7 @@ WIP
 | 0x03 | PageStart                        | 0x04 |✅|✅|
 | 0x05 | PrinterLog                       | 0x06 |✅|❌|
 | 0x0b | AntiFake                         | 0x0c |✅|❌|
+| 0x0d | GetPrintQuality                  | 0x0d |❌|❌|
 | 0x13 | [SetPageSize](#setpagesize)      | 0x14 |❌|✅|
 | 0x15 | PrintQuantity                    | 0x16 |❌|✅|
 | 0x1a | RfidInfo                         | 0x1b |✅|❌|

@@ -54,7 +54,8 @@ export enum RequestCommandId {
    * setPrinterTime: 85, 85, 7, 8, 1, b, b2, b3, b4, b5, b6, b7, b10, -86, -86
   */
   PrinterConfig2 = 0x07,
-  GetKeyFunction = 0x09
+  GetKeyFunction = 0x09,
+  GetPrintQuality = 0x0d
 }
 
 /**
@@ -121,7 +122,8 @@ export enum ResponseCommandId {
   In_ResetTimeout = 0xc6,
   In_GetCurrentTimeFormat = 0x11,
   In_PrinterConfig2 = 0x08,
-  In_GetKeyFunction = 0x0a
+  In_GetKeyFunction = 0x0a,
+  In_GetPrintQuality = 0x0d
 }
 
 import TX = RequestCommandId;
@@ -186,7 +188,8 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine],
   [TX.GetCurrentTimeFormat]: [RX.In_GetCurrentTimeFormat],
   [TX.PrinterConfig2]: [RX.In_PrinterConfig2],
-  [TX.GetKeyFunction]: [RX.In_GetKeyFunction]
+  [TX.GetKeyFunction]: [RX.In_GetKeyFunction],
+  [TX.GetPrintQuality]: [RX.In_GetPrintQuality]
 };
 
 export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
