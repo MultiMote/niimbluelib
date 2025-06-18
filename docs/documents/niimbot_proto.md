@@ -231,6 +231,38 @@ Column count must be less or equal printhead size.
        └─ SetPageSize command
 ```
 
+#### 11 bytes
+
+```
+55 55 13 0b 00 f0 01 80 00 01 00 00 00 00 01 XX aa aa
+       │  │  └──┤  └──┤  └──┤  └───────────┤  │
+       │  │     │     │     │              │  └─ Checksum
+       │  │     │     │     │              │
+       │  │     │     │     │              └─ unknown use
+       │  │     │     │     └─ Copies count (1)
+       │  │     │     └─ Column count (384px)
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
+```
+
+#### 13 bytes
+
+```
+55 55 13 0d 00 f0 01 80 00 01 00 00 00 00 00 00 00 XX aa aa
+       │  │  └──┤  └──┤  └──┤  └──┤  │     │  └──┤  │
+       │  │     │     │     │     │  │     │     │  └─ Checksum
+       │  │     │     │     │     │  │     │     └─ Part height (unknown use)
+       │  │     │     │     │     │  │     └─ Send all (unknown use)
+       │  │     │     │     │     │  └─ Cut type (unknown use)
+       │  │     │     │     │     └─ Cut height (unknown use)
+       │  │     │     │     └─ Copies count (1)
+       │  │     │     └─ Column count (384px)
+       │  │     └─ Row count (240px)
+       │  └─ Data length
+       └─ SetPageSize command
+```
+
 ## Packet details (image data packets)
 
 See [print tasks](niimbot_print_tasks.md) to understand how to images are printed.
