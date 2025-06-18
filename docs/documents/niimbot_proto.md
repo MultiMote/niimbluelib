@@ -161,6 +161,19 @@ Can have different format depending on the model.
        └─ PrintStart command
 ```
 
+#### 8 bytes (used in B21 Pro)
+
+```
+55 55 01 08 00 01 00 00 00 00 00 01 XX aa aa
+       │  │  └──┤  └──┴──┴──┘  │  │  │
+       │  │     │   Always 0   │  │  └─ Checksum
+       │  │     │              |  └─ unknown use
+       │  │     │              └─ Page color (unknown use)
+       │  │     └─ Total pages (sum of page quantity of each page)
+       │  └─ Data length
+       └─ PrintStart command
+```
+
 #### 9 bytes
 
 ```
