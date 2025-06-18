@@ -47,6 +47,8 @@ This is simplified and human-readable variant of [this data](https://oss-print.n
 |EP2M_H|4610|300|567|top|With Gaps, Transparent, Black, Black Mark Gap|1-5|3|
 |ET10|5376|203|1600|top|Continuous|3-3|3|
 |FUST|513|203|96|left|With Gaps, Transparent|1-5|3|
+|H1|3840|203|96|left|With Gaps, Transparent|1-3|2|
+|H1S|4352|203|96|left|With Gaps, Continuous, Transparent|1-3|2|
 |HI_D110|2305|203|120|left|With Gaps, Transparent|1-3|3|
 |HI_NB_D11|512|203|120|left|With Gaps, Transparent|1-3|2|
 |JC_M90|51461|203|384|top|With Gaps, Black, Continuous, Perforated|6-15|10|
