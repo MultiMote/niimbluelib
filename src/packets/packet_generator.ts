@@ -118,24 +118,6 @@ export class PacketGenerator {
     ]);
   }
 
-  /** First seen on B21 Pro v4 */
-  public static setPageSize11b(
-    rows: number,
-    cols: number,
-    copiesCount: number,
-  ): NiimbotPacket {
-    return this.mapped(TX.SetPageSize, [
-      ...Utils.u16ToBytes(rows),
-      ...Utils.u16ToBytes(cols),
-      ...Utils.u16ToBytes(copiesCount),
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x01,
-    ]);
-  }
-
   /** First seen on D110M v4 */
   public static setPageSize13b(
     rows: number,
@@ -194,19 +176,6 @@ export class PacketGenerator {
    */
   public static printStart7b(totalPages: number, pageColor: number = 0): NiimbotPacket {
     return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor]);
-  }
-
-  /** First seen on B21 Pro v4 */
-  public static printStart8b(totalPages: number): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [
-      ...Utils.u16ToBytes(totalPages),
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x01,
-    ]);
   }
 
   /** First seen on D110M v4 */
