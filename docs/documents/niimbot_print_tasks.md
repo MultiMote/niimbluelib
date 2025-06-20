@@ -164,32 +164,3 @@ PrintEnd [1b]
 ```
 
 pageColor is 0
-
-
-## B21_PRO
-
-Print progress is fetched by continuously sending `PrintStatus`. PageStart command is not used.
-When printer responds In_PrinterCheckLine after sending bitmap data packet, you can send PrintStatus.
-
-Init:
-
-```
-SetDensity [1b]
-SetLabelType [1b]
-PrintStart [8b]
-```
-
-Page:
-
-```
-SetPageSize [11b]
-PrintEmptyRow [3b] | PrintBitmapRow [dyn] | PrintBitmapRowIndexed [dyn] | (status poll)
-PageEnd [1b]
-```
-
-End:
-
-```
-PrintEnd [1b]
-(status poll)
-```
