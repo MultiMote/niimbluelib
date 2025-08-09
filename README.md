@@ -19,8 +19,22 @@ Also check out [niimblue-node](https://github.com/MultiMote/niimblue-node) for C
 
 ### Installation
 
+NPM:
+
 ```bash
 npm install -E @mmote/niimbluelib
+```
+
+CDN:
+
+```html
+<script src="https://unpkg.com/@mmote/niimbluelib@0.0.1-alpha.27/dist/umd/niimblue.min.js"></script>
+```
+
+Script uses `niimblue` namespace. Example: 
+
+```js
+const client = new niimblue.NiimbotBluetoothClient();
 ```
 
 ### Usage example
