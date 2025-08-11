@@ -3,12 +3,12 @@ import * as esbuild from 'esbuild';
 const common = {
     entryPoints: ['src/index.ts'],
     bundle: true,
-    globalName: 'niimblue',
+    globalName: 'niimbluelib',
 };
 
 await esbuild.build({
     ...common,
-    outfile: './dist/umd/niimblue.js',
+    outfile: `./dist/umd/${common.globalName}.js`,
     format: 'iife',
     minify: false,
     sourcemap: true,
@@ -18,7 +18,7 @@ await esbuild.build({
 
 await esbuild.build({
     ...common,
-    outfile: './dist/umd/niimblue.min.js',
+    outfile: `./dist/umd/${common.globalName}.min.js`,
     format: 'iife',
     minify: true,
     sourcemap: true,

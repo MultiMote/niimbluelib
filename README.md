@@ -28,13 +28,13 @@ npm install -E @mmote/niimbluelib
 CDN:
 
 ```html
-<script src="https://unpkg.com/@mmote/niimbluelib@0.0.1-alpha.27/dist/umd/niimblue.min.js"></script>
+<script src="https://unpkg.com/@mmote/niimbluelib@0.0.1-alpha.28/dist/umd/niimbluelib.min.js"></script>
 ```
 
-Script uses `niimblue` namespace. Example: 
+Script uses `niimbluelib` namespace. Example:
 
 ```js
-const client = new niimblue.NiimbotBluetoothClient();
+const client = new niimbluelib.NiimbotBluetoothClient();
 ```
 
 ### Usage example
