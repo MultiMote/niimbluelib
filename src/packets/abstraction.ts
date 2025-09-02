@@ -99,10 +99,12 @@ export class Abstraction {
       supportColor = packet.data[10];
 
       const n = packet.data[11] * 100 + packet.data[12];
+
       if (n >= 204 && n < 300) {
         protocolVersion = 3;
-      }
-      if (n >= 301) {
+      } else if (n < 300 || n >= 302) {
+        protocolVersion = n >= 302 ? 5 : 0;
+      } else {
         protocolVersion = 4;
       }
     }
@@ -155,7 +157,7 @@ export class Abstraction {
     if (r.canRead(2)) {
       info.capacity = r.readI16();
     }
-    
+
     r.end();
 
     return info;
