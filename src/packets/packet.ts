@@ -57,6 +57,10 @@ export class NiimbotPacket {
     return this._validResponseIds;
   }
 
+  public set validResponseIds(ids: ResponseCommandId[]) {
+    this._validResponseIds = ids;
+  }
+
   public get command(): RequestCommandId | ResponseCommandId {
     return this._command;
   }

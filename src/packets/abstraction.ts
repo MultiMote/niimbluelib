@@ -56,6 +56,22 @@ export class Abstraction {
     return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.packetTimeout);
   }
 
+  /** Send packet, wait for response, repeat if failed */
+  public async sendRepeatUntilSuccess(packet: NiimbotPacket, attempts: number, forceTimeout?: number): Promise<NiimbotPacket> {
+    let lastError: Error = new Error("Unknown error");
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        return await this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.packetTimeout);
+      } catch (e) {
+        console.warn(`Attempt ${attempt + 1} failed:`, e);
+        lastError = e as Error;
+      }
+    }
+
+    throw lastError;
+  }
+
   public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
     for (const p of packets) {
       await this.send(p, forceTimeout);

@@ -14,8 +14,10 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     ]);
   }
 
-  override printPage(image: EncodedImage, quantity?: number): Promise<void> {
+  override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
     this.checkAddPage(quantity ?? 1);
+
+    await this.abstraction.sendRepeatUntilSuccess(PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1), 2);
 
     return this.abstraction.sendAll(
       [

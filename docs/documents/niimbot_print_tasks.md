@@ -164,3 +164,6 @@ PrintEnd [1b]
 ```
 
 pageColor is 0
+
+> [!NOTE]
+> B21_PRO: for some reason this printer drops the first packet after `PrintStart`. So you need to send `SetPageSize` twice. This applies only to Bluetooth connection.
