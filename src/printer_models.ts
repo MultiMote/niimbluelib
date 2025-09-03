@@ -473,7 +473,7 @@ export const modelsLibrary: PrinterModelMeta[] = [
     id: [2320],
     dpi: 203,
     printDirection: "left",
-    printheadPixels: 120,
+    printheadPixels: 96,
     paperTypes: [LT.WithGaps, LT.Transparent],
     densityMin: 1,
     densityMax: 5,

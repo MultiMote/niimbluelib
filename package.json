@@ -1,6 +1,6 @@
 {
   "name": "@mmote/niimbluelib",
-  "version": "0.0.1-alpha.26",
+  "version": "0.0.1-alpha.28",
   "description": "Library for the communication with NIIMBOT printers",
   "keywords": [
     "reverse-engineering",
@@ -13,8 +13,8 @@
     "serial",
     "capacitor"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "types": "dist/cjs/index.d.ts",
   "files": [
     "/dist"
   ],
@@ -28,6 +28,7 @@
   "scripts": {
     "clean-build": "npm run clean && npm run build",
     "build": "tsc --build",
+    "build:bundle": "node bundle.mjs",
     "parse-wireshark-dump": "npm run build && node tools/parse-wireshark-dump.mjs",
     "parse-text-dump": "npm run build && node tools/parse-text-dump.mjs",
     "clean": "node clean-dist.mjs",
@@ -38,6 +39,7 @@
     "@types/node": "^20.14.2",
     "@types/w3c-web-serial": "^1.0.8",
     "@types/web-bluetooth": "^0.0.21",
+    "esbuild": "0.25.8",
     "typescript": "^5.4.5"
   },
   "dependencies": {

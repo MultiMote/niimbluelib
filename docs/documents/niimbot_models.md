@@ -42,7 +42,7 @@ This is simplified and human-readable variant of [this data](https://oss-print.n
 |D11_H|528|300|142|left|With Gaps, Transparent|1-5|3|
 |D11_PRO|531|300|142|left|Transparent, With Gaps|1-5|3|
 |D110|2304, 2305|203|96|left|With Gaps, Transparent|1-3|2|
-|D110_M|2320|203|120|left|With Gaps, Transparent|1-5|3|
+|D110_M|2320|203|96|left|With Gaps, Transparent|1-5|3|
 |D11S|514|203|96|left|With Gaps, Transparent|1-3|2|
 |EP2M_H|4610|300|567|top|With Gaps, Transparent, Black, Black Mark Gap|1-5|3|
 |ET10|5376|203|1600|top|Continuous|3-3|3|
