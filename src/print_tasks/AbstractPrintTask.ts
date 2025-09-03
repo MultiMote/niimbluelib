@@ -92,4 +92,9 @@ export abstract class AbstractPrintTask {
   protected printheadPixels(): number | undefined {
     return this.abstraction.getClient().getModelMetadata()?.printheadPixels;
   }
+
+  /** End print, cleanup */
+  printEnd(): Promise<boolean> {
+    return this.abstraction.printEnd();
+  }
 }

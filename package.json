@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
-    "@types/w3c-web-serial": "^1.0.6",
-    "@types/web-bluetooth": "^0.0.20",
+    "@types/w3c-web-serial": "^1.0.8",
+    "@types/web-bluetooth": "^0.0.21",
     "esbuild": "0.25.8",
     "typescript": "^5.4.5"
   },

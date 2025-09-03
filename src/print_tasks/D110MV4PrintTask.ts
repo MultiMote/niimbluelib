@@ -1,5 +1,5 @@
 import { EncodedImage } from "../image_encoder";
-import { PacketGenerator } from "../packets";
+import { HeartbeatType, PacketGenerator } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
@@ -14,12 +14,17 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     ]);
   }
 
-  override printPage(image: EncodedImage, quantity?: number): Promise<void> {
+  override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
     this.checkAddPage(quantity ?? 1);
+
+    // B21_PRO does not respond on first packet after PrintStart if using Bluetooth connection.
+    // Originally PrintStatus is sent, no response waited.
+    const statusPacket = PacketGenerator.printStatus();
+    statusPacket.oneWay = true;
+    await this.abstraction.send(statusPacket);
 
     return this.abstraction.sendAll(
       [
-        PacketGenerator.pageStart(),
         PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
@@ -34,5 +39,15 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     return this.abstraction
       .waitUntilPrintFinishedByStatusPoll(this.printOptions.totalPages ?? 1, this.printOptions.statusPollIntervalMs)
       .finally(() => this.abstraction.setDefaultPacketTimeout());
+  }
+
+  override async printEnd(): Promise<boolean> {
+    // B21_PRO drops the first packet after PrintEnd.
+    // Originally `Heartbeat` is sent, no response waited.
+    const pkt = PacketGenerator.heartbeat(HeartbeatType.Advanced1);
+    pkt.oneWay = true;
+    await this.abstraction.send(pkt);
+
+    return this.abstraction.printEnd();
   }
 }

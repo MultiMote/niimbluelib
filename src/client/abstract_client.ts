@@ -46,7 +46,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   private heartbeatIntervalMs: number = 2_000;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
-  private packetBuf = new Uint8Array();
+  private packetBuf: Uint8Array = new Uint8Array();
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = 10;

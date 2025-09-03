@@ -14,10 +14,14 @@ export class SequentialDataReader {
     this.offset = 0;
   }
 
-  /** Check available bytes bytes and throw exception if EOF met */
+  /** Check available bytes */
+  public canRead(count: number) {
+    return this.offset + count <= this.bytes.length;
+  }
+
+  /** Check available bytes and throw exception if EOF met */
   private willRead(count: number) {
-    // console.log(`willRead ${count} (offset becomes ${this.offset+count} / ${this.bytes.length})`)
-    if (this.offset + count > this.bytes.length) {
+    if (!this.canRead(count)) {
       throw new Error("Tried to read too much data");
     }
   }

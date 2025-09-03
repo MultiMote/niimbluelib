@@ -56,14 +56,30 @@ export class Abstraction {
     return this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.packetTimeout);
   }
 
+  /** Send packet, wait for response, repeat if failed */
+  public async sendRepeatUntilSuccess(packet: NiimbotPacket, attempts: number, forceTimeout?: number): Promise<NiimbotPacket> {
+    let lastError: Error = new Error("Unknown error");
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        return await this.client.sendPacketWaitResponse(packet, forceTimeout ?? this.packetTimeout);
+      } catch (e) {
+        console.warn(`Attempt ${attempt + 1} failed:`, e);
+        lastError = e as Error;
+      }
+    }
+
+    throw lastError;
+  }
+
   public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
     for (const p of packets) {
       await this.send(p, forceTimeout);
     }
   }
 
-  public async getPrintStatus(): Promise<PrintStatus> {
-    const packet = await this.send(PacketGenerator.printStatus());
+  public async getPrintStatus(tries: number = 1): Promise<PrintStatus> {
+    const packet = await this.sendRepeatUntilSuccess(PacketGenerator.printStatus(), tries ?? 1);
 
     Validators.u8ArrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
 
@@ -99,10 +115,12 @@ export class Abstraction {
       supportColor = packet.data[10];
 
       const n = packet.data[11] * 100 + packet.data[12];
+
       if (n >= 204 && n < 300) {
         protocolVersion = 3;
-      }
-      if (n >= 301) {
+      } else if (n < 300 || n >= 302) {
+        protocolVersion = n >= 302 ? 5 : 0;
+      } else {
         protocolVersion = 4;
       }
     }
@@ -151,6 +169,11 @@ export class Abstraction {
     info.allPaper = r.readI16();
     info.usedPaper = r.readI16();
     info.consumablesType = r.readI8() as LabelType;
+
+    if (r.canRead(2)) {
+      info.capacity = r.readI16();
+    }
+
     r.end();
 
     return info;
@@ -338,7 +361,7 @@ export class Abstraction {
       this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
 
       this.statusPollTimer = setInterval(() => {
-        this.getPrintStatus()
+        this.getPrintStatus(2)
           .then((status: PrintStatus) => {
             this.client.emit(
               "printprogress",

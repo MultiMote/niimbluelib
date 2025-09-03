@@ -141,7 +141,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
         throw new Error("Channel is closed");
       }
       await Utils.sleep(this.packetIntervalMs);
-      await this.channel.writeValueWithoutResponse(data);
+      await this.channel.writeValueWithoutResponse(data.buffer as ArrayBuffer);
       this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
 
