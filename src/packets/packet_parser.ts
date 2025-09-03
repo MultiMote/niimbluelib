@@ -69,7 +69,7 @@ export class PacketParser {
         break;
       }
 
-      let tailEnd: number = tailPos + NiimbotPacket.TAIL.byteLength;
+      const tailEnd: number = tailPos + NiimbotPacket.TAIL.byteLength;
 
       chunks.push({ cls, raw: buf.slice(0, tailEnd) });
 

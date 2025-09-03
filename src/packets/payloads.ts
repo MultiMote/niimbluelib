@@ -1,6 +1,3 @@
-import { modelsLibrary } from "../printer_models";
-import { RequestCommandId, ResponseCommandId } from "./commands";
-
 /**
  * Sent with {@link RequestCommandId.PrinterInfo}
  * @category Packets

@@ -242,7 +242,7 @@ export class PacketGenerator {
   }
 
   public static writeImageData(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
-    let out: NiimbotPacket[] = [];
+    const out: NiimbotPacket[] = [];
 
     for (const d of image.rowsData) {
       if (d.dataType === "pixels") {

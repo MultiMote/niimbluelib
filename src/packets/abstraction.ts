@@ -248,8 +248,8 @@ export class Abstraction {
 
     // todo: find how to determine format
 
-    let v1 = packet.data[1] / 100 + packet.data[0];
-    let v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
+    const v1 = packet.data[1] / 100 + packet.data[0];
+    const v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
 
     return `0x${Utils.bufToHex(packet.data, "")} (${v1.toFixed(2)} or ${v2.toFixed(2)})`;
   }
@@ -261,8 +261,8 @@ export class Abstraction {
 
     // todo: find how to determine format
 
-    let v1 = packet.data[1] / 100 + packet.data[0];
-    let v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
+    const v1 = packet.data[1] / 100 + packet.data[0];
+    const v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
 
     return `0x${Utils.bufToHex(packet.data, "")} (${v1.toFixed(2)} or ${v2.toFixed(2)})`;
   }

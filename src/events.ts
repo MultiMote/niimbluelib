@@ -1,4 +1,4 @@
-import { ConnectionInfo, PrinterInfo, NiimbotAbstractClient, AbstractPrintTask, NiimbotPacket, HeartbeatData } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData } from ".";
 
 /**
  * Base client event

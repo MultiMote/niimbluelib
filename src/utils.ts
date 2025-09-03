@@ -99,8 +99,8 @@ export class Utils {
     mode: "auto" | "split" | "total" = "auto"
   ): PixelCountResult {
     let total: number = 0;
-    let parts: [number, number, number] = [0, 0, 0];
-    let chunkSize: number = Math.floor(printheadPixels / 8 / 3); // Every byte can store 8 pixels
+    const parts: [number, number, number] = [0, 0, 0];
+    const chunkSize: number = Math.floor(printheadPixels / 8 / 3); // Every byte can store 8 pixels
     let split: boolean = buf.byteLength <= chunkSize * 3; // Is data fits to the three chunks
 
     if (mode === "total") {
