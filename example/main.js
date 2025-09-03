@@ -123,7 +123,7 @@ printButton.onclick = async () => {
   const encoded = ImageEncoder.encodeCanvas(canvas, printDirection);
 
   /** todo: Auto-detection works only for a small set of printers so manual user selection is required */
-  const printTaskName = client.getPrintTaskType() ?? "D110";
+  const printTaskName = client.getPrintTaskType() ?? "B1";
 
   const printTask = client.abstraction.newPrintTask(printTaskName, {
     totalPages: quantity,
@@ -138,7 +138,7 @@ printButton.onclick = async () => {
   } catch (e) {
     alert(e);
   } finally {
-    await client.abstraction.printEnd();
+    await printTask.printEnd();
   }
 };
 

@@ -78,8 +78,8 @@ export class Abstraction {
     }
   }
 
-  public async getPrintStatus(): Promise<PrintStatus> {
-    const packet = await this.send(PacketGenerator.printStatus());
+  public async getPrintStatus(tries: number = 1): Promise<PrintStatus> {
+    const packet = await this.sendRepeatUntilSuccess(PacketGenerator.printStatus(), tries ?? 1);
 
     Validators.u8ArrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
 
@@ -361,7 +361,7 @@ export class Abstraction {
       this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
 
       this.statusPollTimer = setInterval(() => {
-        this.getPrintStatus()
+        this.getPrintStatus(3)
           .then((status: PrintStatus) => {
             this.client.emit(
               "printprogress",

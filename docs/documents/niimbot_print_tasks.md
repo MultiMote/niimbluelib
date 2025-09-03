@@ -152,6 +152,7 @@ Page:
 
 ```
 SetPageSize [13b]
+PrintStatus [1b] - don't wait response
 PrintEmptyRow [3b] | PrintBitmapRow [dyn] | PrintBitmapRowIndexed [dyn] | (status poll)
 PageEnd [1b]
 ```
@@ -159,11 +160,18 @@ PageEnd [1b]
 End:
 
 ```
-PrintEnd [1b]
 (status poll)
+PrintEnd [1b]
+Heartbeat [1b] - don't wait response
 ```
 
 pageColor is 0
 
 > [!NOTE]
-> B21_PRO: for some reason this printer drops the first packet after `PrintStart`. So you need to send `SetPageSize` twice. This applies only to Bluetooth connection.
+> B21_PRO note
+>
+> For some reason this printer drops the first packet after `PrintStart` if using Bluetooth connection.
+> Originally `PrintStatus` is sent and no response waited.
+>
+> Also printer drops the first packet after `PrintStart`.
+> Originally `Heartbeat` is sent and response waited.

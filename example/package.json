@@ -12,6 +12,6 @@
     "vite": "^5.4.10"
   },
   "dependencies": {
-    "@mmote/niimbluelib": "0.0.1-alpha.17"
+    "@mmote/niimbluelib": "0.0.1-alpha.29"
   }
 }
