@@ -28,7 +28,7 @@ npm install -E @mmote/niimbluelib
 CDN:
 
 ```html
-<script src="https://unpkg.com/@mmote/niimbluelib@0.0.1-alpha.28/dist/umd/niimbluelib.min.js"></script>
+<script src="https://unpkg.com/@mmote/niimbluelib@VERSION/dist/umd/niimbluelib.min.js"></script>
 ```
 
 Script uses `niimbluelib` namespace. Example:
