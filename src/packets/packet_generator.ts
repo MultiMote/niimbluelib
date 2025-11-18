@@ -56,6 +56,10 @@ export class PacketGenerator {
   public static rfidInfo(): NiimbotPacket {
     return this.mapped(TX.RfidInfo);
   }
+  
+  public static rfidInfo2(): NiimbotPacket {
+    return this.mapped(TX.RfidInfo2);
+  }
 
   public static antiFake(queryType: number): NiimbotPacket {
     return this.mapped(TX.AntiFake, [queryType]);

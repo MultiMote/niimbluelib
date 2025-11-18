@@ -143,10 +143,7 @@ export class Abstraction {
     return Utils.bytesToI16(packet.data);
   }
 
-  /** Read paper nfc tag info */
-  public async rfidInfo(): Promise<RfidInfo> {
-    const packet = await this.send(PacketGenerator.rfidInfo());
-
+  private processRfidInfo(packet: NiimbotPacket): RfidInfo {
     const info: RfidInfo = {
       tagPresent: false,
       uuid: "",
@@ -177,6 +174,18 @@ export class Abstraction {
     r.end();
 
     return info;
+  }
+
+  /** Read paper nfc tag info */
+  public async rfidInfo(): Promise<RfidInfo> {
+    const packet = await this.send(PacketGenerator.rfidInfo());
+    return this.processRfidInfo(packet);
+  }
+
+  /** Read ribbon nfc tag info */
+  public async rfidInfo2(): Promise<RfidInfo> {
+    const packet = await this.send(PacketGenerator.rfidInfo2());
+    return this.processRfidInfo(packet);
   }
 
   public async heartbeat(): Promise<HeartbeatData> {
@@ -445,7 +454,12 @@ export class Abstraction {
 
     // Send chunks
     while (true) {
-      const p = await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareChunk], true, 5_000);
+      const p = await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareChunk, ResponseCommandId.In_FirmwareResult], true, 5_000);
+
+      if(p.command === ResponseCommandId.In_FirmwareResult) {
+        //fixme
+        throw new Error("Unexpected firmware result");
+      }
 
       if (!(p instanceof NiimbotCrc32Packet)) {
         throw new Error("Not a firmware packet");
