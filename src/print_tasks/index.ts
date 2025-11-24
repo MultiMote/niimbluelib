@@ -47,7 +47,7 @@ export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol |
   D11_V1: [M.D11, M.D11S],
   B21_V1: [M.B21, M.B21_L2B],
   D110: [M.B21S, M.B21S_C2B, M.D110, { m: M.D11, v: 1 }, { m: M.D11, v: 2 }],
-  B1: [M.D110_M, M.B1, M.B21_C2B ],
+  B1: [M.D110_M, M.B1, M.B21_C2B, M.M2_H, M.N1, M.D101],
   D110M_V4: [{ m: M.D110_M, v: 4 }, M.D11_H, M.B21_PRO],
 };
 
