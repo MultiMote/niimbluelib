@@ -46,8 +46,11 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     // Originally `Heartbeat` is sent, no response waited.
     const pkt = PacketGenerator.heartbeat(HeartbeatType.Advanced1);
     pkt.oneWay = true;
+
+    const result = this.abstraction.printEnd();
+
     await this.abstraction.send(pkt);
 
-    return this.abstraction.printEnd();
+    return result;
   }
 }
