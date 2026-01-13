@@ -47,7 +47,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     const pkt = PacketGenerator.heartbeat(HeartbeatType.Advanced1);
     pkt.oneWay = true;
 
-    const result = this.abstraction.printEnd();
+    const result = await this.abstraction.printEnd();
 
     await this.abstraction.send(pkt);
 
