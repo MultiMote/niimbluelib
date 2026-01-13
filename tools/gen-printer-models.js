@@ -37,7 +37,7 @@ fetch("https://oss-print.niimbot.com/public_resources/static_resources/devices.j
     console.log("export enum PrinterModel {");
     console.log('  UNKNOWN = "UNKNOWN",');
     for (const item of items) {
-      const name = item.name.toUpperCase().replaceAll("-", "_");
+      const name = item.name.toUpperCase().replaceAll(/[-\s]/g, "_");
       console.log(`  ${name} = "${name}",`);
     }
 
@@ -65,7 +65,7 @@ export interface PrinterModelMeta {
         continue;
       }
 
-      const name = item.name.toUpperCase().replaceAll("-", "_");
+      const name = item.name.toUpperCase().replaceAll(/[-\s]/g, "_");
       const dir = dir_d[item.printDirection];
       const ppmm = ppmm_d[item.paccuracyName];
       const paperTypes = item.paperType.split(',').map(e => labeltypes_d[e]).join(", ");
