@@ -31,6 +31,8 @@ export class Abstraction {
   private statusPollTimer: NodeJS.Timeout | undefined;
   private statusTimeoutTimer: NodeJS.Timeout | undefined;
 
+  private lastType: HeartbeatType = HeartbeatType.Advanced1;
+
   constructor(client: NiimbotAbstractClient) {
     this.client = client;
   }
@@ -57,7 +59,11 @@ export class Abstraction {
   }
 
   /** Send packet, wait for response, repeat if failed */
-  public async sendRepeatUntilSuccess(packet: NiimbotPacket, attempts: number, forceTimeout?: number): Promise<NiimbotPacket> {
+  public async sendRepeatUntilSuccess(
+    packet: NiimbotPacket,
+    attempts: number,
+    forceTimeout?: number,
+  ): Promise<NiimbotPacket> {
     let lastError: Error = new Error("Unknown error");
 
     for (let attempt = 0; attempt < attempts; attempt++) {
@@ -188,54 +194,134 @@ export class Abstraction {
     return this.processRfidInfo(packet);
   }
 
-  public async heartbeat(): Promise<HeartbeatData> {
-    const packet = await this.send(PacketGenerator.heartbeat(HeartbeatType.Advanced1), 500);
-
-    const info: HeartbeatData = {
-      paperState: -1,
-      rfidReadState: -1,
-      lidClosed: false,
-      powerLevel: BatteryChargeLevel.Charge0,
-    };
-
-    // originally expected packet length is bound to model id, but we make it more robust and simple
+  private processHeartbeatAdvanced1(packet: NiimbotPacket): HeartbeatData {
     const len = packet.dataLength;
     const r = new SequentialDataReader(packet.data);
+    const info: HeartbeatData = {};
 
+    // originally expected packet length is bound to model id, but we make it more robust and simple
     if (len === 10) {
       // d110
       r.skip(8);
       info.lidClosed = r.readBool();
-      info.powerLevel = r.readI8();
+      info.chargeLevel = r.readI8();
     } else if (len === 20) {
       r.skip(18);
-      info.paperState = r.readI8();
-      info.rfidReadState = r.readI8();
+      info.paperInserted = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() === 0;
     } else if (len === 19) {
       r.skip(15);
       info.lidClosed = r.readBool();
-      info.powerLevel = r.readI8();
-      info.paperState = r.readI8();
-      info.rfidReadState = r.readI8();
+      info.chargeLevel = r.readI8();
+      info.paperInserted = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() === 0;
     } else if (len === 13) {
       // b1
       r.skip(9);
       info.lidClosed = r.readBool();
-      info.powerLevel = r.readI8();
-      info.paperState = r.readI8();
-      info.rfidReadState = r.readI8();
+      info.chargeLevel = r.readI8();
+      info.paperInserted = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() === 0;
     } else {
       throw new Error("Invalid heartbeat length");
     }
     r.end();
 
-    const model: number | undefined = this.client.getPrinterInfo().modelId;
+    const printerInfo = this.client.getPrinterInfo();
+    const nonInvertedModels = [512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272, 273, 274];
 
-    if (model !== undefined && ![512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272].includes(model)) {
+    if (printerInfo?.modelId !== undefined && !nonInvertedModels.includes(printerInfo.modelId)) {
       info.lidClosed = !info.lidClosed;
     }
+    return info;
+  }
+
+  private processHeartbeatAdvanced2(packet: NiimbotPacket): Partial<HeartbeatData> {
+    const r = new SequentialDataReader(packet.data);
+    const info: HeartbeatData = {};
+
+    // 6 lastPowerLevel
+    // 7 lastTemp
+    // 8 lastClosingState
+    // 9 lastPaperState
+    // 10 lastRfidReadState
+    // 11 lastRibbonRfidReadState
+    // 12 lastRibbonState
+
+    // > 9
+    // 13 14 OnWifiRssi
+
+    // > 12
+    // 16 lastLightingErrorCode
+
+    // > 13
+    // 17 lastVoltageState
+    //                         CH TM LI PI PR RR RI
+    // 55 55 d9 09   1f bc     04 4a 00 01 00 00 00 3c aa aa
+    // 55 55 d9 09   1f bc     04 4a 01 01 00 00 00 3d aa aa
+    // 55 55 d9 0b   0f d0     04 4d 00 00 00 00 00 00 00 44 aaaa d110m
+
+    // 55 55 d9 0b 20 73 04 4b 00 00 01 01 00 00 00 ce aaaa   m2
+    // 55 55 D9 0C 2E C3 64 4D 00 00 01 01 00 00 00 00 11 AA AA - all inserted
+    // 55 55 D9 0C 2E AF 64 4D 01 01 00 00 00 00 00 00 7D AA AA - nothing inserted
+    //                    |     |  |  |  |  |
+    //                    |     |  |  |  |  |__ ribbonInserted
+    //                    |     |  |  |  |__ ribbonRfidSuccess
+    //                    |     |  |  |_____ paperRfidSuccess
+    //                    |     |  |________ paperInserted
+    //                    |     |___________ lidClosed
+    //                    |_________________ chargeLevel
+
+    Validators.u8ArrayLengthAtLeast(packet.data, 9);
+    r.skip(2);
+    info.chargeLevel = r.readI8();
+    info.temp = r.readI8();
+    info.lidClosed = r.readI8() === 0;
+    info.paperInserted = r.readI8() === 0;
+    info.paperRfidSuccess = r.readI8() !== 0;
+    info.ribbonRfidSuccess = r.readI8() !== 0;
+    info.ribbonInserted = r.readI8() === 0;
+
+    if (r.canRead(2)) {
+      info.wifiRssi = r.readI16();
+    }
+
+    if (r.canRead(2)) {
+      r.skip(1);
+      info.lightingErrorCode = r.readI8();
+    }
+
+    if (r.canRead(1)) {
+      info.voltageState = r.readI8();
+    }
+
+    r.end();
 
     return info;
+  }
+
+  public async heartbeat(): Promise<HeartbeatData> {
+    const heartbeatType = this.lastType;
+
+    this.lastType = this.lastType === HeartbeatType.Advanced1 ? HeartbeatType.Advanced2 : HeartbeatType.Advanced1; // fixme test (switch type every heartbeat)
+
+    // const printerInfo = this.client.getPrinterInfo();
+    // let heartbeatType = HeartbeatType.Advanced1;
+    // if (printerInfo.protocolVersion !== undefined && printerInfo.protocolVersion >= 3) {
+    //   heartbeatType = HeartbeatType.Advanced2;
+    // }
+
+    const packet = await this.send(PacketGenerator.heartbeat(heartbeatType), 500);
+
+    if (packet.command === ResponseCommandId.In_HeartbeatAdvanced1) {
+      return this.processHeartbeatAdvanced1(packet);
+    }
+
+    if (packet.command === ResponseCommandId.In_HeartbeatAdvanced2) {
+      return this.processHeartbeatAdvanced2(packet);
+    }
+
+    throw new Error("Unsupported heartbeat response");
   }
 
   public async getBatteryChargeLevel(): Promise<BatteryChargeLevel> {
@@ -374,7 +460,7 @@ export class Abstraction {
           .then((status: PrintStatus) => {
             this.client.emit(
               "printprogress",
-              new PrintProgressEvent(status.page, pagesToPrint, status.pagePrintProgress, status.pageFeedProgress)
+              new PrintProgressEvent(status.page, pagesToPrint, status.pagePrintProgress, status.pageFeedProgress),
             );
 
             if (status.page === pagesToPrint && status.pagePrintProgress === 100 && status.pageFeedProgress === 100) {
@@ -454,9 +540,13 @@ export class Abstraction {
 
     // Send chunks
     while (true) {
-      const p = await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareChunk, ResponseCommandId.In_FirmwareResult], true, 5_000);
+      const p = await this.client.waitForPacket(
+        [ResponseCommandId.In_RequestFirmwareChunk, ResponseCommandId.In_FirmwareResult],
+        true,
+        5_000,
+      );
 
-      if(p.command === ResponseCommandId.In_FirmwareResult) {
+      if (p.command === ResponseCommandId.In_FirmwareResult) {
         //fixme
         throw new Error("Unexpected firmware result");
       }

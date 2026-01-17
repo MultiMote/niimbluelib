@@ -29,6 +29,7 @@
   "scripts": {
     "clean-build": "npm run clean && npm run build",
     "build": "tsc --build",
+    "watch": "tsc --watch",
     "build:bundle": "node bundle.mjs",
     "parse-wireshark-dump": "npm run build && node tools/parse-wireshark-dump.mjs",
     "parse-text-dump": "npm run build && node tools/parse-text-dump.mjs",
