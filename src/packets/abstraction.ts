@@ -263,8 +263,10 @@ export class Abstraction {
     // 55 55 d9 09 1f bc 04 4a 01 01 00 00 00 3d aa aa
     // 55 55 d9 0b 0f d0 04 4d 00 00 00 00 00 00 00 44 aaaa d110m
     // 55 55 d9 0b 20 73 04 4b 00 00 01 01 00 00 00 ce aaaa   m2
-    // 55 55 D9 0C 2E C3 64 4D 00 00 01 01 00 00 00 00 11 AA AA - all inserted
-    // 55 55 D9 0C 2E AF 64 4D 01 01 00 00 00 00 00 00 7D AA AA - nothing inserted
+    // 55 55 D9 0C 2E C3 64 4D 00 00 01 01 00 00 00 00 11 AA AA - m3 all inserted
+    // 55 55 D9 0C 2E AF 64 4D 01 01 00 00 00 00 00 00 7D AA AA - m3 nothing inserted
+    // 55 55 D9 0C 2E A1 64 4C 01 01 00 00 00 00 00 00 72 AA AA - m3 Everything open
+    // 55 55 D9 0C 2E 99 64 4C 01 01 00 00 00 00 00 00 4A AA AA - m3 Ribbon lock closed
     //                    |     |  |  |  |  |
     //                    |     |  |  |  |  |__ ribbonInserted
     //                    |     |  |  |  |__ ribbonRfidSuccess
