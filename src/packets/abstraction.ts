@@ -203,36 +203,38 @@ export class Abstraction {
     if (len === 10) {
       // d110
       r.skip(8);
-      info.lidClosed = r.readBool();
+      info.lidClosed = r.readI8() === 0;
       info.chargeLevel = r.readI8();
-    } else if (len === 20) {
-      r.skip(18);
-      info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() === 0;
-    } else if (len === 19) {
-      r.skip(15);
-      info.lidClosed = r.readBool();
-      info.chargeLevel = r.readI8();
-      info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() === 0;
     } else if (len === 13) {
       // b1
       r.skip(9);
-      info.lidClosed = r.readBool();
+      info.lidClosed = r.readI8() === 0;
       info.chargeLevel = r.readI8();
       info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() !== 0;
+    } else if (len === 19) {
+      r.skip(15);
+      info.lidClosed = r.readI8() === 0;
+      info.chargeLevel = r.readI8();
+      info.paperInserted = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() !== 0;
+    } else if (len === 20) {
+      r.skip(18);
+      info.paperInserted = r.readI8() === 0;
+      info.paperRfidSuccess = r.readI8() !== 0;
     } else {
       throw new Error("Invalid heartbeat length");
     }
     r.end();
 
     const printerInfo = this.client.getPrinterInfo();
-    const nonInvertedModels = [512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272, 273, 274];
 
-    if (printerInfo?.modelId !== undefined && !nonInvertedModels.includes(printerInfo.modelId)) {
+    const invertedLidModels = [512, 514, 513, 2304, 1792, 3584, 5120, 2560, 3840, 4352, 272, 273, 274];
+
+    if (printerInfo?.modelId !== undefined && invertedLidModels.includes(printerInfo.modelId)) {
       info.lidClosed = !info.lidClosed;
     }
+
     return info;
   }
 
@@ -256,11 +258,10 @@ export class Abstraction {
 
     // > 13
     // 17 lastVoltageState
-    //                         CH TM LI PI PR RR RI
-    // 55 55 d9 09   1f bc     04 4a 00 01 00 00 00 3c aa aa
-    // 55 55 d9 09   1f bc     04 4a 01 01 00 00 00 3d aa aa
-    // 55 55 d9 0b   0f d0     04 4d 00 00 00 00 00 00 00 44 aaaa d110m
 
+    // 55 55 d9 09 1f bc 04 4a 00 01 00 00 00 3c aa aa
+    // 55 55 d9 09 1f bc 04 4a 01 01 00 00 00 3d aa aa
+    // 55 55 d9 0b 0f d0 04 4d 00 00 00 00 00 00 00 44 aaaa d110m
     // 55 55 d9 0b 20 73 04 4b 00 00 01 01 00 00 00 ce aaaa   m2
     // 55 55 D9 0C 2E C3 64 4D 00 00 01 01 00 00 00 00 11 AA AA - all inserted
     // 55 55 D9 0C 2E AF 64 4D 01 01 00 00 00 00 00 00 7D AA AA - nothing inserted
