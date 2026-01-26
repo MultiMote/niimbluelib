@@ -57,13 +57,23 @@ export interface RfidInfo {
 }
 
 /**
+ * Available fields depend on model.
+ *
  * @category Packets
  **/
 export interface HeartbeatData {
-  paperState: number;
-  rfidReadState: number;
-  lidClosed: boolean;
-  powerLevel: BatteryChargeLevel;
+  paperInserted?: boolean;
+  paperRfidSuccess?: boolean;
+  lidClosed?: boolean;
+  chargeLevel?: BatteryChargeLevel;
+
+  temp?: number;
+  ribbonInserted?: boolean;
+  ribbonRfidSuccess?: boolean;
+
+  wifiRssi?: number;
+  lightingErrorCode?: number;
+  voltageState?: number;
 }
 
 /**
