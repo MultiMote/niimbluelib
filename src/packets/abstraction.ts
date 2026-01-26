@@ -31,8 +31,6 @@ export class Abstraction {
   private statusPollTimer: NodeJS.Timeout | undefined;
   private statusTimeoutTimer: NodeJS.Timeout | undefined;
 
-  private lastType: HeartbeatType = HeartbeatType.Advanced1;
-
   constructor(client: NiimbotAbstractClient) {
     this.client = client;
   }
@@ -242,39 +240,6 @@ export class Abstraction {
     const r = new SequentialDataReader(packet.data);
     const info: HeartbeatData = {};
 
-    // 6 lastPowerLevel
-    // 7 lastTemp
-    // 8 lastClosingState
-    // 9 lastPaperState
-    // 10 lastRfidReadState
-    // 11 lastRibbonRfidReadState
-    // 12 lastRibbonState
-
-    // > 9
-    // 13 14 OnWifiRssi
-
-    // > 12
-    // 16 lastLightingErrorCode
-
-    // > 13
-    // 17 lastVoltageState
-
-    // 55 55 d9 09 1f bc 04 4a 00 01 00 00 00 3c aa aa
-    // 55 55 d9 09 1f bc 04 4a 01 01 00 00 00 3d aa aa
-    // 55 55 d9 0b 0f d0 04 4d 00 00 00 00 00 00 00 44 aaaa d110m
-    // 55 55 d9 0b 20 73 04 4b 00 00 01 01 00 00 00 ce aaaa   m2
-    // 55 55 D9 0C 2E C3 64 4D 00 00 01 01 00 00 00 00 11 AA AA - m3 all inserted
-    // 55 55 D9 0C 2E AF 64 4D 01 01 00 00 00 00 00 00 7D AA AA - m3 nothing inserted
-    // 55 55 D9 0C 2E A1 64 4C 01 01 00 00 00 00 00 00 72 AA AA - m3 Everything open
-    // 55 55 D9 0C 2E 99 64 4C 01 01 00 00 00 00 00 00 4A AA AA - m3 Ribbon lock closed
-    //                    |     |  |  |  |  |
-    //                    |     |  |  |  |  |__ ribbonInserted
-    //                    |     |  |  |  |__ ribbonRfidSuccess
-    //                    |     |  |  |_____ paperRfidSuccess
-    //                    |     |  |________ paperInserted
-    //                    |     |___________ lidClosed
-    //                    |_________________ chargeLevel
-
     Validators.u8ArrayLengthAtLeast(packet.data, 9);
     r.skip(2);
     info.chargeLevel = r.readI8();
@@ -304,15 +269,11 @@ export class Abstraction {
   }
 
   public async heartbeat(): Promise<HeartbeatData> {
-    const heartbeatType = this.lastType;
-
-    this.lastType = this.lastType === HeartbeatType.Advanced1 ? HeartbeatType.Advanced2 : HeartbeatType.Advanced1; // fixme test (switch type every heartbeat)
-
-    // const printerInfo = this.client.getPrinterInfo();
-    // let heartbeatType = HeartbeatType.Advanced1;
-    // if (printerInfo.protocolVersion !== undefined && printerInfo.protocolVersion >= 3) {
-    //   heartbeatType = HeartbeatType.Advanced2;
-    // }
+    const printerInfo = this.client.getPrinterInfo();
+    let heartbeatType = HeartbeatType.Advanced1;
+    if (printerInfo.protocolVersion !== undefined && printerInfo.protocolVersion >= 3) {
+      heartbeatType = HeartbeatType.Advanced2;
+    }
 
     const packet = await this.send(PacketGenerator.heartbeat(heartbeatType), 500);
 
