@@ -43,7 +43,7 @@ const printOptionsDefaults: PrintOptions = {
   statusTimeoutMs: 5_000,
   pageTimeoutMs: 10_000,
   speed: 1,
-  color: 1,
+  color: 0,
 };
 
 /**
