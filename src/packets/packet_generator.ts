@@ -56,7 +56,7 @@ export class PacketGenerator {
   public static rfidInfo(): NiimbotPacket {
     return this.mapped(TX.RfidInfo);
   }
-  
+
   public static rfidInfo2(): NiimbotPacket {
     return this.mapped(TX.RfidInfo2);
   }
@@ -183,8 +183,8 @@ export class PacketGenerator {
   }
 
   /** First seen on D110M v4 */
-  public static printStart9b(totalPages: number, pageColor: number = 0, quality: number = 0, someFlag: boolean = false): NiimbotPacket {
-    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, quality, someFlag ? 0x01 : 0x00]);
+  public static printStart9b(totalPages: number, pageColor: number = 0, speed: number = 0, someFlag: boolean = false): NiimbotPacket {
+    return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, speed, someFlag ? 0x01 : 0x00]);
   }
 
   public static printEnd(): NiimbotPacket {

@@ -24,6 +24,10 @@ export type PrintOptions = {
 
   /** Used in {@link AbstractPrintTask.printPage} */
   pageTimeoutMs: number;
+
+  /** Print speed (it called "printing mode" with "print for clarity" and "print for speed" variants on original app).
+   * Supported on models that using 9 bytes PrintStart. */
+  speed: 0 | 1;
 };
 
 /** Default print options for print tasks. */
@@ -34,6 +38,7 @@ const printOptionsDefaults: PrintOptions = {
   statusPollIntervalMs: 300,
   statusTimeoutMs: 5_000,
   pageTimeoutMs: 10_000,
+  speed: 1,
 };
 
 /**

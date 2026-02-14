@@ -10,7 +10,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStart9b(this.printOptions.totalPages, 0, 1),
+      PacketGenerator.printStart9b(this.printOptions.totalPages, 0, this.printOptions.speed),
     ]);
   }
 
