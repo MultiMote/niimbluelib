@@ -10,7 +10,7 @@ export class B1PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStart7b(this.printOptions.totalPages),
+      PacketGenerator.printStart7b(this.printOptions.totalPages, this.printOptions.color),
     ]);
   }
 
