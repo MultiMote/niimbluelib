@@ -48,7 +48,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   protected info: PrinterInfo = {};
   private heartbeatTimer?: NodeJS.Timeout;
   private heartbeatFails: number = 0;
-  private heartbeatIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
+  private heartbeatIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.heartbeatIntervalMs;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
   private packetBuf: Uint8Array = new Uint8Array();
