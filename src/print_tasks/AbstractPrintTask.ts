@@ -26,11 +26,11 @@ export type PrintOptions = {
   pageTimeoutMs: number;
 
   /** Print speed (it called "printing mode" with "print for clarity" and "print for speed" variants on original app).
-   * Supported in {@link D110MV4PrintTask} */
+   * Supported in D110MV4PrintTask */
   speed: 0 | 1;
 
   /** Print temperature for multicolor paper.
-   * Supported in {@link B1PrintTask} and {@link D110MV4PrintTask} */
+   * Supported in B1PrintTask and D110MV4PrintTask */
   color: number;
 };
 
