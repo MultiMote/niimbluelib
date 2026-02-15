@@ -1,4 +1,4 @@
-import { NiimbotAbstractClient, ConnectionInfo } from "./abstract_client";
+import { NiimbotAbstractClient, ConnectionInfo, NIIMBOT_CLIENT_DEFAULTS } from "./abstract_client";
 import { NiimbotBluetoothClient } from "./bluetooth_impl";
 import { NiimbotCapacitorBleClient, NiimbotCapacitorBleClientConnectOptions } from "./capacitor_ble_impl";
 import { NiimbotSerialClient } from "./serial_impl";
@@ -25,4 +25,5 @@ export {
   NiimbotCapacitorBleClient,
   NiimbotCapacitorBleClientConnectOptions,
   NiimbotSerialClient,
+  NIIMBOT_CLIENT_DEFAULTS,
 };
