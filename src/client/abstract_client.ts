@@ -32,6 +32,11 @@ export type ConnectionInfo = {
   result: ConnectResult;
 };
 
+export const NIIMBOT_CLIENT_DEFAULTS = {
+  packetIntervalMs: 10,
+  heartbeatIntervalMs: 2_000
+};
+
 /**
  * Abstract class representing a client with common functionality for interacting with a printer.
  * Hardware interface must be defined after extending this class.
@@ -43,13 +48,13 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   protected info: PrinterInfo = {};
   private heartbeatTimer?: NodeJS.Timeout;
   private heartbeatFails: number = 0;
-  private heartbeatIntervalMs: number = 2_000;
+  private heartbeatIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
   private packetBuf: Uint8Array = new Uint8Array();
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
-  protected packetIntervalMs: number = 10;
+  protected packetIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
 
   constructor() {
     super();
