@@ -1,4 +1,5 @@
 import { AutoShutdownTime, BatteryChargeLevel, ConnectResult, LabelType, SoundSettingsItemType, SoundSettingsType } from "./payloads";
+import { LabelPreset } from "../label_presets";
 
 /**
  * @category Packets
@@ -54,6 +55,8 @@ export interface RfidInfo {
   usedPaper: number;
   consumablesType: LabelType;
   capacity?: number;
+  /** Resolved label dimensions, if barCode/serialNumber matches a known preset */
+  labelPreset?: LabelPreset;
 }
 
 /**

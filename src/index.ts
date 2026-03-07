@@ -11,3 +11,4 @@ export * from "./image_encoder";
 export * from "./utils";
 export * from "./printer_models";
 export * from "./print_tasks";
+export * from "./label_presets";

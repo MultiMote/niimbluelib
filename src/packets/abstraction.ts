@@ -15,6 +15,7 @@ import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTas
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
 import { HeartbeatData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { findLabelPreset } from "../label_presets";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -176,6 +177,8 @@ export class Abstraction {
     }
 
     r.end();
+
+    info.labelPreset = findLabelPreset(info);
 
     return info;
   }
