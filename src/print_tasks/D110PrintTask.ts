@@ -30,11 +30,16 @@ export class D110PrintTask extends AbstractPrintTask {
     );
   }
 
-  override waitForFinished(): Promise<void> {
+  override waitForPageFinished(): Promise<void> {
     this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
 
     return this.abstraction
-      .waitUntilPrintFinishedByStatusPoll(this.printOptions.totalPages, this.printOptions.statusPollIntervalMs)
+      .waitUntilPrintFinishedByStatusPoll(this.pagesPrinted, this.printOptions.statusPollIntervalMs)
       .finally(() => this.abstraction.setDefaultPacketTimeout());
+  }
+
+  override waitForFinished(): Promise<void> {
+    // for compatability with previous versions (unnecessary packet will be sent)
+    return this.waitForPageFinished();
   }
 }

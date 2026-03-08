@@ -60,6 +60,7 @@ const printOptionsDefaults: PrintOptions = {
  * try {
  *   await printTask.printInit();
  *   await printTask.printPage(encodedImage, quantity); // encode your canvas with ImageEncoder.encodeCanvas
+ *   await printTask.waitForPageFinished();
  *   await printTask.waitForFinished();
  * } catch (e) {
  *   alert(e);
@@ -90,13 +91,18 @@ export abstract class AbstractPrintTask {
     if (this.pagesPrinted + quantity > (this.printOptions.totalPages ?? 1)) {
       throw new Error("Trying to print too many pages (task totalPages may not be set correctly)");
     }
+    this.pagesPrinted += quantity;
   }
 
   /** Prepare print (set label type, density, print start, ...) */
   abstract printInit(): Promise<void>;
   /** Print image with a specified number of copies */
   abstract printPage(image: EncodedImage, quantity?: number): Promise<void>;
-  /** Wait for print is finished */
+  /** Wait for page print is finished */
+  waitForPageFinished(): Promise<void> {
+    return Promise.resolve();
+  }
+  /** Wait for all print is finished */
   abstract waitForFinished(): Promise<void>;
   /** Printer's printhead resolution in pixels */
   protected printheadPixels(): number | undefined {

@@ -134,6 +134,7 @@ printButton.onclick = async () => {
   try {
     await printTask.printInit();
     await printTask.printPage(encoded, quantity);
+    await printTask.waitForPageFinished();
     await printTask.waitForFinished();
   } catch (e) {
     alert(e);
