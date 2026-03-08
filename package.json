@@ -1,6 +1,6 @@
 {
   "name": "@mmote/niimbluelib",
-  "version": "0.0.1-alpha.36",
+  "version": "0.0.1-alpha.37",
   "description": "Library for the communication with NIIMBOT printers",
   "keywords": [
     "reverse-engineering",
@@ -34,8 +34,7 @@
     "parse-wireshark-dump": "npm run build && node tools/parse-wireshark-dump.mjs",
     "parse-text-dump": "npm run build && node tools/parse-text-dump.mjs",
     "clean": "node clean-dist.mjs",
-    "gen-printer-models": "node tools/gen-printer-models.js > src/printer_models.ts",
-    "gen-printer-models-md": "node tools/gen-printer-models-md.js > docs/documents/niimbot_models.md"
+    "gen-printer-models": "node tools/gen-printer-models.js > src/printer_models.ts"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
