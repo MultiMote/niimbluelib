@@ -39,7 +39,7 @@ export class D110PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
-    // for compatability with previous versions (unnecessary packet will be sent)
+    // for compatibility with previous versions (unnecessary packet will be sent)
     return this.waitForPageFinished();
   }
 }

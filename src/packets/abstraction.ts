@@ -427,7 +427,7 @@ export class Abstraction {
               new PrintProgressEvent(status.page, pagesToPrint, status.pagePrintProgress, status.pageFeedProgress),
             );
 
-            if (status.page === pagesToPrint && status.pagePrintProgress === 100 && status.pageFeedProgress === 100) {
+            if (status.page === pagesToPrint) {
               clearInterval(this.statusPollTimer);
               resolve();
             }
