@@ -1,6 +1,8 @@
 {
   "include": ["src/**/*"],
   "compilerOptions": {
+    "types": ["node", "w3c-web-serial", "web-bluetooth"],
+    "rootDir": "./src",
     "target": "ES2021",                       /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "lib": ["ES2021", "DOM"],                 /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     "module": "commonjs",                     /* Specify what module code is generated. */
@@ -10,6 +12,6 @@
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
     "strict": true,                           /* Enable all strict type-checking options. */
     "skipLibCheck": true,                     /* Skip type checking all .d.ts files. */
-    "noImplicitOverride": true                /* Ensure overriding members in derived classes are marked with an override modifier. */
+    "noImplicitOverride": true               /* Ensure overriding members in derived classes are marked with an override modifier. */
   }
 }

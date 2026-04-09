@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '25'
           registry-url: 'https://registry.npmjs.org'
           scope: '@mmote'
           cache: npm
