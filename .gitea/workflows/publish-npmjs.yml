@@ -32,6 +32,6 @@ jobs:
         run: npm run build:bundle
 
       - name: Publish
-        run: npm publish --access public
+        run: npm publish --access public --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
