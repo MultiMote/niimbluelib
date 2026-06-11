@@ -122,6 +122,24 @@ export class PacketGenerator {
     ]);
   }
 
+  /** First seen on H1S */
+  public static setPageSize9b(
+    rows: number,
+    cols: number,
+    copiesCount: number,
+    cutHeight: number = 0,
+    cutType: number = 0,
+  ): NiimbotPacket {
+    return this.mapped(TX.SetPageSize, [
+      ...Utils.u16ToBytes(rows),
+      ...Utils.u16ToBytes(cols),
+      ...Utils.u16ToBytes(copiesCount),
+      ...Utils.u16ToBytes(cutHeight),
+      cutType,
+    ]);
+  }
+
+
   /** First seen on D110M v4 */
   public static setPageSize13b(
     rows: number,
