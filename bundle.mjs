@@ -4,6 +4,7 @@ const common = {
     entryPoints: ['src/index.ts'],
     bundle: true,
     globalName: 'niimbluelib',
+    platform: 'node'
 };
 
 await esbuild.build({
@@ -12,7 +13,6 @@ await esbuild.build({
     format: 'iife',
     minify: false,
     sourcemap: true,
-    platform: 'browser',
     target: ['es6'],
 });
 
@@ -22,6 +22,5 @@ await esbuild.build({
     format: 'iife',
     minify: true,
     sourcemap: true,
-    platform: 'browser',
     target: ['es6'],
 });
