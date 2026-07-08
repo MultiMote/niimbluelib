@@ -1,6 +1,6 @@
 {
   "name": "@mmote/niimbluelib",
-  "version": "0.0.1-alpha.40-node",
+  "version": "0.0.1-alpha.41-node",
   "description": "Library for the communication with NIIMBOT printers",
   "keywords": [
     "reverse-engineering",
@@ -51,5 +51,13 @@
     "crc-32": "^1.2.2",
     "eventemitter3": "^5.0.4",
     "serialport": "^13.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.0": true,
+    "usb@2.18.0": true,
+    "@serialport/bindings-cpp@13.0.0": true,
+    "@serialport/bindings-cpp@12.0.1": true,
+    "@stoprocent/bluetooth-hci-socket@2.2.6": true,
+    "@stoprocent/noble@2.5.5": true
   }
 }
