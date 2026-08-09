@@ -1,6 +1,7 @@
 import { PrinterModel as M } from "../printer_models";
 import { B1PrintTask } from "./B1PrintTask";
 import { B21V1PrintTask } from "./B21V1PrintTask";
+import { B21L2BPrintTask } from "./B21L2BPrintTask";
 import { D110PrintTask } from "./D110PrintTask";
 import { OldD11PrintTask } from "./OldD11PrintTask";
 import { D110MV4PrintTask } from "./D110MV4PrintTask";
@@ -15,6 +16,7 @@ export const printTasks = {
   D110: D110PrintTask,
   B1: B1PrintTask,
   B21_V1: B21V1PrintTask,
+  B21_L2B: B21L2BPrintTask,
   D110M_V4: D110MV4PrintTask,
   H1S: H1SPrintTask,
 };
@@ -47,7 +49,8 @@ export type ModelWithProtocol = {
  */
 export const modelPrintTasks: Partial<Record<PrintTaskName, (ModelWithProtocol | M)[]>> = {
   D11_V1: [M.D11, M.D11S],
-  B21_V1: [M.B21, M.B21_L2B],
+  B21_V1: [M.B21],
+  B21_L2B: [M.B21_L2B],
   D110: [M.B21S, M.B21S_C2B, M.D110, { m: M.D11, v: 1 }, { m: M.D11, v: 2 }],
   B1: [M.D110_M, M.B1, M.B21_C2B, M.M2_H, M.N1, M.D101],
   D110M_V4: [{ m: M.D110_M, v: 4 }, M.D11_H, M.B21_PRO, M.B1_PRO],

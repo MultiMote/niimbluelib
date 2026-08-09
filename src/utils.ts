@@ -244,6 +244,29 @@ export class Utils {
 
     return true;
   }
+
+  public static async doUntilTrue(
+    fn: () => Promise<boolean>,
+    attempts: number,
+    delay: number,
+  ): Promise<void> {
+    let lastError: Error = new Error("Maximum attempts reached");
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const ok = await fn();
+        if (ok) {
+          return;
+        }
+        await Utils.sleep(delay);
+      } catch (e) {
+        console.warn(`Attempt ${attempt + 1} failed:`, e);
+        lastError = e as Error;
+      }
+    }
+
+    throw lastError;
+  }
 }
 
 /**
