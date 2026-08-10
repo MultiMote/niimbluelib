@@ -473,6 +473,20 @@ export class Abstraction {
     });
   }
 
+  /** False returned when pageStart refused */
+  public async pageStart(): Promise<boolean> {
+    const response = await this.send(PacketGenerator.pageStart());
+    Validators.u8ArrayLengthEquals(response.data, 1);
+    return response.data[0] === 1;
+  }
+
+  /** False returned when pageEnd refused */
+  public async pageEnd(): Promise<boolean> {
+    const response = await this.send(PacketGenerator.pageEnd());
+    Validators.u8ArrayLengthEquals(response.data, 1);
+    return response.data[0] === 1;
+  }
+
   /** False returned when printEnd refused */
   public async printEnd(): Promise<boolean> {
     const response = await this.send(PacketGenerator.printEnd());
