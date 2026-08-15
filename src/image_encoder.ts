@@ -30,17 +30,16 @@ export class ImageEncoder {
     const iData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const rowsData: ImageRow[] = [];
 
-    let cols: number = canvas.width;
+    let originalCols: number = canvas.width;
     let rows: number = canvas.height;
 
     if (printDirection === "left") {
-      cols = canvas.height;
+      originalCols = canvas.height;
       rows = canvas.width;
     }
 
-    if (cols % 8 !== 0) {
-      throw new Error("Column count must be multiple of 8");
-    }
+    // Pad to multiple of 8
+    const cols = Math.ceil(originalCols / 8) * 8;
 
     for (let row = 0; row < rows; row++) {
       let isVoid: boolean = true;
@@ -50,7 +49,8 @@ export class ImageEncoder {
       for (let colOct = 0; colOct < cols / 8; colOct++) {
         let pixelsOctet: number = 0;
         for (let colBit = 0; colBit < 8; colBit++) {
-          if (ImageEncoder.isPixelNonWhite(iData, colOct * 8 + colBit, row, printDirection)) {
+          const col = colOct * 8 + colBit;
+          if (col < originalCols && ImageEncoder.isPixelNonWhite(iData, col, row, printDirection)) {
             pixelsOctet |= 1 << (7 - colBit);
             isVoid = false;
             blackPixelsCount++;
