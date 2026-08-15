@@ -17,6 +17,40 @@ export type EncodedImage = {
 };
 
 /** @category Image encoder */
+export interface ImageSource {
+  readonly width: number;
+  readonly height: number;
+  /** printDirection = "left" rotates image to 90 degrees clockwise */
+  isPixelNonWhite(x: number, y: number, printDirection: PrintDirection): boolean;
+}
+
+/** @category Image encoder */
+export class CanvasImageSource implements ImageSource {
+  private constructor(
+    private readonly iData: ImageData,
+    public readonly width: number,
+    public readonly height: number
+  ) {}
+
+  public static fromCanvas(canvas: HTMLCanvasElement): CanvasImageSource {
+    const ctx = canvas.getContext("2d")!;
+    const iData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    return new CanvasImageSource(iData, canvas.width, canvas.height);
+  }
+
+  public isPixelNonWhite(x: number, y: number, printDirection: PrintDirection = "left"): boolean {
+    let idx = y * this.iData.width + x;
+
+    if (printDirection === "left") {
+      idx = (this.iData.height - 1 - x) * this.iData.width + y;
+    }
+
+    idx *= 4;
+    return this.iData.data[idx] !== 255 || this.iData.data[idx + 1] !== 255 || this.iData.data[idx + 2] !== 255;
+  }
+}
+
+/** @category Image encoder */
 export type PrintDirection = "left" | "top";
 
 /**
@@ -26,16 +60,19 @@ export type PrintDirection = "left" | "top";
 export class ImageEncoder {
   /** printDirection = "left" rotates image for 90 degrees clockwise */
   public static encodeCanvas(canvas: HTMLCanvasElement, printDirection: PrintDirection = "left"): EncodedImage {
-    const ctx: CanvasRenderingContext2D = canvas.getContext("2d")!;
-    const iData: ImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const imageSource = CanvasImageSource.fromCanvas(canvas);
+    return ImageEncoder.encode(imageSource, printDirection);
+  }
+  
+  public static encode(source: ImageSource, printDirection: PrintDirection = "left"): EncodedImage {
     const rowsData: ImageRow[] = [];
 
-    let originalCols: number = canvas.width;
-    let rows: number = canvas.height;
+    let originalCols: number = source.width;
+    let rows: number = source.height;
 
     if (printDirection === "left") {
-      originalCols = canvas.height;
-      rows = canvas.width;
+      originalCols = source.height;
+      rows = source.width;
     }
 
     // Pad to multiple of 8
@@ -50,7 +87,7 @@ export class ImageEncoder {
         let pixelsOctet: number = 0;
         for (let colBit = 0; colBit < 8; colBit++) {
           const col = colOct * 8 + colBit;
-          if (col < originalCols && ImageEncoder.isPixelNonWhite(iData, col, row, printDirection)) {
+          if (col < originalCols && source.isPixelNonWhite(col, row, printDirection)) {
             pixelsOctet |= 1 << (7 - colBit);
             isVoid = false;
             blackPixelsCount++;
@@ -102,21 +139,21 @@ export class ImageEncoder {
   }
 
   /** printDirection = "left" rotates image to 90 degrees clockwise */
-  public static isPixelNonWhite(
-    iData: ImageData,
-    x: number,
-    y: number,
-    printDirection: PrintDirection = "left"
-  ): boolean {
-    let idx = y * iData.width + x;
+  // public static isPixelNonWhite(
+  //   iData: ImageData,
+  //   x: number,
+  //   y: number,
+  //   printDirection: PrintDirection = "left"
+  // ): boolean {
+  //   let idx = y * iData.width + x;
 
-    if (printDirection === "left") {
-      idx = (iData.height - 1 - x) * iData.width + y;
-    }
+  //   if (printDirection === "left") {
+  //     idx = (iData.height - 1 - x) * iData.width + y;
+  //   }
 
-    idx *= 4;
-    return iData.data[idx] !== 255 || iData.data[idx + 1] !== 255 || iData.data[idx + 2] !== 255;
-  }
+  //   idx *= 4;
+  //   return iData.data[idx] !== 255 || iData.data[idx + 1] !== 255 || iData.data[idx + 2] !== 255;
+  // }
 
   /**
    * @param data Pixels encoded by {@link encodeCanvas} (byte is 8 pixels)
