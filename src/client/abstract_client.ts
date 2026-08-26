@@ -132,7 +132,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
           this.off("packetreceived", listener);
 
           if (cmdIn === ResponseCommandId.In_PrintError) {
-            Validators.u8ArrayLengthEquals(pktIn.data, 1);
+            Validators.arrayLengthEquals(pktIn.data, 1);
             const errorName = PrinterErrorCode[pktIn.data[0]] ?? "unknown";
             reject(new PrintError(`Print error ${pktIn.data[0]}: ${errorName}`, pktIn.data[0]));
           } else if (cmdIn === ResponseCommandId.In_NotSupported) {

@@ -85,7 +85,7 @@ export class Abstraction {
   public async getPrintStatus(tries: number = 1): Promise<PrintStatus> {
     const packet = await this.sendRepeatUntilSuccess(PacketGenerator.printStatus(), tries ?? 1);
 
-    Validators.u8ArrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
+    Validators.arrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
 
     const r = new SequentialDataReader(packet.data);
     const page = r.readI16();
@@ -106,7 +106,7 @@ export class Abstraction {
 
   public async connectResult(): Promise<ConnectResult> {
     const packet = await this.send(PacketGenerator.connect());
-    Validators.u8ArrayLengthAtLeast(packet.data, 1);
+    Validators.arrayLengthAtLeast(packet.data, 1);
     return packet.data[0] as ConnectResult;
   }
 
@@ -137,13 +137,13 @@ export class Abstraction {
 
   public async getPrinterModel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.PrinterModelId));
-    Validators.u8ArrayLengthAtLeast(packet.data, 1);
+    Validators.arrayLengthAtLeast(packet.data, 1);
 
     if (packet.data.length === 1) {
       return packet.data[0] << 8;
     }
 
-    Validators.u8ArrayLengthEquals(packet.data, 2);
+    Validators.arrayLengthEquals(packet.data, 2);
     return Utils.bytesToI16(packet.data);
   }
 
@@ -240,7 +240,7 @@ export class Abstraction {
     const r = new SequentialDataReader(packet.data);
     const info: HeartbeatData = {};
 
-    Validators.u8ArrayLengthAtLeast(packet.data, 9);
+    Validators.arrayLengthAtLeast(packet.data, 9);
     r.skip(2);
     info.chargeLevel = r.readI8();
     info.temp = r.readI8();
@@ -290,20 +290,20 @@ export class Abstraction {
 
   public async getBatteryChargeLevel(): Promise<BatteryChargeLevel> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.BatteryChargeLevel));
-    Validators.u8ArrayLengthEquals(packet.data, 1);
+    Validators.arrayLengthEquals(packet.data, 1);
     return packet.data[0] as BatteryChargeLevel;
   }
 
   public async getAutoShutDownTime(): Promise<AutoShutdownTime> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.AutoShutdownTime));
-    Validators.u8ArrayLengthEquals(packet.data, 1);
+    Validators.arrayLengthEquals(packet.data, 1);
     return packet.data[0] as AutoShutdownTime;
   }
 
   /** May be wrong, version format varies between models */
   public async getSoftwareVersion(): Promise<string> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.SoftWareVersion));
-    Validators.u8ArrayLengthEquals(packet.data, 2);
+    Validators.arrayLengthEquals(packet.data, 2);
 
     // todo: find how to determine format
 
@@ -316,7 +316,7 @@ export class Abstraction {
   /** May be wrong, version format varies between models */
   public async getHardwareVersion(): Promise<string> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.HardWareVersion));
-    Validators.u8ArrayLengthEquals(packet.data, 2);
+    Validators.arrayLengthEquals(packet.data, 2);
 
     // todo: find how to determine format
 
@@ -332,13 +332,13 @@ export class Abstraction {
 
   public async getLabelType(): Promise<LabelType> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.LabelType));
-    Validators.u8ArrayLengthEquals(packet.data, 1);
+    Validators.arrayLengthEquals(packet.data, 1);
     return packet.data[0] as LabelType;
   }
 
   public async getPrinterSerialNumber(): Promise<string> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.SerialNumber));
-    Validators.u8ArrayLengthAtLeast(packet.data, 1);
+    Validators.arrayLengthAtLeast(packet.data, 1);
 
     if (packet.data.length < 4) {
       return "-1";
@@ -353,13 +353,13 @@ export class Abstraction {
 
   public async getPrinterBluetoothMacAddress(): Promise<string> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.BluetoothAddress));
-    Validators.u8ArrayLengthAtLeast(packet.data, 1);
+    Validators.arrayLengthAtLeast(packet.data, 1);
     return Utils.bufToHex(packet.data.reverse(), ":");
   }
 
   public async isSoundEnabled(soundType: SoundSettingsItemType): Promise<boolean> {
     const packet = await this.send(PacketGenerator.getSoundSettings(soundType));
-    Validators.u8ArrayLengthEquals(packet.data, 3);
+    Validators.arrayLengthEquals(packet.data, 3);
     const value = !!packet.data[2];
     return value;
   }
@@ -377,7 +377,7 @@ export class Abstraction {
     return new Promise<void>((resolve, reject) => {
       const listener = (evt: PacketReceivedEvent) => {
         if (evt.packet.command === ResponseCommandId.In_PrinterPageIndex) {
-          Validators.u8ArrayLengthEquals(evt.packet.data, 2);
+          Validators.arrayLengthEquals(evt.packet.data, 2);
           const page = Utils.bytesToI16(evt.packet.data);
 
           this.client.emit("printprogress", new PrintProgressEvent(page, pagesToPrint, 100, 100));
@@ -476,21 +476,21 @@ export class Abstraction {
   /** False returned when pageStart refused */
   public async pageStart(): Promise<boolean> {
     const response = await this.send(PacketGenerator.pageStart());
-    Validators.u8ArrayLengthEquals(response.data, 1);
+    Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
   }
 
   /** False returned when pageEnd refused */
   public async pageEnd(): Promise<boolean> {
     const response = await this.send(PacketGenerator.pageEnd());
-    Validators.u8ArrayLengthEquals(response.data, 1);
+    Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
   }
 
   /** False returned when printEnd refused */
   public async printEnd(): Promise<boolean> {
     const response = await this.send(PacketGenerator.printEnd());
-    Validators.u8ArrayLengthEquals(response.data, 1);
+    Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
   }
 
@@ -500,7 +500,7 @@ export class Abstraction {
    */
   public async labelPositioningCalibration(value: number): Promise<boolean> {
     const response = await this.send(PacketGenerator.labelPositioningCalibration(value));
-    Validators.u8ArrayLengthEquals(response.data, 1);
+    Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
   }
 
@@ -548,7 +548,7 @@ export class Abstraction {
     await this.send(PacketGenerator.firmwareNoMoreChunks());
 
     const uploadResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareCheckResult], true, 5_000);
-    Validators.u8ArrayLengthEquals(uploadResult.data, 1);
+    Validators.arrayLengthEquals(uploadResult.data, 1);
 
     if (uploadResult.data[0] !== 1) {
       throw new Error("Firmware check error (maybe CRC does not match)");
@@ -558,7 +558,7 @@ export class Abstraction {
 
     const firmwareResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareResult], true, 5_000);
 
-    Validators.u8ArrayLengthEquals(firmwareResult.data, 1);
+    Validators.arrayLengthEquals(firmwareResult.data, 1);
 
     if (firmwareResult.data[0] !== 1) {
       throw new Error("Firmware error");

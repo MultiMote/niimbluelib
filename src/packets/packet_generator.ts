@@ -11,7 +11,7 @@ import {
   NiimbotCrc32Packet,
 } from ".";
 import { EncodedImage, ImageEncoder } from "../image_encoder";
-import { Utils } from "../utils";
+import { Utils, Validators } from "../utils";
 
 export interface ImagePacketsGenerateOptions {
   /** Mode for "black pixel count" section of bitmap packet. */
@@ -140,7 +140,10 @@ export class PacketGenerator {
   }
 
 
-  /** First seen on D110M v4 */
+  /** First seen on D110M v4
+   *
+   * @param serial Something called "local template data id", 32 bytes
+   */
   public static setPageSize13b(
     rows: number,
     cols: number,
@@ -149,7 +152,12 @@ export class PacketGenerator {
     cutType: number = 0,
     sendAll: number = 0,
     partHeight: number = 0,
+    serial: number[] = [],
   ): NiimbotPacket {
+    if (serial) {
+      Validators.arrayLengthEquals(serial, 32);
+    }
+
     return this.mapped(TX.SetPageSize, [
       ...Utils.u16ToBytes(rows),
       ...Utils.u16ToBytes(cols),
@@ -159,6 +167,7 @@ export class PacketGenerator {
       0x00,
       sendAll,
       ...Utils.u16ToBytes(partHeight),
+      ...serial
     ]);
   }
 
@@ -255,8 +264,8 @@ export class PacketGenerator {
     return this.mapped(TX.PrintClear);
   }
 
-  public static writeRfid(data: Uint8Array): NiimbotPacket {
-    return this.mapped(TX.WriteRFID, data);
+  public static getVolumeLevel(data: Uint8Array): NiimbotPacket {
+    return this.mapped(TX.GetVolumeLevel, data);
   }
 
   public static checkLine(line: number): NiimbotPacket {
@@ -345,5 +354,14 @@ export class PacketGenerator {
     const p = new NiimbotCrc32Packet(TX.FirmwareCommit, 0, [1]);
     p.oneWay = true;
     return p;
+  }
+
+  public static setTubeTypeAndWidth(tubeType: number, mmWidth: number): NiimbotPacket {
+    const widthFixed = Math.floor(mmWidth * 100);
+    return this.mapped(TX.TubeTypeAndWidth, [0x01, 0x01, tubeType, ...Utils.u16ToBytes(widthFixed)]);
+  }
+
+  public static setHalfCut(value: number): NiimbotPacket {
+    return this.mapped(TX.HalfCut, [0x01, value]);
   }
 }

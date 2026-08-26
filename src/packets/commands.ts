@@ -32,14 +32,18 @@ export enum RequestCommandId {
   RfidSuccessTimes = 0x54,
   SetAutoShutdownTime = 0x27,
   SetDensity = 0x21,
+  SetPrintSpeed = 0x22,
   SetLabelType = 0x23,
+  SetLanguageType = 0x26,
+  SetVolumeLevel = 0x2e,
+  SetAntiSetter = 0x2f,
   /** 2, 4 or 6 bytes */
   SetPageSize = 0x13,
+  SetReversePrinterFeedOrMarginTop = 0x1e,
   SoundSettings = 0x58,
   /** some info request (niimbot app), 01 long 02 short */
   AntiFake = 0x0b,
-  /** same as GetVolumeLevel??? */
-  WriteRFID = 0x70,
+  GetVolumeLevel = 0x70,
   PrintTestPage = 0x5a,
   StartFirmwareUpgrade = 0xf5,
   FirmwareCrc = 0x91,
@@ -47,16 +51,23 @@ export enum RequestCommandId {
   FirmwareChunk = 0x9b,
   FirmwareNoMoreChunks = 0x9c,
   PrinterCheckLine = 0x86,
-  GetCurrentTimeFormat = 0x12,
+  SetCurrentTimeFormat = 0x11,
+  GetCurrentTimeFormatOrTemplateInfo = 0x12,
   /**
    * setPrinterTime: 85, 85, 7, 2, 2, 1, 6, -86, -86
    * sendCompressMode: 85, 85, 7, 4, b, b2, b3, b4
    * setPrinterTime: 85, 85, 7, 8, 1, b, b2, b3, b4, b5, b6, b7, b10, -86, -86
-  */
+   */
   PrinterConfig2 = 0x07,
   GetKeyFunction = 0x09,
   GetPrintQuality = 0x0d,
-  GetPrinterConfigurationWifi = 0xa2
+  GetPrinterConfigurationWifi = 0xa2,
+  TubeTypeAndWidth = 0x0f,
+  HalfCut = 0x5c,
+  GetPrinterUsage = 0x19,
+  GetTemplateHistory = 0x17,
+  GetCompress = 0x89,
+  GetPrinterFree = 0xc3,
 }
 
 /**
@@ -94,6 +105,7 @@ export enum ResponseCommandId {
   In_PrinterInfoPrinterCode = 0x48,
   In_PrinterInfoSerialNumber = 0x4b,
   In_PrinterInfoSoftWareVersion = 0x49,
+  In_PrinterInfoPrintMode = 0x4e,
   In_PrinterInfoArea = 0x4f,
   In_PrinterStatusData = 0xb5,
   In_PrinterReset = 0x38,
@@ -107,13 +119,19 @@ export enum ResponseCommandId {
   In_RfidSuccessTimes = 0x64,
   In_SetAutoShutdownTime = 0x37,
   In_SetDensity = 0x31,
+  In_SetPrintSpeed = 0x32,
   In_SetLabelType = 0x33,
+  In_SetLanguageType = 0x36,
+  In_SetVolumeLevel = 0x3e,
+  In_SetAntiSetter = 0x3f,
   In_SetPageSize = 0x14,
+  In_PrintMarginTop = 0x1f,
+  In_SetReversePrinterFeed = 0x1e,
   In_SoundSettings = 0x68,
   In_PageEnd = 0xe4,
   In_PrinterPageIndex = 0xe0,
   In_PrintTestPage = 0x6a,
-  In_WriteRFID = 0x71,
+  In_GetVolumeLevel = 0x71,
   In_StartFirmwareUpgrade = 0xf6,
   In_RequestFirmwareCrc = 0x90,
   In_RequestFirmwareChunk = 0x9a,
@@ -121,18 +139,25 @@ export enum ResponseCommandId {
   In_FirmwareResult = 0x9e,
   /** Sent before {@link ResponseCommandId.In_PrinterCheckLine } */
   In_ResetTimeout = 0xc6,
-  In_GetCurrentTimeFormat = 0x11,
+  In_SetCurrentTimeFormat = 0x11,
+  In_GetCurrentTimeFormatOrTemplateInfo = 0x12,
   In_PrinterConfig2 = 0x08,
   In_GetKeyFunction = 0x0a,
   In_GetPrintQuality = 0x0d,
-  In_GetPrinterConfigurationWifi = 0xb2
+  In_GetPrinterConfigurationWifi = 0xb2,
+  In_TubeTypeAndWidth = 0x0f,
+  In_HalfCut = 0x6c,
+  In_GetPrinterUsage = 0x19,
+  In_GetTemplateHistory = 0x17,
+  In_GetCompress = 0x88,
+  In_GetPrinterFree = 0xc4,
 }
 
 import TX = RequestCommandId;
 import RX = ResponseCommandId;
 
 /**
- * Map request id to response id. null meant no response expected (one way).
+ * Map the request ID to the response ID. A null value means that no response is expected (one-way message).
  *
  * @category Packets
  **/
@@ -164,6 +189,7 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
     RX.In_PrinterInfoSerialNumber,
     RX.In_PrinterInfoSoftWareVersion,
     RX.In_PrinterInfoSpeed,
+    RX.In_PrinterInfoPrintMode,
   ],
   [TX.PrinterConfig]: [RX.In_PrinterConfig],
   [TX.PrinterStatusData]: [RX.In_PrinterStatusData],
@@ -176,11 +202,16 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.RfidSuccessTimes]: [RX.In_RfidSuccessTimes],
   [TX.SetAutoShutdownTime]: [RX.In_SetAutoShutdownTime],
   [TX.SetDensity]: [RX.In_SetDensity],
+  [TX.SetPrintSpeed]: [RX.In_SetPrintSpeed],
   [TX.SetLabelType]: [RX.In_SetLabelType],
+  [TX.SetLanguageType]: [RX.In_SetLanguageType],
+  [TX.SetVolumeLevel]: [RX.In_SetVolumeLevel],
+  [TX.SetAntiSetter]: [RX.In_SetAntiSetter],
   [TX.SetPageSize]: [RX.In_SetPageSize],
+  [TX.SetReversePrinterFeedOrMarginTop]: [RX.In_SetReversePrinterFeed, RX.In_PrintMarginTop],
   [TX.SoundSettings]: [RX.In_SoundSettings],
   [TX.AntiFake]: [RX.In_AntiFake],
-  [TX.WriteRFID]: [RX.In_WriteRFID],
+  [TX.GetVolumeLevel]: [RX.In_GetVolumeLevel],
   [TX.PrintTestPage]: [RX.In_PrintTestPage],
   [TX.StartFirmwareUpgrade]: [RX.In_StartFirmwareUpgrade],
   [TX.FirmwareCrc]: null,
@@ -188,11 +219,18 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.FirmwareNoMoreChunks]: null,
   [TX.FirmwareCommit]: null,
   [TX.PrinterCheckLine]: [RX.In_PrinterCheckLine],
-  [TX.GetCurrentTimeFormat]: [RX.In_GetCurrentTimeFormat],
+  [TX.SetCurrentTimeFormat]: [RX.In_SetCurrentTimeFormat],
+  [TX.GetCurrentTimeFormatOrTemplateInfo]: [RX.In_GetCurrentTimeFormatOrTemplateInfo],
   [TX.PrinterConfig2]: [RX.In_PrinterConfig2],
   [TX.GetKeyFunction]: [RX.In_GetKeyFunction],
   [TX.GetPrintQuality]: [RX.In_GetPrintQuality],
-  [TX.GetPrinterConfigurationWifi]: [RX.In_GetPrinterConfigurationWifi]
+  [TX.GetPrinterConfigurationWifi]: [RX.In_GetPrinterConfigurationWifi],
+  [TX.TubeTypeAndWidth]: [RX.In_TubeTypeAndWidth],
+  [TX.HalfCut]: [RX.In_HalfCut],
+  [TX.GetPrinterUsage]: [RX.In_GetPrinterUsage],
+  [TX.GetTemplateHistory]: [RX.In_GetTemplateHistory],
+  [TX.GetCompress]: [RX.In_GetCompress],
+  [TX.GetPrinterFree]: [RX.In_GetPrinterFree],
 };
 
 export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
