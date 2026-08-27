@@ -1,5 +1,5 @@
 import { EncodedImage } from "../image_encoder";
-import { HeartbeatType, PacketGenerator } from "../packets";
+import { HeartbeatType, NiimbotPacket, PacketGenerator, LabelType } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
@@ -7,11 +7,33 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
  */
 export class D110MV4PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
-    return this.abstraction.sendAll([
-      PacketGenerator.setDensity(this.printOptions.density),
+    const pkts: NiimbotPacket[] = [];
+
+    if (
+      (this.printOptions.tubeWidthMm !== undefined || this.printOptions.tubeType !== undefined) &&
+      this.printOptions.labelType !== LabelType.Continuous
+    ) {
+      throw new Error("When using tube parameters, labelType must set to Continuous");
+    }
+
+    pkts.push(
       PacketGenerator.setLabelType(this.printOptions.labelType),
+      PacketGenerator.setDensity(this.printOptions.density),
+    );
+
+    if (this.printOptions.tubeType !== undefined && this.printOptions.tubeWidthMm !== undefined) {
+      pkts.push(PacketGenerator.setTubeTypeAndWidth(this.printOptions.tubeType, this.printOptions.tubeWidthMm));
+    }
+
+    if (this.printOptions.halfCut !== undefined) {
+      pkts.push(PacketGenerator.setHalfCut(this.printOptions.halfCut));
+    }
+
+    pkts.push(
       PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.color, this.printOptions.speed),
-    ]);
+    );
+
+    return this.abstraction.sendAll(pkts);
   }
 
   override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
@@ -29,7 +51,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
-      this.printOptions.pageTimeoutMs
+      this.printOptions.pageTimeoutMs,
     );
   }
 

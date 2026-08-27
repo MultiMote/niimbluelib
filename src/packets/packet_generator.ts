@@ -9,6 +9,8 @@ import {
   SoundSettingsType,
   commandsMap,
   NiimbotCrc32Packet,
+  PrinterConfig2Type,
+  PrinterConfig2Action,
 } from ".";
 import { EncodedImage, ImageEncoder } from "../image_encoder";
 import { Utils, Validators } from "../utils";
@@ -361,7 +363,20 @@ export class PacketGenerator {
     return this.mapped(TX.TubeTypeAndWidth, [0x01, 0x01, tubeType, ...Utils.u16ToBytes(widthFixed)]);
   }
 
-  public static setHalfCut(value: number): NiimbotPacket {
-    return this.mapped(TX.HalfCut, [0x01, value]);
+  public static setHalfCut(value: boolean): NiimbotPacket {
+    return this.mapped(TX.HalfCut, [0x01, value ? 0x01 : 0x00]);
+  }
+
+  public static setPrinterTime(date: Date = new Date()): NiimbotPacket {
+    return this.mapped(TX.PrinterConfig2, [
+      PrinterConfig2Type.Time,
+      PrinterConfig2Action.SetValue,
+      ...Utils.u16ToBytes(date.getFullYear()),
+      date.getMonth() + 1,
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    ]);
   }
 }

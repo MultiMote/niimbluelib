@@ -19,6 +19,23 @@ export enum PrinterInfoType {
   Area = 15,
 }
 
+/**
+ * Sent with {@link RequestCommandId.PrinterConfig2}
+ * @category Packets
+ **/
+export enum PrinterConfig2Type {
+  Time = 8,
+}
+
+/**
+ * Sent with {@link RequestCommandId.PrinterConfig2}
+ * @category Packets
+ **/
+export enum PrinterConfig2Action {
+  SetValue = 1,
+  GetValue = 2,
+}
+
 /** @category Packets */
 export enum SoundSettingsType {
   SetSound = 0x01,

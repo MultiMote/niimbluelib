@@ -504,6 +504,10 @@ export class Abstraction {
     return response.data[0] === 1;
   }
 
+  public async setPrinterTime(value: Date = new Date()): Promise<void> {
+    await this.send(PacketGenerator.setPrinterTime(value));
+  }
+
   public async firmwareUpgrade(data: Uint8Array, version: string): Promise<void> {
     const crc = CRC32.buf(data);
     await this.send(PacketGenerator.startFirmwareUpgrade(version));

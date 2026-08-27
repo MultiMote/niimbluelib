@@ -32,6 +32,15 @@ export type PrintOptions = {
   /** Print temperature for multicolor paper.
    * Supported in B1PrintTask and D110MV4PrintTask */
   color: number;
+
+  halfCut?: boolean;
+
+  /** For shrink tube */
+  tubeWidthMm?: number;
+
+  cutType?: number;
+
+  tubeType?: number;
 };
 
 /** Default print options for print tasks. */
@@ -44,6 +53,7 @@ const printOptionsDefaults: PrintOptions = {
   pageTimeoutMs: 10_000,
   speed: 1,
   color: 0,
+  halfCut: false,
 };
 
 /**
