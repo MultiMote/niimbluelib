@@ -56,21 +56,34 @@ export class NiimbotNodeBleClient extends NiimbotAbstractClient {
     return new Promise((resolve, reject) => {
       let timer: NodeJS.Timeout | undefined;
 
-      noble.on("discover", async (peripheral: Peripheral) => {
+      const cleanup = () => {
+        if (timer !== undefined) clearTimeout(timer);
+        noble.removeListener("discover", onDiscover);
+      };
+
+      const onDiscover = (peripheral: Peripheral) => {
         if (
-          peripheral.address === address.toLowerCase() ||
+          peripheral.address.toLowerCase() === address.toLowerCase() ||
           peripheral.advertisement.localName === address
         ) {
-          clearTimeout(timer);
-          resolve(peripheral);
+          cleanup();
+          void noble.stopScanningAsync()
+            .then(() => resolve(peripheral))
+            .catch(reject);
+        }
+      };
+
+      noble.on("discover", onDiscover);
+
+      noble.startScanning([], false, (error?: Error) => {
+        if (error) {
+          cleanup();
+          reject(error);
         }
       });
 
-      noble.startScanning([], false, (error?: Error) => {
-        if (error) reject(error);
-      });
-
       timer = setTimeout(() => {
+        cleanup();
         noble.stopScanning();
         reject(new Error("Device not found"));
       }, timeoutMs ?? 5000);
