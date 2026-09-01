@@ -23,8 +23,40 @@
     <button class="disconnect" disabled>Disconnect</button>
     <pre class="logger"></pre>
 
-    <canvas width="240" height="96"></canvas>
+    <div>
+      Canvas size:
+      <input type="number" class="canvas-width" value="240" min="1" max="9999"/>
+      x
+      <input type="number" class="canvas-height" value="96" min="1" max="9999"/>
+    </div>
 
+    <canvas width="240" height="96"></canvas>
+    
+    <div>
+      <label>
+        Print task:
+        <select class="print-task"></select>
+      </label>
+      <label>
+        Print direction:
+        <select class="print-direction">
+          <option value="left" selected>Left</option>
+          <option value="top">Top</option>
+        </select>
+      </label>
+      <label>
+        Density:
+        <select class="print-density">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+      <label>
+        Page color type:
+        <select class="page-color"></select>
+      </label>
+    </div>
     <button class="print" disabled>Print</button>
 
     <script type="module" src="/main.js"></script>

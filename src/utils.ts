@@ -170,7 +170,7 @@ export class Utils {
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI16(arr: Uint8Array): number {
-    Validators.u8ArrayLengthEquals(arr, 2);
+    Validators.arrayLengthEquals(arr, 2);
     return new DataView(arr.buffer).getInt16(0, false);
   }
 
@@ -178,7 +178,7 @@ export class Utils {
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI32(arr: Uint8Array): number {
-    Validators.u8ArrayLengthEquals(arr, 4);
+    Validators.arrayLengthEquals(arr, 4);
     return new DataView(arr.buffer).getInt32(0, false);
   }
 
@@ -285,7 +285,7 @@ export class Validators {
   /**
    * Checks if the length of a Uint8Array equals a specified length and throws an error if the lengths do not match.
    */
-  public static u8ArrayLengthEquals(arr: Uint8Array, len: number, message?: string): void {
+  public static arrayLengthEquals(arr: ArrayLike<unknown>, len: number, message?: string): void {
     if (arr.length !== len) {
       throw new Error(message ?? `Array length must be ${len}`);
     }
@@ -294,7 +294,7 @@ export class Validators {
    * Checks if the length of a Uint8Array is at least a specified length.
    * Throws an error if the length is less than the specified length.
    */
-  public static u8ArrayLengthAtLeast(arr: Uint8Array, len: number, message?: string): void {
+  public static arrayLengthAtLeast(arr: ArrayLike<unknown>, len: number, message?: string): void {
     if (arr.length < len) {
       throw new Error(message ?? `Array length must be at least ${len}`);
     }

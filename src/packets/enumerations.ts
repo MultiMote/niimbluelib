@@ -19,6 +19,23 @@ export enum PrinterInfoType {
   Area = 15,
 }
 
+/**
+ * Sent with {@link RequestCommandId.PrinterConfig2}
+ * @category Packets
+ **/
+export enum PrinterConfig2Type {
+  Time = 8,
+}
+
+/**
+ * Sent with {@link RequestCommandId.PrinterConfig2}
+ * @category Packets
+ **/
+export enum PrinterConfig2Action {
+  SetValue = 1,
+  GetValue = 2,
+}
+
 /** @category Packets */
 export enum SoundSettingsType {
   SetSound = 0x01,
@@ -137,4 +154,27 @@ export enum PrinterErrorCode {
   IllegalRibbonPage = 0x33,
   ReceiveDataTimeout = 0x34,
   NonDedicatedRibbon = 0x35,
+}
+
+
+/**
+ * Sent with {@link RequestCommandId.PrintStart}
+ * @category Packets
+ **/
+export enum PageColorType {
+  SingleColor = 0,
+  DoubleColor = 1,
+  SingleColorAlt = 2,
+  MultiorderColor = 3,
+}
+
+/**
+ * Sent with {@link RequestCommandId.PrintBitmapRowMoreColor}
+ * @category Packets
+ **/
+export enum BitmapColorMode {
+  Empty = 0,
+  Red = 1,
+  Black = 2,
+  Mixed = 3,
 }
