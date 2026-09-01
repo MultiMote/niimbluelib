@@ -8,7 +8,7 @@ export enum RequestCommandId {
   /** Entire packet should be prefixed with 0x03 */
   Connect = 0xc1,
   CancelPrint = 0xda,
-  CalibrateHeight = 0x59,
+  GetPaperInfo = 0x59,
   Heartbeat = 0xdc,
   LabelPositioningCalibration = 0x8e,
   PageEnd = 0xe3,
@@ -68,6 +68,10 @@ export enum RequestCommandId {
   GetTemplateHistory = 0x17,
   GetCompress = 0x89,
   GetPrinterFree = 0xc3,
+  PrintBitmapRowDoubleColor = 0x8a,
+  SetLabelMaterial = 0x2d,
+  TubeSettings = 0x0e,
+  Pause = 0xa6,
 }
 
 /**
@@ -151,6 +155,9 @@ export enum ResponseCommandId {
   In_GetTemplateHistory = 0x17,
   In_GetCompress = 0x88,
   In_GetPrinterFree = 0xc4,
+  In_SetLabelMaterial = 0x3d,
+  In_TubeSettings = 0x0e,
+  In_Pause = 0xb6,
 }
 
 import TX = RequestCommandId;
@@ -166,9 +173,10 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.PrintBitmapRow]: null,
   [TX.PrintBitmapRowIndexed]: null,
   [TX.PrintEmptyRow]: null,
+  [TX.PrintBitmapRowDoubleColor]: null,
   [TX.Connect]: [RX.In_Connect],
   [TX.CancelPrint]: [RX.In_CancelPrint],
-  [TX.CalibrateHeight]: [RX.In_CalibrateHeight],
+  [TX.GetPaperInfo]: [RX.In_CalibrateHeight],
   [TX.Heartbeat]: [RX.In_HeartbeatBasic, RX.In_HeartbeatUnknown, RX.In_HeartbeatAdvanced1, RX.In_HeartbeatAdvanced2],
   [TX.LabelPositioningCalibration]: [RX.In_LabelPositioningCalibration],
   [TX.PageEnd]: [RX.In_PageEnd],
@@ -231,6 +239,9 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.GetTemplateHistory]: [RX.In_GetTemplateHistory],
   [TX.GetCompress]: [RX.In_GetCompress],
   [TX.GetPrinterFree]: [RX.In_GetPrinterFree],
+  [TX.SetLabelMaterial]: [RX.In_SetLabelMaterial],
+  [TX.TubeSettings]: [RX.In_TubeSettings],
+  [TX.Pause]: [RX.In_Pause],
 };
 
 export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {

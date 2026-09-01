@@ -155,3 +155,26 @@ export enum PrinterErrorCode {
   ReceiveDataTimeout = 0x34,
   NonDedicatedRibbon = 0x35,
 }
+
+
+/**
+ * Sent with {@link RequestCommandId.PrintStart}
+ * @category Packets
+ **/
+export enum PageColorType {
+  SingleColor = 0,
+  DoubleColor = 1,
+  SingleColorAlt = 2,
+  MultiorderColor = 3,
+}
+
+/**
+ * Sent with {@link RequestCommandId.PrintBitmapRowMoreColor}
+ * @category Packets
+ **/
+export enum BitmapColorMode {
+  Empty = 0,
+  Red = 1,
+  Black = 2,
+  Mixed = 3,
+}

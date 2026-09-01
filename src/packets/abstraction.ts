@@ -115,17 +115,17 @@ export class Abstraction {
     const packet = await this.send(PacketGenerator.getPrinterStatusData());
     let supportColor = 0;
 
-    if (packet.dataLength > 12) {
+    if (packet.dataLength >= 13) {
       supportColor = packet.data[10];
 
       const n = packet.data[11] * 100 + packet.data[12];
 
       if (n >= 204 && n < 300) {
         protocolVersion = 3;
-      } else if (n < 300 || n >= 302) {
-        protocolVersion = n >= 302 ? 5 : 0;
-      } else {
+      } else if (n >= 300 && n < 302) {
         protocolVersion = 4;
+      } else if (n >= 302) {
+        protocolVersion = 5;
       }
     }
 

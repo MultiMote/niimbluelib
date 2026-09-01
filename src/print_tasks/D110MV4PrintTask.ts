@@ -30,7 +30,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     }
 
     pkts.push(
-      PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.color, this.printOptions.speed),
+      PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.pageColor, this.printOptions.speed),
     );
 
     return this.abstraction.sendAll(pkts);

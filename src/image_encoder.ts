@@ -1,4 +1,4 @@
-import { Utils } from ".";
+import { PageColorType, Utils } from ".";
 
 /** @category Image encoder */
 export type ImageRow = {
@@ -6,11 +6,14 @@ export type ImageRow = {
   rowNumber: number;
   repeat: number;
   blackPixelsCount: number;
-  rowData?: Uint8Array;
+  redPixelsCount: number;
+  rowDataBlack?: Uint8Array;
+  rowDataRed?: Uint8Array;
 };
 
 /** @category Image encoder */
 export type EncodedImage = {
+  pageColor: PageColorType;
   cols: number;
   rows: number;
   rowsData: ImageRow[];
@@ -21,7 +24,7 @@ export interface ImageSource {
   readonly width: number;
   readonly height: number;
   /** printDirection = "left" rotates image to 90 degrees clockwise */
-  isPixelNonWhite(x: number, y: number, printDirection: PrintDirection): boolean;
+  getPixelColor(x: number, y: number, printDirection: PrintDirection): number;
 }
 
 /** @category Image encoder */
@@ -29,7 +32,7 @@ export class CanvasImageSource implements ImageSource {
   private constructor(
     private readonly iData: ImageData,
     public readonly width: number,
-    public readonly height: number
+    public readonly height: number,
   ) {}
 
   public static fromCanvas(canvas: HTMLCanvasElement): CanvasImageSource {
@@ -38,7 +41,7 @@ export class CanvasImageSource implements ImageSource {
     return new CanvasImageSource(iData, canvas.width, canvas.height);
   }
 
-  public isPixelNonWhite(x: number, y: number, printDirection: PrintDirection = "left"): boolean {
+  public getPixelColor(x: number, y: number, printDirection: PrintDirection = "left"): number {
     let idx = y * this.iData.width + x;
 
     if (printDirection === "left") {
@@ -46,7 +49,7 @@ export class CanvasImageSource implements ImageSource {
     }
 
     idx *= 4;
-    return this.iData.data[idx] !== 255 || this.iData.data[idx + 1] !== 255 || this.iData.data[idx + 2] !== 255;
+    return this.iData.data[idx + 2] | (this.iData.data[idx + 1] << 8) | (this.iData.data[idx] << 16);
   }
 }
 
@@ -59,12 +62,20 @@ export type PrintDirection = "left" | "top";
  */
 export class ImageEncoder {
   /** printDirection = "left" rotates image for 90 degrees clockwise */
-  public static encodeCanvas(canvas: HTMLCanvasElement, printDirection: PrintDirection = "left"): EncodedImage {
+  public static encodeCanvas(
+    canvas: HTMLCanvasElement,
+    pageColor: PageColorType,
+    printDirection: PrintDirection,
+  ): EncodedImage {
     const imageSource = CanvasImageSource.fromCanvas(canvas);
-    return ImageEncoder.encode(imageSource, printDirection);
+    return ImageEncoder.encode(imageSource, pageColor, printDirection);
   }
-  
-  public static encode(source: ImageSource, printDirection: PrintDirection = "left"): EncodedImage {
+
+  public static encode(
+    source: ImageSource,
+    pageColor: PageColorType,
+    printDirection: PrintDirection,
+  ): EncodedImage {
     const rowsData: ImageRow[] = [];
 
     let originalCols: number = source.width;
@@ -81,27 +92,44 @@ export class ImageEncoder {
     for (let row = 0; row < rows; row++) {
       let isVoid: boolean = true;
       let blackPixelsCount: number = 0;
-      const rowData = new Uint8Array(cols / 8);
+      let redPixelsCount: number = 0;
+      const blackRowData = new Uint8Array(cols / 8);
+      const redRowData = new Uint8Array(cols / 8);
 
       for (let colOct = 0; colOct < cols / 8; colOct++) {
-        let pixelsOctet: number = 0;
+        let blackPixelsOctet: number = 0;
+        let redPixelsOctet: number = 0;
+
         for (let colBit = 0; colBit < 8; colBit++) {
           const col = colOct * 8 + colBit;
-          if (col < originalCols && source.isPixelNonWhite(col, row, printDirection)) {
-            pixelsOctet |= 1 << (7 - colBit);
+          const color = source.getPixelColor(col, row, printDirection);
+
+          if (col >= originalCols) {
+            continue;
+          }
+
+          if (color === 0xff0000 && pageColor === PageColorType.DoubleColor) {
+            redPixelsOctet |= 1 << (7 - colBit);
+            isVoid = false;
+            redPixelsCount++;
+          } else if (color !== 0xffffff) {
+            blackPixelsOctet |= 1 << (7 - colBit);
             isVoid = false;
             blackPixelsCount++;
           }
         }
-        rowData[colOct] = pixelsOctet;
+        blackRowData[colOct] = blackPixelsOctet;
+        redRowData[colOct] = redPixelsOctet;
       }
 
       const newPart: ImageRow = {
         dataType: isVoid ? "void" : "pixels",
         rowNumber: row,
         repeat: 1,
-        rowData: isVoid ? undefined : rowData,
+        rowDataBlack: isVoid ? undefined : blackRowData,
+        rowDataRed: isVoid ? undefined : redRowData,
         blackPixelsCount,
+        redPixelsCount,
       };
 
       // Check previous row and increment repeats instead of adding new row if data is same
@@ -112,7 +140,9 @@ export class ImageEncoder {
         let same: boolean = newPart.dataType === lastPacket.dataType;
 
         if (same && newPart.dataType === "pixels") {
-          same = Utils.u8ArraysEqual(newPart.rowData!, lastPacket.rowData!);
+          same =
+            Utils.u8ArraysEqual(newPart.rowDataBlack!, lastPacket.rowDataBlack!) &&
+            Utils.u8ArraysEqual(newPart.rowDataRed!, lastPacket.rowDataRed!);
         }
 
         if (same) {
@@ -128,32 +158,15 @@ export class ImageEncoder {
             dataType: "check",
             rowNumber: row,
             repeat: 0,
-            rowData: undefined,
             blackPixelsCount: 0,
+            redPixelsCount: 0,
           });
         }
       }
     }
-    
-    return { cols, rows, rowsData };
+
+    return { cols, rows, rowsData, pageColor };
   }
-
-  /** printDirection = "left" rotates image to 90 degrees clockwise */
-  // public static isPixelNonWhite(
-  //   iData: ImageData,
-  //   x: number,
-  //   y: number,
-  //   printDirection: PrintDirection = "left"
-  // ): boolean {
-  //   let idx = y * iData.width + x;
-
-  //   if (printDirection === "left") {
-  //     idx = (iData.height - 1 - x) * iData.width + y;
-  //   }
-
-  //   idx *= 4;
-  //   return iData.data[idx] !== 255 || iData.data[idx + 1] !== 255 || iData.data[idx + 2] !== 255;
-  // }
 
   /**
    * @param data Pixels encoded by {@link encodeCanvas} (byte is 8 pixels)

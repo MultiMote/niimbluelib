@@ -11,6 +11,8 @@ import {
   NiimbotCrc32Packet,
   PrinterConfig2Type,
   PrinterConfig2Action,
+  PageColorType,
+  BitmapColorMode,
 } from ".";
 import { EncodedImage, ImageEncoder } from "../image_encoder";
 import { Utils, Validators } from "../utils";
@@ -156,7 +158,7 @@ export class PacketGenerator {
     partHeight: number = 0,
     serial: number[] = [],
   ): NiimbotPacket {
-    if (serial) {
+    if (serial && serial.length !== 0) {
       Validators.arrayLengthEquals(serial, 32);
     }
 
@@ -207,12 +209,12 @@ export class PacketGenerator {
    *
    * @param totalPages Declare how many pages will be printed
    */
-  public static printStart7b(totalPages: number, pageColor: number = 0): NiimbotPacket {
+  public static printStart7b(totalPages: number, pageColor: PageColorType = PageColorType.SingleColor): NiimbotPacket {
     return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor]);
   }
 
   /** First seen on D110M v4 */
-  public static printStart9b(totalPages: number, pageColor: number = 0, speed: number = 0, someFlag: boolean = false): NiimbotPacket {
+  public static printStart9b(totalPages: number, pageColor: PageColorType = PageColorType.SingleColor, speed: number = 0, someFlag: boolean = false): NiimbotPacket {
     return this.mapped(TX.PrintStart, [...Utils.u16ToBytes(totalPages), 0x00, 0x00, 0x00, 0x00, pageColor, speed, someFlag ? 0x01 : 0x00]);
   }
 
@@ -243,6 +245,15 @@ export class PacketGenerator {
     return this.mapped(TX.PrintBitmapRow, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...data]);
   }
 
+  public static printBitmapRowWithColor(
+    pos: number,
+    repeats: number,
+    data: Uint8Array,
+    colorMode: BitmapColorMode = BitmapColorMode.Black
+  ): NiimbotPacket {
+    return this.mapped(TX.PrintBitmapRowDoubleColor, [colorMode, TX.PrintBitmapRow, ...Utils.u16ToBytes(pos), repeats, ...data]);
+  }
+
   /** Printer powers off if black pixel count > 6 */
   // 5555 83 0e 007e 000400 01 0027 0028 0029 002a fa aaaa
   public static printBitmapRowIndexed(
@@ -262,6 +273,33 @@ export class PacketGenerator {
     return this.mapped(TX.PrintBitmapRowIndexed, [...Utils.u16ToBytes(pos), ...counts.parts, repeats, ...indexes]);
   }
 
+  public static printBitmapRowDoubleColor(blackData: Uint8Array, redData: Uint8Array, pos: number, repeats: number, cols: number): NiimbotPacket {
+    const maskBytes: number[] = [];
+    const colorBytes: number[] = [];
+    const bytesPerOctet = cols / 8;
+
+    for (let i = 0; i < bytesPerOctet; i++) {
+      const bByte = blackData ? blackData[i] : 0;
+      const rByte = redData ? redData[i] : 0;
+
+      // mask: bit is on if pixel is non-white (black OR red)
+      const mask = bByte | rByte;
+      maskBytes.push(mask);
+
+      // color: 0 for black, 1 for red (only appended if block contains pixels)
+      if (mask !== 0) {
+        let colorByte = 0;
+        for (let bit = 7; bit >= 0; bit--) {
+          const isRed = (rByte & (1 << bit)) !== 0;
+          colorByte = (colorByte << 1) | (isRed ? 1 : 0);
+        }
+        colorBytes.push(colorByte);
+      }
+    }
+
+    return this.mapped(TX.PrintBitmapRowDoubleColor, [BitmapColorMode.Mixed, ...Utils.u16ToBytes(pos), repeats, ...maskBytes, ...colorBytes ]);
+  }
+
   public static printClear(): NiimbotPacket {
     return this.mapped(TX.PrintClear);
   }
@@ -275,6 +313,16 @@ export class PacketGenerator {
   }
 
   public static writeImageData(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
+    if (image.pageColor === PageColorType.SingleColor) {
+      return this.writeImageDataSingleColor(image, options);
+    } else if (image.pageColor === PageColorType.DoubleColor) {
+      return this.writeImageDataDoubleColor(image);
+    }
+
+    throw new Error(`Page color ${image.pageColor} not implemented`);
+  }
+
+  public static writeImageDataSingleColor(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
     const out: NiimbotPacket[] = [];
 
     for (const d of image.rowsData) {
@@ -284,7 +332,7 @@ export class PacketGenerator {
             this.printBitmapRowIndexed(
               d.rowNumber,
               d.repeat,
-              d.rowData!,
+              d.rowDataBlack!,
               options?.printheadPixels ?? 0,
               options?.countsMode ?? "auto"
             )
@@ -294,7 +342,7 @@ export class PacketGenerator {
             this.printBitmapRow(
               d.rowNumber,
               d.repeat,
-              d.rowData!,
+              d.rowDataBlack!,
               options?.printheadPixels ?? 0,
               options?.countsMode ?? "auto"
             )
@@ -310,6 +358,37 @@ export class PacketGenerator {
 
       if (d.dataType === "void") {
         out.push(this.printEmptySpace(d.rowNumber, d.repeat));
+      }
+    }
+
+    return out;
+  }
+
+  public static writeImageDataDoubleColor(image: EncodedImage): NiimbotPacket[] {
+    const out: NiimbotPacket[] = [];
+
+    if (image.pageColor !== PageColorType.DoubleColor) {
+      throw new Error("EncodedImage.pageColor must be PageColorType.DoubleColor");
+    }
+
+    for (const d of image.rowsData) {
+      if (d.dataType === "pixels") {
+        const hasBlack = d.blackPixelsCount > 0;
+        const hasRed = d.redPixelsCount > 0;
+
+        if (hasBlack && hasRed) {
+          out.push(this.printBitmapRowDoubleColor(d.rowDataBlack!, d.rowDataRed!, d.rowNumber, d.repeat, image.cols));
+        } else if (hasBlack || hasRed) {
+          const color = hasBlack ? BitmapColorMode.Black : BitmapColorMode.Red;
+          const rowData = hasBlack ? d.rowDataBlack! : d.rowDataRed!;
+          out.push(this.printBitmapRowWithColor(d.rowNumber, d.repeat, rowData, color));
+        }
+        continue;
+      }
+
+      if (d.dataType === "void") {
+        const p = this.printEmptySpace(d.rowNumber, d.repeat);
+        out.push(this.mapped(TX.PrintBitmapRowDoubleColor, [BitmapColorMode.Empty, p.command, ...p.data]));
       }
     }
 

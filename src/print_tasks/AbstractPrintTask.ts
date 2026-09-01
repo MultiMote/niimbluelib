@@ -1,5 +1,5 @@
 import { EncodedImage } from "../image_encoder";
-import { LabelType } from "../packets";
+import { LabelType, PageColorType } from "../packets";
 import { Abstraction } from "../packets/abstraction";
 
 /**
@@ -29,9 +29,9 @@ export type PrintOptions = {
    * Supported in D110MV4PrintTask */
   speed: 0 | 1;
 
-  /** Print temperature for multicolor paper.
-   * Supported in B1PrintTask and D110MV4PrintTask */
-  color: number;
+  /** Color mode for multicolor / grayscale print.
+   * Supported in D110MV4PrintTask */
+  pageColor: PageColorType;
 
   halfCut?: boolean;
 
@@ -52,8 +52,7 @@ const printOptionsDefaults: PrintOptions = {
   statusTimeoutMs: 5_000,
   pageTimeoutMs: 10_000,
   speed: 1,
-  color: 0,
-  halfCut: false,
+  pageColor: PageColorType.SingleColor,
 };
 
 /**
