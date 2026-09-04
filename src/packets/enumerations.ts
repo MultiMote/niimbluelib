@@ -169,7 +169,7 @@ export enum PageColorType {
 }
 
 /**
- * Sent with {@link RequestCommandId.PrintBitmapRowMoreColor}
+ * Sent with {@link RequestCommandId.PrintBitmapRowDoubleColor}
  * @category Packets
  **/
 export enum BitmapColorMode {
