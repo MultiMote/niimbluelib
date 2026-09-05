@@ -1,4 +1,4 @@
-name: Deploy docs to Cloudflare Pages
+name: Build and deploy docs
 
 on:
   # Runs on pushes targeting the default branch
@@ -33,10 +33,10 @@ jobs:
       - name: Build
         run: npx typedoc
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs/html --project-name=niim-docs
+      # - name: Deploy to Cloudflare Pages
+      #   uses: cloudflare/wrangler-action@v3
+      #   with:
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     command: pages deploy docs/html --project-name=niim-docs
 
