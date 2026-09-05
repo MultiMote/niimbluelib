@@ -1,6 +1,7 @@
 # 0.0.1-alpha.45
 
 * node: fix BLE scan and connection setup
+* Add NiimbotClientType.getType
 
 # 0.0.1-alpha.44
 

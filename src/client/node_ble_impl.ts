@@ -1,7 +1,7 @@
 import noble, { Peripheral, Characteristic, Service } from "@stoprocent/noble";
 
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient } from ".";
+import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 
@@ -197,5 +197,9 @@ export class NiimbotNodeBleClient extends NiimbotAbstractClient {
     } else {
       await this.mutex.runExclusive(send);
     }
+  }
+
+  public override getType(): NiimbotClientType {
+    return "node-ble";
   }
 }

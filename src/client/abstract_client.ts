@@ -21,6 +21,7 @@ import {
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
 import { PrinterInfo, PrintError } from "../packets/dto";
+import { NiimbotClientType } from ".";
 
 /**
  * Represents the connection result information.
@@ -330,4 +331,6 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   public setDebug(value: boolean) {
     this.debug = value;
   }
+
+  public abstract getType(): NiimbotClientType;
 }
