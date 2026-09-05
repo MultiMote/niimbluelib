@@ -1,3 +1,7 @@
+# 0.0.1-alpha.45
+
+* node: fix BLE scan and connection setup
+
 # 0.0.1-alpha.44
 
 * Add more packet command ID's

@@ -57,6 +57,11 @@ export class CanvasImageSource implements ImageSource {
 export type PrintDirection = "left" | "top";
 
 /**
+ * Currently ImageEncode supports three colors:
+ * - White (0xffffff) - background color
+ * - Black (0x000000) - first color
+ * - Red (0xff0000) - second color
+ *
  * @category Helpers
  * @category Image encoder
  */
