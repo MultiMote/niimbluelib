@@ -1,5 +1,5 @@
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient } from ".";
+import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { modelsLibrary } from "../printer_models";
@@ -150,5 +150,9 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     } else {
       await this.mutex.runExclusive(send);
     }
+  }
+
+  public getType(): NiimbotClientType {
+    return "bluetooth";
   }
 }

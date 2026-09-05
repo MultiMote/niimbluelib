@@ -6,14 +6,17 @@ import { NiimbotSerialClient } from "./serial_impl";
 /** Client type for {@link instantiateClient} */
 export type NiimbotClientType = "bluetooth" | "serial" | "capacitor-ble";
 
+const clientFactories: Record<NiimbotClientType, () => NiimbotAbstractClient> = {
+  "bluetooth": () => new NiimbotBluetoothClient(),
+  "serial": () => new NiimbotSerialClient(),
+  "capacitor-ble": () => new NiimbotCapacitorBleClient(),
+};
+
 /** Create new client instance */
 export const instantiateClient = (t: NiimbotClientType): NiimbotAbstractClient => {
-  if (t === "bluetooth") {
-    return new NiimbotBluetoothClient();
-  } else if (t === "capacitor-ble") {
-    return new NiimbotCapacitorBleClient();
-  } else if (t === "serial") {
-    return new NiimbotSerialClient();
+  const client = clientFactories[t]();
+  if (client !== undefined) {
+    return client;
   }
   throw new Error("Invalid client type");
 };

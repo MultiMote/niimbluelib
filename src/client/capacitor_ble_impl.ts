@@ -1,5 +1,5 @@
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient } from ".";
+import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
@@ -149,5 +149,9 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
     } else {
       await this.mutex.runExclusive(send);
     }
+  }
+
+  public override getType(): NiimbotClientType {
+    return "capacitor-ble";
   }
 }
