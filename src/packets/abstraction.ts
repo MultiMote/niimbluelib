@@ -428,12 +428,12 @@ export class Abstraction {
             );
 
             if (status.page === pagesToPrint) {
-              clearInterval(this.statusPollTimer);
+              this.cancelStatusPoll();
               resolve();
             }
           })
           .catch((e: unknown) => {
-            clearInterval(this.statusPollTimer);
+            this.cancelStatusPoll();
             reject(e as Error);
           });
       }, pollIntervalMs ?? 300);
@@ -461,12 +461,12 @@ export class Abstraction {
               this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
             } else {
               this.client.emit("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
-              clearInterval(this.statusPollTimer);
+              this.cancelStatusPoll();
               resolve();
             }
           })
           .catch((e: unknown) => {
-            clearInterval(this.statusPollTimer);
+            this.cancelStatusPoll();
             reject(e as Error);
           });
       }, pollIntervalMs ?? 500);
@@ -489,6 +489,7 @@ export class Abstraction {
 
   /** False returned when printEnd refused */
   public async printEnd(): Promise<boolean> {
+    this.cancelStatusPoll();
     const response = await this.send(PacketGenerator.printEnd());
     Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
@@ -571,5 +572,12 @@ export class Abstraction {
 
   public newPrintTask(name: PrintTaskName, options?: Partial<PrintOptions>): AbstractPrintTask {
     return new printTasks[name](this, options);
+  }
+
+  public cancelStatusPoll() {
+    if (this.statusPollTimer) {
+      clearInterval(this.statusPollTimer);
+      this.statusPollTimer = undefined;
+    }
   }
 }
