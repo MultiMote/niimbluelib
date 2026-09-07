@@ -1,5 +1,5 @@
 import { EncodedImage } from "../image_encoder";
-import { PacketGenerator } from "../packets";
+import { PacketGenerator, PageColorType } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
@@ -10,12 +10,12 @@ export class B1PrintTask extends AbstractPrintTask {
     return this.abstraction.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
-      PacketGenerator.printStart7b(this.printOptions.totalPages),
+      PacketGenerator.printStart7b(this.printOptions.totalPages, this.printOptions.pageColor),
     ]);
   }
 
   override printPage(image: EncodedImage, quantity?: number): Promise<void> {
-    this.checkAddPage(quantity ?? 1);
+    this.validatePage(image, quantity ?? 1);
 
     return this.abstraction.sendAll(
       [
@@ -24,7 +24,7 @@ export class B1PrintTask extends AbstractPrintTask {
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
-      this.printOptions.pageTimeoutMs
+      this.printOptions.pageTimeoutMs,
     );
   }
 
@@ -34,5 +34,9 @@ export class B1PrintTask extends AbstractPrintTask {
     return this.abstraction
       .waitUntilPrintFinishedByStatusPoll(this.printOptions.totalPages, this.printOptions.statusPollIntervalMs)
       .finally(() => this.abstraction.setDefaultPacketTimeout());
+  }
+
+  override isSupportColor(pageColor: PageColorType): boolean {
+    return pageColor === PageColorType.SingleColor || pageColor === PageColorType.DoubleColor;
   }
 }

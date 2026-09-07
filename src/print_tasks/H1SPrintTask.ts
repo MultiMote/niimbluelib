@@ -15,7 +15,7 @@ export class H1SPrintTask extends AbstractPrintTask {
   }
 
   override printPage(image: EncodedImage, quantity?: number): Promise<void> {
-    this.checkAddPage(quantity ?? 1);
+    this.validatePage(image, quantity ?? 1);
 
     return this.abstraction.sendAll(
       [

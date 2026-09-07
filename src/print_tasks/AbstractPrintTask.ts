@@ -38,7 +38,9 @@ export type PrintOptions = {
   /** For shrink tube */
   tubeWidthMm?: number;
 
-  cutType?: number;
+  cutType: number;
+
+  cutHeight: number;
 
   tubeType?: number;
 };
@@ -53,6 +55,8 @@ const printOptionsDefaults: PrintOptions = {
   pageTimeoutMs: 10_000,
   speed: 1,
   pageColor: PageColorType.SingleColor,
+  cutType: 0,
+  cutHeight: 0,
 };
 
 /**
@@ -62,14 +66,18 @@ const printOptionsDefaults: PrintOptions = {
  * ```ts
  * const quantity = 1;
  *
- * const printTask = client.abstraction.newPrintTask("D110", {
+ * const printTask = client.abstraction.newPrintTask("B1", {
  *   totalPages: quantity
  * });
  *
  * try {
  *   await printTask.printInit();
+ *
+ *   // you can print multiple pages in a loop, make sure options.totalPages is set correctly
  *   await printTask.printPage(encodedImage, quantity); // encode your canvas with ImageEncoder.encodeCanvas
  *   await printTask.waitForPageFinished();
+ *   // loop ends here
+ *
  *   await printTask.waitForFinished();
  * } catch (e) {
  *   alert(e);
@@ -95,11 +103,38 @@ export abstract class AbstractPrintTask {
     };
   }
 
-  /** Check added pages not does not exceed {@link pagesPrinted} */
-  protected checkAddPage(quantity: number) {
+  /** Update print options for this print task */
+  setPrintOptions(printOptions: Partial<PrintOptions>) {
+    this.printOptions = {
+      ...this.printOptions,
+      ...printOptions,
+    };
+  }
+  /** Reset print task state (pages printed) */
+  reset() {
+    this.pagesPrinted = 0;
+  }
+  /**
+   * Validate page before printing. Checks:
+   *  - Page color is supported by this print task
+   *  - Page color matches print task color
+   *  - Added pages not does not exceed {@link pagesPrinted}
+   *
+   * Also increments {@link pagesPrinted} by quantity.
+   **/
+  protected validatePage(image: EncodedImage, quantity: number) {
     if (this.pagesPrinted + quantity > (this.printOptions.totalPages ?? 1)) {
       throw new Error("Trying to print too many pages (task totalPages may not be set correctly)");
     }
+
+    if (!this.isSupportColor(image.pageColor)) {
+      throw new Error(`Page color ${image.pageColor} is not supported by this print task`);
+    }
+
+    if (this.printOptions.pageColor !== image.pageColor) {
+      throw new Error(`Page color ${image.pageColor} does not match print task color ${this.printOptions.pageColor}`);
+    }
+
     this.pagesPrinted += quantity;
   }
 
@@ -117,9 +152,12 @@ export abstract class AbstractPrintTask {
   protected printheadPixels(): number | undefined {
     return this.abstraction.getClient().getModelMetadata()?.printheadPixels;
   }
-
   /** End print, cleanup */
   printEnd(): Promise<boolean> {
     return this.abstraction.printEnd();
+  }
+  /** Check if this print task supports a specified page color */
+  isSupportColor(pageColor: PageColorType): boolean {
+    return pageColor === PageColorType.SingleColor;
   }
 }

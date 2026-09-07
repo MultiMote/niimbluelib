@@ -27,6 +27,7 @@ export interface PrinterInfo {
   autoShutdownTime?: AutoShutdownTime;
   labelType?: LabelType;
   printheadWidth?: number;
+  supportColor?: boolean;
   softwareVersion?: string;
   hardwareVersion?: string;
 }
@@ -103,6 +104,6 @@ export interface SoundSettings {
  * @category Packets
  */
 export interface PrinterStatusData {
-  supportColor: number;
+  supportColor: boolean;
   protocolVersion: number;
 }

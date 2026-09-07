@@ -114,10 +114,10 @@ export class Abstraction {
   public async getPrinterStatusData(): Promise<PrinterStatusData> {
     let protocolVersion = 0;
     const packet = await this.send(PacketGenerator.getPrinterStatusData());
-    let supportColor = 0;
+    let supportColor = false;
 
     if (packet.dataLength >= 13) {
-      supportColor = packet.data[10];
+      supportColor = packet.data[10] > 0;
 
       const n = packet.data[11] * 100 + packet.data[12];
 
