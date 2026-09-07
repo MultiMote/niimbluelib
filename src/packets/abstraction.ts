@@ -5,6 +5,7 @@ import {
   HeartbeatType,
   LabelType,
   PrinterInfoType,
+  ResolutionClass,
   ResponseCommandId,
   SoundSettingsItemType,
 } from ".";
@@ -14,7 +15,7 @@ import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
-import { HeartbeatData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { HeartbeatData, HeartbeatPrinterInfoData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -262,6 +263,28 @@ export class Abstraction {
     if (r.canRead(1)) {
       info.voltageState = r.readI8();
     }
+
+    r.end();
+
+    return info;
+  }
+
+  public async heartbeatPrinterInfo(): Promise<HeartbeatPrinterInfoData> {
+    const packet = await this.send(PacketGenerator.heartbeat(HeartbeatType.PrinterInfo));
+
+    Validators.arrayLengthEquals(packet.data, 10);
+
+    const r = new SequentialDataReader(packet.data);
+
+    const info: HeartbeatPrinterInfoData = {
+      firmwareVersion: r.readI16(),
+      hardwareVersion: r.readI16(),
+      printheadWidth: r.readI16(),
+      resolutionClass: r.readI8() as ResolutionClass,
+      printheadAlignment: r.readI8(),
+      supportsRFID: r.readBool(),
+      supportsWriteRFID: r.readBool(),
+    };
 
     r.end();
 

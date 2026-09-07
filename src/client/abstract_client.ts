@@ -235,6 +235,13 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.info.hardwareVersion = (await this.abstraction.getHardwareVersion().catch(console.error)) ?? undefined;
     this.info.softwareVersion = (await this.abstraction.getSoftwareVersion().catch(console.error)) ?? undefined;
 
+    try {
+      const i = await this.abstraction.heartbeatPrinterInfo();
+      this.info.printheadWidth = i.printheadWidth;
+    } catch (e) {
+      console.warn(`${e}`);
+    }
+
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
   }

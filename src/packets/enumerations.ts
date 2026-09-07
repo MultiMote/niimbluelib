@@ -70,7 +70,7 @@ export enum LabelType {
 export enum HeartbeatType {
   Advanced1 = 1,
   Basic = 2,
-  Unknown = 3,
+  PrinterInfo = 3,
   Advanced2 = 4,
 }
 
@@ -177,4 +177,13 @@ export enum BitmapColorMode {
   Red = 1,
   Black = 2,
   Mixed = 3,
+}
+
+/**
+ * Sent with {@link RequestCommandId.PrintBitmapRowDoubleColor}
+ * @category Packets
+ **/
+export enum ResolutionClass {
+  DPI203 = 2,
+  DPI300 = 3,
 }
