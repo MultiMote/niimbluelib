@@ -4,6 +4,13 @@ import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 
 /**
+ * @category Client
+ */
+export interface NiimbotSerialClientConnectOptions {
+  authorizedPort?: SerialPort
+}
+
+/**
  * Uses [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
  *
  * @category Client
@@ -13,10 +20,16 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
   private writer?: WritableStreamDefaultWriter<Uint8Array> = undefined;
   private reader?: ReadableStreamDefaultReader<Uint8Array> = undefined;
 
-  public async connect(): Promise<ConnectionInfo> {
+  public async connect(options?: NiimbotSerialClientConnectOptions): Promise<ConnectionInfo> {
     await this.disconnect();
 
-    const _port: SerialPort = await navigator.serial.requestPort();
+    let _port: SerialPort;
+
+    if (options?.authorizedPort !== undefined) {
+      _port = options?.authorizedPort;
+    } else {
+      _port = await navigator.serial.requestPort();
+    }
 
     _port.addEventListener("disconnect", () => {
       this.port = undefined;

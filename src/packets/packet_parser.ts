@@ -6,11 +6,9 @@ import {
   LabelType,
   NiimbotCrc32Packet,
   NiimbotPacket,
-  PrintError,
   PrinterStatusData,
   PrintStatus,
   ResolutionClass,
-  ResponseCommandId,
   RfidInfo,
   SequentialDataReader,
 } from ".";

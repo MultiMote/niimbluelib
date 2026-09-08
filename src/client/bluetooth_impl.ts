@@ -9,6 +9,25 @@ const getAllModelFirstLetters = (): string[] => [...new Set(modelsLibrary.map((m
 /**
  * @category Client
  */
+export interface NiimbotBluetoothClientConnectOptions {
+  /**
+   * Allows using authorized device without device picker dialog.
+   * "Use the new permissions backend for Web Bluetooth" at chrome://flags must be enabled to use `navigator.bluetooth.gedDevices()`
+   *
+   * Example:
+   * 
+   * ```
+   * const authorized = await navigator.bluetooth.getDevices();
+   * const authorizedDevice = authorized.find(d => d.name.includes("B1"));
+   * await client.connect({ authorizedDevice });
+   * ```
+   */
+  authorizedDevice?: BluetoothDevice
+}
+
+/**
+ * @category Client
+ */
 export class BleDefaultConfiguration {
   public static readonly SERVICES: string[] = ["e7810a71-73ae-499d-8c15-faa9aef0c3f2"];
   public static readonly NAME_FILTERS: BluetoothLEScanFilter[] = [
@@ -34,17 +53,24 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.serviceUuidFilter = ids;
   }
 
-  public async connect(): Promise<ConnectionInfo> {
+  public async connect(options?: NiimbotBluetoothClientConnectOptions): Promise<ConnectionInfo> {
     await this.disconnect();
 
-    const options: RequestDeviceOptions = {
-      filters: [
-        ...BleDefaultConfiguration.NAME_FILTERS,
-        { services: this.serviceUuidFilter ?? BleDefaultConfiguration.SERVICES },
-      ],
-    };
+    let device: BluetoothDevice;
 
-    const device: BluetoothDevice = await navigator.bluetooth.requestDevice(options);
+    if (options?.authorizedDevice !== undefined) {
+      device = options?.authorizedDevice;
+    } else {
+      const options: RequestDeviceOptions = {
+        filters: [
+          ...BleDefaultConfiguration.NAME_FILTERS,
+          { services: this.serviceUuidFilter ?? BleDefaultConfiguration.SERVICES },
+        ],
+      };
+
+      device = await navigator.bluetooth.requestDevice(options);
+    }
+
 
     if (device.gatt === undefined) {
       throw new Error("Device has no Bluetooth Generic Attribute Profile");
