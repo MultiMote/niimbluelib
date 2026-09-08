@@ -1,4 +1,4 @@
-import { AutoShutdownTime, BatteryChargeLevel, ConnectResult, LabelType, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
+import { AutoShutdownTime, BatteryChargeLevel, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
 
 /**
  * @category Packets
@@ -26,6 +26,8 @@ export interface PrinterInfo {
   charge?: BatteryChargeLevel;
   autoShutdownTime?: AutoShutdownTime;
   labelType?: LabelType;
+  printheadWidth?: number;
+  supportColor?: boolean;
   softwareVersion?: string;
   hardwareVersion?: string;
 }
@@ -79,6 +81,19 @@ export interface HeartbeatData {
 /**
  * @category Packets
  */
+export interface HeartbeatPrinterInfoData {
+  firmwareVersion: number;
+  hardwareVersion: number;
+  printheadWidth: number;
+  resolutionClass: ResolutionClass;
+  printheadAlignment: number;
+  supportsRFID: boolean;
+  supportsWriteRFID: boolean;
+}
+
+/**
+ * @category Packets
+ */
 export interface SoundSettings {
   category: SoundSettingsType;
   item: SoundSettingsItemType;
@@ -89,6 +104,6 @@ export interface SoundSettings {
  * @category Packets
  */
 export interface PrinterStatusData {
-  supportColor: number;
+  supportColor: boolean;
   protocolVersion: number;
 }

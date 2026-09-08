@@ -74,4 +74,4 @@ export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName
 };
 
 export { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";
-export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, D110MV4PrintTask,  };
+export { B1PrintTask, B21V1PrintTask, D110PrintTask, OldD11PrintTask, D110MV4PrintTask, B21L2BPrintTask, H1SPrintTask };

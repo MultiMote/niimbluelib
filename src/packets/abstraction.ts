@@ -5,6 +5,7 @@ import {
   HeartbeatType,
   LabelType,
   PrinterInfoType,
+  ResolutionClass,
   ResponseCommandId,
   SoundSettingsItemType,
 } from ".";
@@ -14,7 +15,7 @@ import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
 import { SequentialDataReader } from "./data_reader";
-import { HeartbeatData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { HeartbeatData, HeartbeatPrinterInfoData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -113,10 +114,10 @@ export class Abstraction {
   public async getPrinterStatusData(): Promise<PrinterStatusData> {
     let protocolVersion = 0;
     const packet = await this.send(PacketGenerator.getPrinterStatusData());
-    let supportColor = 0;
+    let supportColor = false;
 
     if (packet.dataLength >= 13) {
-      supportColor = packet.data[10];
+      supportColor = packet.data[10] > 0;
 
       const n = packet.data[11] * 100 + packet.data[12];
 
@@ -262,6 +263,28 @@ export class Abstraction {
     if (r.canRead(1)) {
       info.voltageState = r.readI8();
     }
+
+    r.end();
+
+    return info;
+  }
+
+  public async heartbeatPrinterInfo(): Promise<HeartbeatPrinterInfoData> {
+    const packet = await this.send(PacketGenerator.heartbeat(HeartbeatType.PrinterInfo));
+
+    Validators.arrayLengthEquals(packet.data, 10);
+
+    const r = new SequentialDataReader(packet.data);
+
+    const info: HeartbeatPrinterInfoData = {
+      firmwareVersion: r.readI16(),
+      hardwareVersion: r.readI16(),
+      printheadWidth: r.readI16(),
+      resolutionClass: r.readI8() as ResolutionClass,
+      printheadAlignment: r.readI8(),
+      supportsRFID: r.readBool(),
+      supportsWriteRFID: r.readBool(),
+    };
 
     r.end();
 
@@ -428,12 +451,12 @@ export class Abstraction {
             );
 
             if (status.page === pagesToPrint) {
-              clearInterval(this.statusPollTimer);
+              this.cancelStatusPoll();
               resolve();
             }
           })
           .catch((e: unknown) => {
-            clearInterval(this.statusPollTimer);
+            this.cancelStatusPoll();
             reject(e as Error);
           });
       }, pollIntervalMs ?? 300);
@@ -461,12 +484,12 @@ export class Abstraction {
               this.client.emit("printprogress", new PrintProgressEvent(1, pagesToPrint, 0, 0));
             } else {
               this.client.emit("printprogress", new PrintProgressEvent(pagesToPrint, pagesToPrint, 100, 100));
-              clearInterval(this.statusPollTimer);
+              this.cancelStatusPoll();
               resolve();
             }
           })
           .catch((e: unknown) => {
-            clearInterval(this.statusPollTimer);
+            this.cancelStatusPoll();
             reject(e as Error);
           });
       }, pollIntervalMs ?? 500);
@@ -489,6 +512,7 @@ export class Abstraction {
 
   /** False returned when printEnd refused */
   public async printEnd(): Promise<boolean> {
+    this.cancelStatusPoll();
     const response = await this.send(PacketGenerator.printEnd());
     Validators.arrayLengthEquals(response.data, 1);
     return response.data[0] === 1;
@@ -571,5 +595,12 @@ export class Abstraction {
 
   public newPrintTask(name: PrintTaskName, options?: Partial<PrintOptions>): AbstractPrintTask {
     return new printTasks[name](this, options);
+  }
+
+  public cancelStatusPoll() {
+    if (this.statusPollTimer) {
+      clearInterval(this.statusPollTimer);
+      this.statusPollTimer = undefined;
+    }
   }
 }

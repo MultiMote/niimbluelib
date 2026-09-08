@@ -17,7 +17,7 @@ export class B21L2BPrintTask extends AbstractPrintTask {
   }
 
   override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
-    this.checkAddPage(quantity ?? 1);
+    this.validatePage(image, quantity ?? 1);
 
     for (let i = 0; i < (quantity ?? 1); i++) {
       await Utils.doUntilTrue(() => this.abstraction.pageStart(), 5, 500);

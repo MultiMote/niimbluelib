@@ -2,6 +2,13 @@
 
 * node: fix BLE scan and connection setup
 * Add NiimbotClientType.getType
+* Add statusPollTimer cleanup to printEnd
+* AbstractPrintTask:
+   - Add isSupportColor, setPrintOptions, reset (allow reusing the same print task for multiple print jobs)
+   - Add options.cutHeight
+   - Fix options.cutType not being used
+* Add printheadWidth, supportColor gathering on printer connection (PrinterInfo object)
+* Add double color support to B1PrintTask
 
 # 0.0.1-alpha.44
 

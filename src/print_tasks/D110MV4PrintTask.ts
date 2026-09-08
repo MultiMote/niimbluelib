@@ -1,5 +1,5 @@
 import { EncodedImage } from "../image_encoder";
-import { HeartbeatType, NiimbotPacket, PacketGenerator, LabelType } from "../packets";
+import { HeartbeatType, NiimbotPacket, PacketGenerator, LabelType, PageColorType } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
@@ -37,7 +37,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
   }
 
   override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
-    this.checkAddPage(quantity ?? 1);
+    this.validatePage(image, quantity ?? 1);
 
     // B21_PRO does not respond on first packet after PrintStart if using Bluetooth connection.
     // Originally PrintStatus is sent, no response waited.
@@ -47,7 +47,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
 
     return this.abstraction.sendAll(
       [
-        PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1),
+        PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1, this.printOptions.cutHeight, this.printOptions.cutType),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
@@ -74,5 +74,9 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     await this.abstraction.send(pkt);
 
     return result;
+  }
+
+  override isSupportColor(pageColor: PageColorType): boolean {
+    return pageColor === PageColorType.SingleColor || pageColor === PageColorType.DoubleColor;
   }
 }

@@ -209,15 +209,16 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Send "connect" packet and fetch the protocol version.
    **/
   protected async initialNegotiate(): Promise<void> {
-    const cfg = this.info;
-    cfg.connectResult = await this.abstraction.connectResult();
-    cfg.protocolVersion = 0;
+    this.info.connectResult = await this.abstraction.connectResult();
+    this.info.protocolVersion = 0;
+    this.info.supportColor = false;
 
-    if (cfg.connectResult === ConnectResult.ConnectedNew) {
-      cfg.protocolVersion = 1;
-    } else if (cfg.connectResult === ConnectResult.ConnectedV3) {
+    if (this.info.connectResult === ConnectResult.ConnectedNew) {
+      this.info.protocolVersion = 1;
+    } else if (this.info.connectResult === ConnectResult.ConnectedV3) {
       const statusData = await this.abstraction.getPrinterStatusData();
-      cfg.protocolVersion = statusData.protocolVersion;
+      this.info.protocolVersion = statusData.protocolVersion;
+      this.info.supportColor = statusData.supportColor;
     }
   }
 
@@ -234,6 +235,13 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.info.labelType = (await this.abstraction.getLabelType().catch(console.error)) ?? undefined;
     this.info.hardwareVersion = (await this.abstraction.getHardwareVersion().catch(console.error)) ?? undefined;
     this.info.softwareVersion = (await this.abstraction.getSoftwareVersion().catch(console.error)) ?? undefined;
+
+    try {
+      const i = await this.abstraction.heartbeatPrinterInfo();
+      this.info.printheadWidth = i.printheadWidth;
+    } catch (e) {
+      console.warn(`${e}`);
+    }
 
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
