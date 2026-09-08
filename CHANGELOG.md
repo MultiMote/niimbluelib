@@ -1,6 +1,7 @@
 # 0.0.1-alpha.46
 
 * BREAKING: rename `abstraction` to `protocol`
+* Move parsing operations to `PacketParser`
 
 # 0.0.1-alpha.45
 

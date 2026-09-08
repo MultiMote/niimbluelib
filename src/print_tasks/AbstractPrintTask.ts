@@ -1,6 +1,6 @@
 import { EncodedImage } from "../image_encoder";
 import { LabelType, PageColorType } from "../packets";
-import { NiimbotProtocol } from "../packets/ptotocol";
+import { NiimbotProtocol } from "../packets/protocol";
 
 /**
  * Print options for print tasks.

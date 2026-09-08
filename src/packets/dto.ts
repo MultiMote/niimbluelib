@@ -42,6 +42,8 @@ export interface PrintStatus {
   pagePrintProgress: number;
   /** 0 – 100 */
   pageFeedProgress: number;
+  
+  error: number;
 }
 
 /**
