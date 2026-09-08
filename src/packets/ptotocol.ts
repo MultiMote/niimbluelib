@@ -25,9 +25,9 @@ import CRC32 from "crc-32";
  *
  * @category Packets
  */
-export class Abstraction {
+export class NiimbotProtocol {
   private readonly DEFAULT_PACKET_TIMEOUT: number = 1_000;
-  private client: NiimbotAbstractClient;
+  private readonly client: NiimbotAbstractClient;
   private packetTimeout: number = this.DEFAULT_PACKET_TIMEOUT;
   private statusPollTimer: NodeJS.Timeout | undefined;
   private statusTimeoutTimer: NodeJS.Timeout | undefined;

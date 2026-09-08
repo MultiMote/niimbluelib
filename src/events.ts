@@ -150,7 +150,7 @@ export class PrintProgressEvent extends NiimbotEvent {
 }
 
 /**
- * Fired on firmware upload progress during {@link Abstraction.firmwareUpgrade}.
+ * Fired on firmware upload progress during {@link NiimbotProtocol.firmwareUpgrade}.
  * @category Events
  */
 export class FirmwareProgressEvent extends NiimbotEvent {

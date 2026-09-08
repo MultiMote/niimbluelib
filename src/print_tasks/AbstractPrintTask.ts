@@ -1,6 +1,6 @@
 import { EncodedImage } from "../image_encoder";
 import { LabelType, PageColorType } from "../packets";
-import { Abstraction } from "../packets/abstraction";
+import { NiimbotProtocol } from "../packets/ptotocol";
 
 /**
  * Print options for print tasks.
@@ -66,7 +66,7 @@ const printOptionsDefaults: PrintOptions = {
  * ```ts
  * const quantity = 1;
  *
- * const printTask = client.abstraction.newPrintTask("B1", {
+ * const printTask = client.protocol.newPrintTask("B1", {
  *   totalPages: quantity
  * });
  *
@@ -82,19 +82,19 @@ const printOptionsDefaults: PrintOptions = {
  * } catch (e) {
  *   alert(e);
  * } finally {
- *   await client.abstraction.printEnd();
+ *   await client.protocol.printEnd();
  * }
  * ```
  *
  * @category Print tasks
  **/
 export abstract class AbstractPrintTask {
-  protected abstraction: Abstraction;
+  protected protocol: NiimbotProtocol;
   protected printOptions: PrintOptions;
   protected pagesPrinted: number;
 
-  constructor(abstraction: Abstraction, printOptions?: Partial<PrintOptions>) {
-    this.abstraction = abstraction;
+  constructor(protocol: NiimbotProtocol, printOptions?: Partial<PrintOptions>) {
+    this.protocol = protocol;
     this.pagesPrinted = 0;
 
     this.printOptions = {
@@ -150,11 +150,11 @@ export abstract class AbstractPrintTask {
   abstract waitForFinished(): Promise<void>;
   /** Printer's printhead resolution in pixels */
   protected printheadPixels(): number | undefined {
-    return this.abstraction.getClient().getModelMetadata()?.printheadPixels;
+    return this.protocol.getClient().getModelMetadata()?.printheadPixels;
   }
   /** End print, cleanup */
   printEnd(): Promise<boolean> {
-    return this.abstraction.printEnd();
+    return this.protocol.printEnd();
   }
   /** Check if this print task supports a specified page color */
   isSupportColor(pageColor: PageColorType): boolean {

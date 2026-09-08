@@ -33,7 +33,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
       PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.pageColor, this.printOptions.speed),
     );
 
-    return this.abstraction.sendAll(pkts);
+    return this.protocol.sendAll(pkts);
   }
 
   override async printPage(image: EncodedImage, quantity?: number): Promise<void> {
@@ -43,9 +43,9 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     // Originally PrintStatus is sent, no response waited.
     const statusPacket = PacketGenerator.printStatus();
     statusPacket.oneWay = true;
-    await this.abstraction.send(statusPacket);
+    await this.protocol.send(statusPacket);
 
-    return this.abstraction.sendAll(
+    return this.protocol.sendAll(
       [
         PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1, this.printOptions.cutHeight, this.printOptions.cutType),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
@@ -56,11 +56,11 @@ export class D110MV4PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
-    this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
+    this.protocol.setPacketTimeout(this.printOptions.statusTimeoutMs);
 
-    return this.abstraction
+    return this.protocol
       .waitUntilPrintFinishedByStatusPoll(this.printOptions.totalPages ?? 1, this.printOptions.statusPollIntervalMs)
-      .finally(() => this.abstraction.setDefaultPacketTimeout());
+      .finally(() => this.protocol.setDefaultPacketTimeout());
   }
 
   override async printEnd(): Promise<boolean> {
@@ -69,9 +69,9 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     const pkt = PacketGenerator.heartbeat(HeartbeatType.Advanced1);
     pkt.oneWay = true;
 
-    const result = await this.abstraction.printEnd();
+    const result = await this.protocol.printEnd();
 
-    await this.abstraction.send(pkt);
+    await this.protocol.send(pkt);
 
     return result;
   }

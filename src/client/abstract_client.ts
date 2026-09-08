@@ -1,7 +1,7 @@
 import { EventEmitter } from "eventemitter3";
 import { Mutex } from "async-mutex";
 import {
-  Abstraction,
+  NiimbotProtocol,
   ConnectResult,
   NiimbotPacket,
   PacketParser,
@@ -45,7 +45,7 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
  * @category Client
  */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
-  public readonly abstraction: Abstraction;
+  public readonly protocol: NiimbotProtocol;
   protected info: PrinterInfo = {};
   private heartbeatTimer?: NodeJS.Timeout;
   private heartbeatFails: number = 0;
@@ -59,7 +59,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
   constructor() {
     super();
-    this.abstraction = new Abstraction(this);
+    this.protocol = new NiimbotProtocol(this);
     this.on("connect", () => this.startHeartbeat());
     this.on("disconnect", () => {
       this.stopHeartbeat();
@@ -209,14 +209,14 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Send "connect" packet and fetch the protocol version.
    **/
   protected async initialNegotiate(): Promise<void> {
-    this.info.connectResult = await this.abstraction.connectResult();
+    this.info.connectResult = await this.protocol.connectResult();
     this.info.protocolVersion = 0;
     this.info.supportColor = false;
 
     if (this.info.connectResult === ConnectResult.ConnectedNew) {
       this.info.protocolVersion = 1;
     } else if (this.info.connectResult === ConnectResult.ConnectedV3) {
-      const statusData = await this.abstraction.getPrinterStatusData();
+      const statusData = await this.protocol.getPrinterStatusData();
       this.info.protocolVersion = statusData.protocolVersion;
       this.info.supportColor = statusData.supportColor;
     }
@@ -226,18 +226,18 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Fetches printer information and stores it.
    */
   public async fetchPrinterInfo(): Promise<PrinterInfo> {
-    this.info.modelId = await this.abstraction.getPrinterModel();
+    this.info.modelId = await this.protocol.getPrinterModel();
 
-    this.info.serial = (await this.abstraction.getPrinterSerialNumber().catch(console.error)) ?? undefined;
-    this.info.mac = (await this.abstraction.getPrinterBluetoothMacAddress().catch(console.error)) ?? undefined;
-    this.info.charge = (await this.abstraction.getBatteryChargeLevel().catch(console.error)) ?? undefined;
-    this.info.autoShutdownTime = (await this.abstraction.getAutoShutDownTime().catch(console.error)) ?? undefined;
-    this.info.labelType = (await this.abstraction.getLabelType().catch(console.error)) ?? undefined;
-    this.info.hardwareVersion = (await this.abstraction.getHardwareVersion().catch(console.error)) ?? undefined;
-    this.info.softwareVersion = (await this.abstraction.getSoftwareVersion().catch(console.error)) ?? undefined;
+    this.info.serial = (await this.protocol.getPrinterSerialNumber().catch(console.error)) ?? undefined;
+    this.info.mac = (await this.protocol.getPrinterBluetoothMacAddress().catch(console.error)) ?? undefined;
+    this.info.charge = (await this.protocol.getBatteryChargeLevel().catch(console.error)) ?? undefined;
+    this.info.autoShutdownTime = (await this.protocol.getAutoShutDownTime().catch(console.error)) ?? undefined;
+    this.info.labelType = (await this.protocol.getLabelType().catch(console.error)) ?? undefined;
+    this.info.hardwareVersion = (await this.protocol.getHardwareVersion().catch(console.error)) ?? undefined;
+    this.info.softwareVersion = (await this.protocol.getSoftwareVersion().catch(console.error)) ?? undefined;
 
     try {
-      const i = await this.abstraction.heartbeatPrinterInfo();
+      const i = await this.protocol.heartbeatPrinterInfo();
       this.info.printheadWidth = i.printheadWidth;
     } catch (e) {
       console.warn(`${e}`);
@@ -274,7 +274,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.stopHeartbeat();
 
     this.heartbeatTimer = setInterval(() => {
-      this.abstraction
+      this.protocol
         .heartbeat()
         .then((data) => {
           this.heartbeatFails = 0;

@@ -9,7 +9,7 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
  */
 export class B21L2BPrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
-    return this.abstraction.sendAll([
+    return this.protocol.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
       PacketGenerator.printStart1b(),
@@ -20,9 +20,9 @@ export class B21L2BPrintTask extends AbstractPrintTask {
     this.validatePage(image, quantity ?? 1);
 
     for (let i = 0; i < (quantity ?? 1); i++) {
-      await Utils.doUntilTrue(() => this.abstraction.pageStart(), 5, 500);
+      await Utils.doUntilTrue(() => this.protocol.pageStart(), 5, 500);
 
-      await this.abstraction.sendAll(
+      await this.protocol.sendAll(
         [
           PacketGenerator.setPageSize4b(image.rows, image.cols),
           ...PacketGenerator.writeImageData(image, {
@@ -38,8 +38,8 @@ export class B21L2BPrintTask extends AbstractPrintTask {
   }
 
   override async waitForPageFinished(): Promise<void> {
-    await Utils.doUntilTrue(() => this.abstraction.pageEnd(), 20, 500);
-    this.abstraction.getClient().emit("printprogress", new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, 100, 100));
+    await Utils.doUntilTrue(() => this.protocol.pageEnd(), 20, 500);
+    this.protocol.getClient().emit("printprogress", new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, 100, 100));
   }
 
   override waitForFinished(): Promise<void> {

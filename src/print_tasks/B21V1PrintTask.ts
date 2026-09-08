@@ -7,7 +7,7 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
  */
 export class B21V1PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
-    return this.abstraction.sendAll([
+    return this.protocol.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
       PacketGenerator.printStart1b(),
@@ -18,7 +18,7 @@ export class B21V1PrintTask extends AbstractPrintTask {
     this.validatePage(image, quantity ?? 1);
 
     for (let i = 0; i < (quantity ?? 1); i++) {
-      await this.abstraction.sendAll(
+      await this.protocol.sendAll(
         [
           // PacketGenerator.printClear(),
           PacketGenerator.pageStart(),
@@ -36,10 +36,10 @@ export class B21V1PrintTask extends AbstractPrintTask {
   }
 
   override waitForFinished(): Promise<void> {
-    this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
+    this.protocol.setPacketTimeout(this.printOptions.statusTimeoutMs);
 
-    return this.abstraction
+    return this.protocol
       .waitUntilPrintFinishedByPrintEndPoll(this.printOptions.totalPages, this.printOptions.statusPollIntervalMs)
-      .finally(() => this.abstraction.setDefaultPacketTimeout());
+      .finally(() => this.protocol.setDefaultPacketTimeout());
   }
 }
