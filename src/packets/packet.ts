@@ -154,6 +154,10 @@ export class NiimbotPacket {
 
     return packet;
   }
+
+  public static fromHex(hex: string): NiimbotPacket {
+    return NiimbotPacket.fromBytes(Utils.hexToBuf(hex));
+  }
 }
 
 /**

@@ -3,6 +3,7 @@
 * BREAKING: rename `abstraction` to `protocol`
 * Move parsing operations to `PacketParser`
 * Allow reconnecting to an previously authorized `SerialPort`/`BluetoothDevice`
+* Add `NiimbotPacket.fromHex`
 
 # 0.0.1-alpha.45
 

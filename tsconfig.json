@@ -1,5 +1,6 @@
 {
   "include": ["src/**/*"],
+  "exclude": ["src/test/**/*"],
   "compilerOptions": {
     "types": ["node", "w3c-web-serial", "web-bluetooth"],
     "rootDir": "./src",
