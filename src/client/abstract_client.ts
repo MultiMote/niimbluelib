@@ -35,7 +35,7 @@ export type ConnectionInfo = {
 
 export const NIIMBOT_CLIENT_DEFAULTS = {
   packetIntervalMs: 10,
-  heartbeatIntervalMs: 2_000
+  heartbeatIntervalMs: 2_000,
 };
 
 /**
@@ -115,7 +115,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   public async waitForPacket(
     ids: ResponseCommandId[] = [],
     catchErrorPackets: boolean = true,
-    timeoutMs: number = 1000
+    timeoutMs: number = 1000,
   ): Promise<NiimbotPacket> {
     return new Promise((resolve, reject) => {
       let timeout: NodeJS.Timeout | undefined = undefined;
@@ -223,24 +223,29 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   }
 
   /**
-   * Fetches printer information and stores it.
+   * Fetch printer information and store it
    */
   public async fetchPrinterInfo(): Promise<PrinterInfo> {
-    this.info.modelId = await this.protocol.getPrinterModel();
+    const safeGet = <T>(promise: Promise<T>, msg: string) =>
+      promise.catch((e) => {
+        console.warn(`Unable to get ${msg} (${e})`);
+        return undefined;
+      });
 
-    this.info.serial = (await this.protocol.getPrinterSerialNumber().catch(console.error)) ?? undefined;
-    this.info.mac = (await this.protocol.getPrinterBluetoothMacAddress().catch(console.error)) ?? undefined;
-    this.info.charge = (await this.protocol.getBatteryChargeLevel().catch(console.error)) ?? undefined;
-    this.info.autoShutdownTime = (await this.protocol.getAutoShutDownTime().catch(console.error)) ?? undefined;
-    this.info.labelType = (await this.protocol.getLabelType().catch(console.error)) ?? undefined;
-    this.info.hardwareVersion = (await this.protocol.getHardwareVersion().catch(console.error)) ?? undefined;
-    this.info.softwareVersion = (await this.protocol.getSoftwareVersion().catch(console.error)) ?? undefined;
+    this.info.modelId = await this.protocol.getPrinterModel();
+    this.info.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
+    this.info.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth");
+    this.info.charge = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
+    this.info.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
+    this.info.labelType = await safeGet(this.protocol.getLabelType(), "label type");
+    this.info.hardwareVersion = await safeGet(this.protocol.getHardwareVersion(), "hardware version");
+    this.info.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
 
     try {
       const i = await this.protocol.heartbeatPrinterInfo();
       this.info.printheadWidth = i.printheadWidth;
     } catch (e) {
-      console.warn(`${e}`);
+      console.warn("Unable to get printhead width");
     }
 
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
