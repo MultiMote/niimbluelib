@@ -122,27 +122,27 @@ export class PacketParser {
   }
 
   public static parsePrinterStatusDataResponse(packet: NiimbotPacket): PrinterStatusData {
-    let protocolVersion = 0;
-    let supportColor = false;
+    const result: PrinterStatusData = {
+      protocolVersion: 0,
+      supportColor: false
+    }
+
 
     if (packet.dataLength >= 13) {
-      supportColor = packet.data[10] > 0;
+      result.supportColor = packet.data[10] > 0;
 
       const n = packet.data[11] * 100 + packet.data[12];
 
       if (n >= 204 && n < 300) {
-        protocolVersion = 3;
+        result.protocolVersion = 3;
       } else if (n >= 300 && n < 302) {
-        protocolVersion = 4;
+        result.protocolVersion = 4;
       } else if (n >= 302) {
-        protocolVersion = 5;
+        result.protocolVersion = 5;
       }
     }
 
-    return {
-      supportColor,
-      protocolVersion,
-    };
+    return result;
   }
 
   public static parsePrinterInfoModelIdResponse(packet: NiimbotPacket): number {
@@ -194,9 +194,12 @@ export class PacketParser {
 
     const r = new SequentialDataReader(packet.data);
 
+    const [hwH, hwL] = r.readBytes(2);
+    const [fwH, fwL] = r.readBytes(2);
+
     const info: HeartbeatPrinterInfoData = {
-      firmwareVersion: r.readI16(),
-      hardwareVersion: r.readI16(),
+      softwareVersion: (fwL / 100 + fwH).toFixed(2),
+      hardwareVersion: (hwL / 100 + hwH).toFixed(2),
       printheadWidth: r.readI16(),
       resolutionClass: r.readI8() as ResolutionClass,
       printheadAlignment: r.readI8(),

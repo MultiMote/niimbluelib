@@ -234,18 +234,21 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
     this.info.modelId = await this.protocol.getPrinterModel();
     this.info.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
-    this.info.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth");
+    this.info.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
     this.info.charge = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
     this.info.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
     this.info.labelType = await safeGet(this.protocol.getLabelType(), "label type");
-    this.info.hardwareVersion = await safeGet(this.protocol.getHardwareVersion(), "hardware version");
-    this.info.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
 
     try {
       const i = await this.protocol.heartbeatPrinterInfo();
       this.info.printheadWidth = i.printheadWidth;
+      this.info.hardwareVersion = i.hardwareVersion;
+      this.info.softwareVersion = i.softwareVersion;
+      this.info.resolutionClass = i.resolutionClass;
     } catch (e) {
-      console.warn("Unable to get printhead width");
+      console.warn(`Unable to get printhead width and some other info (${e})`);
+      this.info.hardwareVersion = await safeGet(this.protocol.getHardwareVersion(), "hardware version");
+      this.info.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
     }
 
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));

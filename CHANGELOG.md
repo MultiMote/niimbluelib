@@ -4,7 +4,8 @@
 * Move parsing operations to `PacketParser`
 * Allow reconnecting to an previously authorized `SerialPort`/`BluetoothDevice`
 * Add `NiimbotPacket.fromHex`
-* Add `NiimbotVirtualClient`
+* Add `NiimbotVirtualClient` and tests with dumps from real printers (printer characteristics detection)
+* Fix version detection for non-very-old printer models
 
 # 0.0.1-alpha.45
 

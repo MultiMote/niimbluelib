@@ -23,7 +23,7 @@ export class NiimbotVirtualClient extends NiimbotAbstractClient {
    * ```
    * >> 03 5555 c1 01 01 c1 aaaa
    * << 5555 c2 01 02 c1 aaaa
-   * >> 5555 40 01 08 49 aaaa
+   * >> 5555 40 01 08 49 aaaa (packet comment)
    * << 5555 48 02 0900 43 aaaa
    * >> 5555 40 01 0c 4d aaaa
    * << 5555 4c 02 051e 55 aaaa
@@ -37,15 +37,20 @@ export class NiimbotVirtualClient extends NiimbotAbstractClient {
 
     let request: Uint8Array | undefined;
 
+    const lineRegexp = /^\s*(>>|<<)\s*(.+?)\s*$/;
+    const parRegexp = /\(.*?\)/g;
+
     for (const line of hex.split(/\r?\n/)) {
-      const match = line.match(/^\s*(>>|<<)\s*(.+?)\s*$/);
+      const match = lineRegexp.exec(line);
 
       if (!match) {
         continue;
       }
 
       const [, direction, value] = match;
-      const packet = Utils.hexToBuf(value.replace(/\s+/g, ""));
+      // Strip parenthesized comments and whitespaces
+      const cleanHex = value.replace(parRegexp, "").replace(/\s+/g, "");
+      const packet = Utils.hexToBuf(cleanHex);
 
       if (direction === ">>") {
         if (request) {

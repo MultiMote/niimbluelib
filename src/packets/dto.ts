@@ -30,6 +30,7 @@ export interface PrinterInfo {
   supportColor?: boolean;
   softwareVersion?: string;
   hardwareVersion?: string;
+  resolutionClass?: ResolutionClass;
 }
 
 /**
@@ -42,7 +43,7 @@ export interface PrintStatus {
   pagePrintProgress: number;
   /** 0 – 100 */
   pageFeedProgress: number;
-  
+
   error: number;
 }
 
@@ -84,8 +85,8 @@ export interface HeartbeatData {
  * @category Packets
  */
 export interface HeartbeatPrinterInfoData {
-  firmwareVersion: number;
-  hardwareVersion: number;
+  softwareVersion: string;
+  hardwareVersion: string;
   printheadWidth: number;
   resolutionClass: ResolutionClass;
   printheadAlignment: number;
