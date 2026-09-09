@@ -2,14 +2,16 @@ import { NiimbotAbstractClient, ConnectionInfo, NIIMBOT_CLIENT_DEFAULTS } from "
 import { NiimbotBluetoothClient } from "./bluetooth_impl";
 import { NiimbotCapacitorBleClient, NiimbotCapacitorBleClientConnectOptions } from "./capacitor_ble_impl";
 import { NiimbotSerialClient } from "./serial_impl";
+import { NiimbotVirtualClient } from "./virtual_impl";
 
 /** Client type for {@link instantiateClient} */
-export type NiimbotClientType = "bluetooth" | "serial" | "capacitor-ble";
+export type NiimbotClientType = "bluetooth" | "serial" | "capacitor-ble" | "virtual";
 
 const clientFactories: Record<NiimbotClientType, () => NiimbotAbstractClient> = {
   "bluetooth": () => new NiimbotBluetoothClient(),
   "serial": () => new NiimbotSerialClient(),
   "capacitor-ble": () => new NiimbotCapacitorBleClient(),
+  "virtual": () => new NiimbotVirtualClient(),
 };
 
 /** Create new client instance */
@@ -28,5 +30,6 @@ export {
   NiimbotCapacitorBleClient,
   NiimbotCapacitorBleClientConnectOptions,
   NiimbotSerialClient,
+  NiimbotVirtualClient,
   NIIMBOT_CLIENT_DEFAULTS,
 };

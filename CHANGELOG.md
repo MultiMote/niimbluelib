@@ -4,6 +4,7 @@
 * Move parsing operations to `PacketParser`
 * Allow reconnecting to an previously authorized `SerialPort`/`BluetoothDevice`
 * Add `NiimbotPacket.fromHex`
+* Add `NiimbotVirtualClient`
 
 # 0.0.1-alpha.45
 
