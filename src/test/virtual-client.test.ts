@@ -1,11 +1,11 @@
 import { test, describe } from "node:test";
 import { match, strictEqual } from "node:assert";
 import { NiimbotVirtualClient, ResolutionClass } from "..";
-import { B1_V5_22, B21_PRO_V3_09, B21S_V40_28, B2_PRO_V2_01, D110_V5_34, D110M_V4_23 } from "./dumps";
+import * as dumps from "./dumps";
 
 describe("Virtual B1 5.22 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(B1_V5_22);
+  client.loadHexDump(dumps.B1_V5_22);
   await client.connect();
 
   const info = client.getPrinterInfo();
@@ -32,7 +32,7 @@ describe("Virtual B1 5.22 test", async () => {
 
 describe("Virtual B21 PRO 3.09 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(B21_PRO_V3_09);
+  client.loadHexDump(dumps.B21_PRO_V3_09);
   await client.connect();
 
   const info = client.getPrinterInfo();
@@ -53,7 +53,7 @@ describe("Virtual B21 PRO 3.09 test", async () => {
 
 describe("Virtual D110 5.34 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(D110_V5_34);
+  client.loadHexDump(dumps.D110_V13_14);
   await client.connect();
 
   const info = client.getPrinterInfo();
@@ -61,8 +61,8 @@ describe("Virtual D110 5.34 test", async () => {
 
   describe("getPrinterInfo", async () => {
     test("modelId", async () => strictEqual(info.modelId, 2304));
-    test("hardwareVersion", async () => match(info.hardwareVersion!, /5\.30/));
-    test("softwareVersion", async () => match(info.softwareVersion!, /5\.34/));
+    test("hardwareVersion", async () => match(info.hardwareVersion!, /13\.10/));
+    test("softwareVersion", async () => match(info.softwareVersion!, /13\.14/));
     test("printheadWidth", async () => strictEqual(info.printheadWidth, undefined));
     test("protocolVersion", async () => strictEqual(info.protocolVersion, 1));
     test("serial", async () => strictEqual(info.serial, "G326030306"));
@@ -79,7 +79,7 @@ describe("Virtual D110 5.34 test", async () => {
 
 describe("Virtual D110M 4.23 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(D110M_V4_23);
+  client.loadHexDump(dumps.D110M_V4_23);
   await client.connect();
 
   const info = client.getPrinterInfo();
@@ -106,7 +106,7 @@ describe("Virtual D110M 4.23 test", async () => {
 
 describe("Virtual B2 PRO 2.09 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(B2_PRO_V2_01);
+  client.loadHexDump(dumps.B2_PRO_V2_01);
   await client.connect();
 
   const info = client.getPrinterInfo();
@@ -133,7 +133,7 @@ describe("Virtual B2 PRO 2.09 test", async () => {
 
 describe("Virtual B21S 40.28 test", async () => {
   const client = new NiimbotVirtualClient();
-  client.loadHexDump(B21S_V40_28);
+  client.loadHexDump(dumps.B21S_V40_28);
   await client.connect();
 
   const info = client.getPrinterInfo();
