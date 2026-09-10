@@ -50,6 +50,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   private heartbeatTimer?: NodeJS.Timeout;
   private heartbeatFails: number = 0;
   private heartbeatIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.heartbeatIntervalMs;
+  private heartbeatAutoStart: boolean = true;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
   private packetBuf: Uint8Array = new Uint8Array();
@@ -60,11 +61,21 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   constructor() {
     super();
     this.protocol = new NiimbotProtocol(this);
-    this.on("connect", () => this.startHeartbeat());
+    
+    this.on("connect", () => {
+      if (this.heartbeatAutoStart) {
+        this.startHeartbeat()
+      }
+    });
+
     this.on("disconnect", () => {
       this.stopHeartbeat();
       this.packetBuf = new Uint8Array();
     });
+  }
+
+  public setHeartbeatAutoStart(value: boolean) {
+    this.heartbeatAutoStart = value;
   }
 
   /**

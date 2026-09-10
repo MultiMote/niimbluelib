@@ -6,6 +6,7 @@
 * Add `NiimbotPacket.fromHex`
 * Add `NiimbotVirtualClient` and tests with dumps from real printers (printer characteristics detection)
 * Fix version detection for non-very-old printer models
+* Add `NiimbotAbstractClient.setHeartbeatAutoStart`
 
 # 0.0.1-alpha.45
 

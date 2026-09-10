@@ -17,6 +17,11 @@ export class NiimbotVirtualClient extends NiimbotAbstractClient {
     response: Uint8Array;
   }> = [];
 
+  constructor() {
+    super();
+    this.setHeartbeatAutoStart(false);
+  }
+
   /**
    * Dump example (case and spaces are ignored):
    *
