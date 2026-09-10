@@ -20,7 +20,7 @@ import {
 } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
-import { PrinterInfo, PrintError } from "../packets/dto";
+import { HeartbeatData, PrinterInfo, PrintError } from "../packets/dto";
 import { NiimbotClientType } from ".";
 
 /**
@@ -297,6 +297,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
         .heartbeat()
         .then((data) => {
           this.heartbeatFails = 0;
+          this.heartbeatReceived(data);
           this.emit("heartbeat", new HeartbeatEvent(data));
         })
         .catch((e) => {
@@ -305,6 +306,12 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
           this.emit("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
         });
     }, this.heartbeatIntervalMs);
+  }
+
+  private heartbeatReceived(data: HeartbeatData) {
+    if (data.batteryPercents) {
+      this.info.batteryPercents = data.batteryPercents;
+    }
   }
 
   /**

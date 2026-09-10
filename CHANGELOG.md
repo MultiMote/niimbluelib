@@ -9,6 +9,7 @@
 * Add `NiimbotAbstractClient.setHeartbeatAutoStart`
 * Add `PrinterInfo.charge` and `HeartbeatData.chargeLevel` renamed to `batteryPercents`
 * Battery charge level is in 0-100 range now
+* Auto update `NiimbotAbstractClient.info.batteryPercents` with heartbeat data
 
 # 0.0.1-alpha.45
 
