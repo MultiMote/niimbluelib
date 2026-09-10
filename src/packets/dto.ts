@@ -1,4 +1,4 @@
-import { AutoShutdownTime, BatteryChargeLevel, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
+import { AutoShutdownTime, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
 
 /**
  * @category Packets
@@ -23,7 +23,7 @@ export interface PrinterInfo {
   modelId?: number;
   serial?: string;
   mac?: string;
-  charge?: BatteryChargeLevel;
+  batteryPercents?: number;
   autoShutdownTime?: AutoShutdownTime;
   labelType?: LabelType;
   printheadWidth?: number;
@@ -70,7 +70,7 @@ export interface HeartbeatData {
   paperInserted?: boolean;
   paperRfidSuccess?: boolean;
   lidClosed?: boolean;
-  chargeLevel?: BatteryChargeLevel;
+  batteryPercents?: number;
 
   temp?: number;
   ribbonInserted?: boolean;

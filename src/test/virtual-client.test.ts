@@ -19,11 +19,11 @@ describe("Virtual B1 5.22 test", async () => {
     test("protocolVersion", async () => strictEqual(info.protocolVersion, 3));
     test("serial", async () => strictEqual(info.serial, "G327071185"));
     test("resolutionClass", async () => strictEqual(info.resolutionClass, ResolutionClass.DPI203));
-    test("charge", async () => strictEqual(info.charge, 4));
+    test("batteryPercents", async () => strictEqual(info.batteryPercents, 100));
   });
 
   describe("heartbeatInfo", async () => {
-    test("chargeLevel", async () => strictEqual(heartbeatInfo.chargeLevel, 4));
+    test("batteryPercents", async () => strictEqual(heartbeatInfo.batteryPercents, 100));
     test("lidClosed", async () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 
@@ -45,7 +45,7 @@ describe("Virtual B21 PRO 3.09 test", async () => {
     test("protocolVersion", async () => strictEqual(info.protocolVersion, 5));
     test("serial", async () => strictEqual(info.serial, "H613040618"));
     test("resolutionClass", async () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
-    test("charge", async () => strictEqual(info.charge, 2));
+    test("batteryPercents", async () => strictEqual(info.batteryPercents, 50));
   });
 
   await client.disconnect();
@@ -66,11 +66,11 @@ describe("Virtual D110 5.34 test", async () => {
     test("printheadWidth", async () => strictEqual(info.printheadWidth, undefined));
     test("protocolVersion", async () => strictEqual(info.protocolVersion, 1));
     test("serial", async () => strictEqual(info.serial, "G326030306"));
-    test("charge", async () => strictEqual(info.charge, 3));
+    test("batteryPercents", async () => strictEqual(info.batteryPercents, 75));
   });
 
   describe("heartbeatInfo", async () => {
-    test("chargeLevel", async () => strictEqual(heartbeatInfo.chargeLevel, 3));
+    test("batteryPercents", async () => strictEqual(heartbeatInfo.batteryPercents, 75));
     test("lidClosed", async () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 
@@ -93,11 +93,11 @@ describe("Virtual D110M 4.23 test", async () => {
     test("serial", async () => strictEqual(info.serial, "H322062548"));
     test("printheadWidth", async () => strictEqual(info.printheadWidth, 96));
     test("resolutionClass", async () => strictEqual(info.resolutionClass, ResolutionClass.DPI203));
-    test("charge", async () => strictEqual(info.charge, 4));
+    test("batteryPercents", async () => strictEqual(info.batteryPercents, 100));
   });
 
   describe("heartbeatInfo", async () => {
-    test("chargeLevel", async () => strictEqual(heartbeatInfo.chargeLevel, 4));
+    test("batteryPercents", async () => strictEqual(heartbeatInfo.batteryPercents, 100));
     test("lidClosed", async () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 
@@ -120,11 +120,11 @@ describe("Virtual B2 PRO 2.09 test", async () => {
     test("serial", async () => strictEqual(info.serial, "I122050127"));
     test("printheadWidth", async () => strictEqual(info.printheadWidth, 576));
     test("resolutionClass", async () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
-    test("charge", async () => strictEqual(info.charge, 60)); // todo: why this range?
+    test("batteryPercents", async () => strictEqual(info.batteryPercents, 60));
   });
 
   describe("heartbeatInfo", async () => {
-    test("chargeLevel", async () => strictEqual(heartbeatInfo.chargeLevel, 60));
+    test("batteryPercents", async () => strictEqual(heartbeatInfo.batteryPercents, 60));
     test("lidClosed", async () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 
@@ -150,7 +150,7 @@ describe("Virtual B21S 40.28 test", async () => {
   });
 
   describe("heartbeatInfo", async () => {
-    test("chargeLevel", async () => strictEqual(heartbeatInfo.chargeLevel, 3));
+    test("batteryPercents", async () => strictEqual(heartbeatInfo.batteryPercents, 75));
     test("lidClosed", async () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 

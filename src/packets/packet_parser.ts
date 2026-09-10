@@ -222,18 +222,18 @@ export class PacketParser {
       // d110
       r.skip(8);
       info.lidClosed = r.readI8() === 0;
-      info.chargeLevel = r.readI8();
+      info.batteryPercents = r.readI8();
     } else if (len === 13) {
       // b1
       r.skip(9);
       info.lidClosed = r.readI8() === 0;
-      info.chargeLevel = r.readI8();
+      info.batteryPercents = r.readI8();
       info.paperInserted = r.readI8() === 0;
       info.paperRfidSuccess = r.readI8() !== 0;
     } else if (len === 19) {
       r.skip(15);
       info.lidClosed = r.readI8() === 0;
-      info.chargeLevel = r.readI8();
+      info.batteryPercents = r.readI8();
       info.paperInserted = r.readI8() === 0;
       info.paperRfidSuccess = r.readI8() !== 0;
     } else if (len === 20) {
@@ -251,6 +251,10 @@ export class PacketParser {
       info.lidClosed = !info.lidClosed;
     }
 
+    if (info.batteryPercents !== undefined && info.batteryPercents <= 4) {
+      info.batteryPercents *= 25;
+    }
+
     return info;
   }
 
@@ -260,7 +264,7 @@ export class PacketParser {
 
     Validators.arrayLengthAtLeast(packet.data, 9);
     r.skip(2);
-    info.chargeLevel = r.readI8();
+    info.batteryPercents = r.readI8();
     info.temp = r.readI8();
     info.lidClosed = r.readI8() === 0;
     info.paperInserted = r.readI8() === 0;
@@ -282,6 +286,10 @@ export class PacketParser {
     }
 
     r.end();
+
+    if (info.batteryPercents <= 4) {
+      info.batteryPercents *= 25;
+    }
 
     return info;
   }
@@ -323,7 +331,8 @@ export class PacketParser {
 
   public static parseBatteryChargeLevelResponse(packet: NiimbotPacket): number {
     Validators.arrayLengthEquals(packet.data, 1);
-    return packet.data[0];
+    const value = packet.data[0]
+    return value <= 4 ? value * 25 : value;
   }
 
   public static parseAutoShutdownTimeResponse(packet: NiimbotPacket): number {

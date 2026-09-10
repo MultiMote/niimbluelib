@@ -87,18 +87,6 @@ export enum AutoShutdownTime {
 }
 
 /**
- * Battery charge level
- * @category Packets
- **/
-export enum BatteryChargeLevel {
-  Charge0 = 0,
-  Charge25 = 1,
-  Charge50 = 2,
-  Charge75 = 3,
-  Charge100 = 4,
-}
-
-/**
  * {@link ResponseCommandId.In_Connect} status codes.
  * @category Packets
  **/

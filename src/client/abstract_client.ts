@@ -61,7 +61,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   constructor() {
     super();
     this.protocol = new NiimbotProtocol(this);
-    
+
     this.on("connect", () => {
       if (this.heartbeatAutoStart) {
         this.startHeartbeat()
@@ -246,7 +246,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.info.modelId = await this.protocol.getPrinterModel();
     this.info.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
     this.info.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
-    this.info.charge = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
+    this.info.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
     this.info.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
     this.info.labelType = await safeGet(this.protocol.getLabelType(), "label type");
 

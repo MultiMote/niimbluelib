@@ -7,6 +7,8 @@
 * Add `NiimbotVirtualClient` and tests with dumps from real printers (printer characteristics detection)
 * Fix version detection for non-very-old printer models
 * Add `NiimbotAbstractClient.setHeartbeatAutoStart`
+* Add `PrinterInfo.charge` and `HeartbeatData.chargeLevel` renamed to `batteryPercents`
+* Battery charge level is in 0-100 range now
 
 # 0.0.1-alpha.45
 

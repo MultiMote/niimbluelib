@@ -1,6 +1,5 @@
 import {
   AutoShutdownTime,
-  BatteryChargeLevel,
   ConnectResult,
   HeartbeatType,
   LabelType,
@@ -315,9 +314,9 @@ export class NiimbotProtocol {
     throw new Error("Unsupported heartbeat response");
   }
 
-  public async getBatteryChargeLevel(): Promise<BatteryChargeLevel> {
+  public async getBatteryChargeLevel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.BatteryChargeLevel));
-    return PacketParser.parseBatteryChargeLevelResponse(packet) as BatteryChargeLevel;
+    return PacketParser.parseBatteryChargeLevelResponse(packet)
   }
 
   public async getAutoShutDownTime(): Promise<AutoShutdownTime> {
