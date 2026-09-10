@@ -203,3 +203,39 @@ describe("Virtual B21S 40.28 test", () => {
     test("lidClosed", () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 });
+
+
+describe("Virtual B2 PRO 2.12 test", () => {
+  const client = new NiimbotVirtualClient();
+
+  let info: PrinterInfo;
+  let heartbeatInfo: HeartbeatData;
+
+  before(async () => {
+    client.loadHexDump(dumps.B1_PRO_V2_12);
+    await client.connect();
+
+    info = client.getPrinterInfo();
+    heartbeatInfo = await client.protocol.heartbeat();
+  });
+
+  after(async () => {
+    await client.disconnect();
+  });
+
+  describe("getPrinterInfo", () => {
+    test("modelId", () => strictEqual(info.modelId, 4097));
+    test("hardwareVersion", () => strictEqual(info.hardwareVersion!, "2.01"));
+    test("softwareVersion", () => strictEqual(info.softwareVersion!, "2.12"));
+    test("protocolVersion", () => strictEqual(info.protocolVersion, 5));
+    test("serial", () => strictEqual(info.serial, "I304031441"));
+    test("printheadWidth", () => strictEqual(info.printheadWidth, 576));
+    test("resolutionClass", () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
+    test("batteryPercents", () => strictEqual(info.batteryPercents, 40));
+  });
+
+  describe("heartbeatInfo", () => {
+    test("batteryPercents", () => strictEqual(heartbeatInfo.batteryPercents, 40));
+    test("lidClosed", () => strictEqual(heartbeatInfo.lidClosed, true));
+  });
+});
