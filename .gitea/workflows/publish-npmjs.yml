@@ -25,8 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build cjs
-        run: npm run build
+      - name: Test
+        run: npm run test
+
+      - name: Clean and build cjs
+        run: npm run clean-build
 
       - name: Build bundle
         run: npm run build:bundle

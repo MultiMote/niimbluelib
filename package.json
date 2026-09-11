@@ -17,7 +17,7 @@
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.ts",
   "files": [
-    "/dist"
+    "dist"
   ],
   "repository": {
     "type": "git",
@@ -28,13 +28,14 @@
   "private": false,
   "scripts": {
     "clean-build": "npm run clean && npm run build",
-    "build": "tsc --build",
+    "build": "tsc --build tsconfig.build.json",
     "watch": "tsc --watch",
     "build:bundle": "node bundle.mjs",
     "parse-wireshark-dump": "npm run build && node tools/parse-wireshark-dump.mjs",
     "parse-text-dump": "npm run build && node tools/parse-text-dump.mjs",
     "clean": "node clean-dist.mjs",
-    "gen-printer-models": "node tools/gen-printer-models.js > src/printer_models.ts"
+    "gen-printer-models": "node tools/gen-printer-models.js > src/printer_models.ts",
+    "test": "npm run clean && tsc --build && node --test dist/cjs/test/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^25.5.2",

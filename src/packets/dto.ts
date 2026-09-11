@@ -1,4 +1,4 @@
-import { AutoShutdownTime, BatteryChargeLevel, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
+import { AutoShutdownTime, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
 
 /**
  * @category Packets
@@ -23,13 +23,25 @@ export interface PrinterInfo {
   modelId?: number;
   serial?: string;
   mac?: string;
-  charge?: BatteryChargeLevel;
+  batteryPercents?: number;
   autoShutdownTime?: AutoShutdownTime;
   labelType?: LabelType;
   printheadWidth?: number;
   supportColor?: boolean;
   softwareVersion?: string;
   hardwareVersion?: string;
+  resolutionClass?: ResolutionClass;
+}
+
+/**
+ * Interface representing printer information.
+ *
+ * @category Client
+ */
+export interface ConnectNegotiateResult {
+  connectResult: ConnectResult;
+  protocolVersion: number;
+  supportColor: boolean;
 }
 
 /**
@@ -42,6 +54,8 @@ export interface PrintStatus {
   pagePrintProgress: number;
   /** 0 – 100 */
   pageFeedProgress: number;
+
+  error: number;
 }
 
 /**
@@ -67,7 +81,7 @@ export interface HeartbeatData {
   paperInserted?: boolean;
   paperRfidSuccess?: boolean;
   lidClosed?: boolean;
-  chargeLevel?: BatteryChargeLevel;
+  batteryPercents?: number;
 
   temp?: number;
   ribbonInserted?: boolean;
@@ -82,8 +96,8 @@ export interface HeartbeatData {
  * @category Packets
  */
 export interface HeartbeatPrinterInfoData {
-  firmwareVersion: number;
-  hardwareVersion: number;
+  softwareVersion: string;
+  hardwareVersion: string;
   printheadWidth: number;
   resolutionClass: ResolutionClass;
   printheadAlignment: number;

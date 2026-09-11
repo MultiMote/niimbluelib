@@ -7,7 +7,7 @@ import { AbstractPrintTask } from "./AbstractPrintTask";
  */
 export class D110PrintTask extends AbstractPrintTask {
   override printInit(): Promise<void> {
-    return this.abstraction.sendAll([
+    return this.protocol.sendAll([
       PacketGenerator.setDensity(this.printOptions.density),
       PacketGenerator.setLabelType(this.printOptions.labelType),
       PacketGenerator.printStart1b(),
@@ -17,7 +17,7 @@ export class D110PrintTask extends AbstractPrintTask {
   override printPage(image: EncodedImage, quantity?: number): Promise<void> {
     this.validatePage(image, quantity ?? 1);
 
-    return this.abstraction.sendAll(
+    return this.protocol.sendAll(
       [
         PacketGenerator.printClear(),
         PacketGenerator.pageStart(),
@@ -31,11 +31,11 @@ export class D110PrintTask extends AbstractPrintTask {
   }
 
   override waitForPageFinished(): Promise<void> {
-    this.abstraction.setPacketTimeout(this.printOptions.statusTimeoutMs);
+    this.protocol.setPacketTimeout(this.printOptions.statusTimeoutMs);
 
-    return this.abstraction
+    return this.protocol
       .waitUntilPrintFinishedByStatusPoll(this.pagesPrinted, this.printOptions.statusPollIntervalMs)
-      .finally(() => this.abstraction.setDefaultPacketTimeout());
+      .finally(() => this.protocol.setDefaultPacketTimeout());
   }
 
   override waitForFinished(): Promise<void> {

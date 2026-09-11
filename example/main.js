@@ -193,7 +193,7 @@ printButton.onclick = async () => {
   /** Convert image to black and white bits */
   const encoded = ImageEncoder.encodeCanvas(canvas, pageColor, printDirectionSelect.value);
 
-  const printTask = client.abstraction.newPrintTask(printTaskSelect.value, {
+  const printTask = client.protocol.newPrintTask(printTaskSelect.value, {
     totalPages: quantity,
     statusPollIntervalMs: 100,
     statusTimeoutMs: 8_000,
