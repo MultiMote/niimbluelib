@@ -95,13 +95,7 @@ export class NiimbotVirtualClient extends NiimbotAbstractClient {
   public async connect(): Promise<ConnectionInfo> {
     this.connected = true;
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info (is it turned on?).");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.connected = false);
 
     const result: ConnectionInfo = {
       deviceName: "Virtual",

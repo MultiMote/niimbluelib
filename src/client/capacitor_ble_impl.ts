@@ -70,13 +70,7 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       this.processRawPacket(value);
     });
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info.");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.disconnect());
 
     const result: ConnectionInfo = {
       deviceName: device.name,

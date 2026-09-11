@@ -15,7 +15,7 @@ export interface NiimbotBluetoothClientConnectOptions {
    * "Use the new permissions backend for Web Bluetooth" at chrome://flags must be enabled to use `navigator.bluetooth.gedDevices()`
    *
    * Example:
-   * 
+   *
    * ```
    * const authorized = await navigator.bluetooth.getDevices();
    * const authorizedDevice = authorized.find(d => d.name.includes("B1"));
@@ -109,13 +109,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.gattServer = gattServer;
     this.channel = channel;
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info.");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.disconnect());
 
     const result: ConnectionInfo = {
       deviceName: device.name,

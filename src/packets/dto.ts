@@ -34,6 +34,17 @@ export interface PrinterInfo {
 }
 
 /**
+ * Interface representing printer information.
+ *
+ * @category Client
+ */
+export interface ConnectNegotiateResult {
+  connectResult: ConnectResult;
+  protocolVersion: number;
+  supportColor: boolean;
+}
+
+/**
  * @category Packets
  */
 export interface PrintStatus {

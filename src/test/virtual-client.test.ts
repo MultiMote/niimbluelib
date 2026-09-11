@@ -1,7 +1,15 @@
 import { test, describe, before, after } from "node:test";
-import { match, strictEqual } from "node:assert";
+import { match, strictEqual, rejects, ifError } from "node:assert";
 import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } from "..";
 import * as dumps from "./dumps";
+
+describe("Virtual bad client", () => {
+  const client = new NiimbotVirtualClient();
+
+  test("Failed connection with no connect packet", async () => {
+    await rejects(() => client.connect());
+  });
+});
 
 describe("Virtual B1 5.22 test", () => {
   const client = new NiimbotVirtualClient();
@@ -88,7 +96,7 @@ describe("Virtual D110 5.34 test", () => {
     test("modelId", () => strictEqual(info.modelId, 2304));
     test("hardwareVersion", () => match(info.hardwareVersion!, /13\.10/));
     test("softwareVersion", () => match(info.softwareVersion!, /13\.14/));
-    test("printheadWidth", () => strictEqual(info.printheadWidth, undefined));
+    test("printheadWidth", () => ifError(info.printheadWidth));
     test("protocolVersion", () => strictEqual(info.protocolVersion, 1));
     test("serial", () => strictEqual(info.serial, "G326030306"));
     test("batteryPercents", () => strictEqual(info.batteryPercents, 75));
@@ -194,8 +202,8 @@ describe("Virtual B21S 40.28 test", () => {
     test("softwareVersion", () => match(info.softwareVersion!, /40\.28/));
     test("protocolVersion", () => strictEqual(info.protocolVersion, 0));
     test("serial", () => strictEqual(info.serial, "G626070087"));
-    test("printheadWidth", () => strictEqual(info.printheadWidth, undefined));
-    test("resolutionClass", () => strictEqual(info.resolutionClass, undefined));
+    test("printheadWidth", () => ifError(info.printheadWidth));
+    test("resolutionClass", () => ifError(info.resolutionClass));
   });
 
   describe("heartbeatInfo", () => {
