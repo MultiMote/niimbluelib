@@ -13,7 +13,7 @@ import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
-import { HeartbeatData, HeartbeatPrinterInfoData, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -261,7 +261,7 @@ export class NiimbotProtocol {
     return status;
   }
 
-  public async connectResult(): Promise<ConnectResult> {
+  public async sendConnect(): Promise<ConnectResult> {
     const packet = await this.send(PacketGenerator.connect());
     return PacketParser.parseConnectResponse(packet);
   }
@@ -270,6 +270,29 @@ export class NiimbotProtocol {
     const packet = await this.send(PacketGenerator.getPrinterStatusData());
     return PacketParser.parsePrinterStatusDataResponse(packet);
   }
+
+
+  public async connectNegotiate(): Promise<ConnectNegotiateResult> {
+    const result: ConnectNegotiateResult = {
+      protocolVersion: 0,
+      supportColor: false,
+      connectResult: ConnectResult.Disconnect
+    };
+
+    result.connectResult = await this.sendConnect();
+
+    if (result.connectResult === ConnectResult.ConnectedNew) {
+      result.protocolVersion = 1;
+    } else if (result.connectResult === ConnectResult.ConnectedV3) {
+      const statusData = await this.getPrinterStatusData();
+      result.protocolVersion = statusData.protocolVersion;
+      result.supportColor = statusData.supportColor;
+    }
+
+    return result;
+  }
+
+
 
   public async getPrinterModel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.PrinterModelId));

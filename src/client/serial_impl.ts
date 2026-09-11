@@ -57,13 +57,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
       })();
     }, 1); // todo: maybe some other way exists
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info (is it turned on?).");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.disconnect());
 
     const result: ConnectionInfo = {
       deviceName: `Serial (VID:${info.usbVendorId?.toString(16)} PID:${info.usbProductId?.toString(16)})`,

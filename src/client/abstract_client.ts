@@ -219,18 +219,11 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   /**
    * Send "connect" packet and fetch the protocol version.
    **/
-  protected async initialNegotiate(): Promise<void> {
-    this.info.connectResult = await this.protocol.connectResult();
-    this.info.protocolVersion = 0;
-    this.info.supportColor = false;
-
-    if (this.info.connectResult === ConnectResult.ConnectedNew) {
-      this.info.protocolVersion = 1;
-    } else if (this.info.connectResult === ConnectResult.ConnectedV3) {
-      const statusData = await this.protocol.getPrinterStatusData();
-      this.info.protocolVersion = statusData.protocolVersion;
-      this.info.supportColor = statusData.supportColor;
-    }
+  protected async connectNegotiate(): Promise<void> {
+    const result = await this.protocol.connectNegotiate();
+    this.info.connectResult = result.connectResult;
+    this.info.protocolVersion = result.protocolVersion;
+    this.info.supportColor = result.supportColor;
   }
 
   /**
@@ -264,6 +257,26 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
     return this.info;
+  }
+
+  /**
+   * Calls {@link connectNegotiate} (exceptions are not ignored) then calls {@link fetchPrinterInfo} (exceptions ignored)
+   * @param cleanup cleanup/disconnect function, called when initialNegotiate fails
+   */
+  protected async negotiateAndGetPrinterInfo(cleanup?: () => void) {
+    try {
+      await this.connectNegotiate();
+    } catch (e) {
+      if (cleanup) cleanup();
+      throw new Error(`Unable to perform initial negotiate: ${e}`)
+    }
+
+    try {
+      await this.fetchPrinterInfo();
+    } catch (e) {
+      if (cleanup) cleanup(); 
+      throw new Error(`Unable to fetch printer info: ${e}`);
+    }
   }
 
   /**

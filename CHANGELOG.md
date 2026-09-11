@@ -1,5 +1,6 @@
-# 0.0.1-alpha.46
+# 0.46.0
 
+* Switch to semantic versioning.
 * BREAKING: rename `abstraction` to `protocol`
 * Move parsing operations to `PacketParser`
 * Allow reconnecting to an previously authorized `SerialPort`/`BluetoothDevice`
@@ -8,8 +9,9 @@
 * Fix version detection for non-very-old printer models
 * Add `NiimbotAbstractClient.setHeartbeatAutoStart`
 * Add `PrinterInfo.charge` and `HeartbeatData.chargeLevel` renamed to `batteryPercents`
-* Battery charge level is in 0-100 range now
+* BREAKING: Battery charge level is in 0-100 range now
 * Auto update `NiimbotAbstractClient.info.batteryPercents` with heartbeat data
+* BREAKING: Initial negotiation results are now strictly checked in `connect()`. Connecting to a non-printer port is prohibited.
 
 # 0.0.1-alpha.45
 

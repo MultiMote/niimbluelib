@@ -1,6 +1,6 @@
-import { NiimbotAbstractClient, ConnectionInfo, NIIMBOT_CLIENT_DEFAULTS } from "./abstract_client";
+import { NiimbotAbstractClient,   } from "./abstract_client";
 import { NiimbotBluetoothClient } from "./bluetooth_impl";
-import { NiimbotCapacitorBleClient, NiimbotCapacitorBleClientConnectOptions } from "./capacitor_ble_impl";
+import { NiimbotCapacitorBleClient,  } from "./capacitor_ble_impl";
 import { NiimbotSerialClient } from "./serial_impl";
 import { NiimbotVirtualClient } from "./virtual_impl";
 
@@ -25,11 +25,11 @@ export const instantiateClient = (t: NiimbotClientType): NiimbotAbstractClient =
 
 export {
   NiimbotAbstractClient,
-  ConnectionInfo,
   NiimbotBluetoothClient,
   NiimbotCapacitorBleClient,
-  NiimbotCapacitorBleClientConnectOptions,
   NiimbotSerialClient,
   NiimbotVirtualClient,
-  NIIMBOT_CLIENT_DEFAULTS,
 };
+
+export {ConnectionInfo, NIIMBOT_CLIENT_DEFAULTS} from "./abstract_client";
+export {NiimbotCapacitorBleClientConnectOptions} from "./capacitor_ble_impl";
