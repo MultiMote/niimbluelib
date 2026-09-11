@@ -69,13 +69,7 @@ export class NiimbotNodeSerialClient extends NiimbotAbstractClient {
 
     this.device = _port;
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info (is it turned on?).");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.disconnect());
 
     const result: ConnectionInfo = {
       deviceName: `Serial (${this.portName})`,

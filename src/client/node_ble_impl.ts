@@ -145,13 +145,7 @@ export class NiimbotNodeBleClient extends NiimbotAbstractClient {
 
     await this.connectToDevice(this.addr);
 
-    try {
-      await this.initialNegotiate();
-      await this.fetchPrinterInfo();
-    } catch (e) {
-      console.error("Unable to fetch printer info.");
-      console.error(e);
-    }
+    await this.negotiateAndGetPrinterInfo(() => this.disconnect());
 
     const result: ConnectionInfo = {
       deviceName: this.device!.advertisement.localName ?? this.addr,
