@@ -184,6 +184,10 @@ export class PacketParser {
       info.capacity = r.readI16();
     }
 
+    if (r.canRead(8)) {
+      info.uuid2 = Utils.bufToHex(r.readBytes(8), "");
+    }
+
     r.end();
 
     return info;

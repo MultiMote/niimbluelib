@@ -1,3 +1,7 @@
+# 0.46.1
+
+* Fix parsing RfidInfo packet response with extra uuid field
+
 # 0.46.0
 
 * Switch to semantic versioning.
@@ -8,7 +12,7 @@
 * Add `NiimbotVirtualClient` and tests with dumps from real printers (printer characteristics detection)
 * Fix version detection for non-very-old printer models
 * Add `NiimbotAbstractClient.setHeartbeatAutoStart`
-* Add `PrinterInfo.charge` and `HeartbeatData.chargeLevel` renamed to `batteryPercents`
+* BREAKING: `PrinterInfo.charge` and `HeartbeatData.chargeLevel` renamed to `batteryPercents`
 * BREAKING: Battery charge level is in 0-100 range now
 * Auto update `NiimbotAbstractClient.info.batteryPercents` with heartbeat data
 * BREAKING: Initial negotiation results are now strictly checked in `connect()`. Connecting to a non-printer port is prohibited.

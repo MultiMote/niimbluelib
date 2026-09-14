@@ -64,6 +64,7 @@ export interface PrintStatus {
 export interface RfidInfo {
   tagPresent: boolean;
   uuid: string;
+  uuid2?: string;
   barCode: string;
   serialNumber: string;
   allPaper: number;
