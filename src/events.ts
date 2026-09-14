@@ -1,4 +1,4 @@
-import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, RfidInfo } from ".";
 
 /**
  * Base client event
@@ -127,6 +127,21 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
 }
 
 /**
+ * Fired when RFID info fetched from printer (after {@link NiimbotAbstractClient.fetchRfidInfo} finished).
+ * @category Events
+ */
+export class RfidInfoFetchedEvent extends NiimbotEvent {
+  readonly labelRfid?: RfidInfo;
+  readonly ribbonRfid?: RfidInfo;
+
+  constructor(labelRfid?: RfidInfo, ribbonRfid?: RfidInfo) {
+    super("rfidinfofetched");
+    this.labelRfid = labelRfid;
+    this.ribbonRfid = ribbonRfid;
+  }
+}
+
+/**
  * Fired on print progress received during {@link AbstractPrintTask.waitForFinished}.
  * @category Events
  */
@@ -178,6 +193,7 @@ export type ClientEventMap = {
   heartbeat: (event: HeartbeatEvent) => void;
   heartbeatfailed: (event: HeartbeatFailedEvent) => void;
   printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
+  rfidinfofetched: (event: RfidInfoFetchedEvent) => void;
   printprogress: (event: PrintProgressEvent) => void;
   firmwareprogress: (event: FirmwareProgressEvent) => void;
 };

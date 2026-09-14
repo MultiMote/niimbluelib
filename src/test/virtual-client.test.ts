@@ -2,6 +2,7 @@ import { test, describe, before, after } from "node:test";
 import { match, strictEqual, rejects, ifError, deepStrictEqual } from "node:assert";
 import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData, RfidInfo } from "..";
 import * as dumps from "./dumps";
+import { CombinedRfidInfo } from "../client/abstract_client";
 
 describe("Virtual bad client", () => {
   const client = new NiimbotVirtualClient();
@@ -50,14 +51,14 @@ describe("Virtual B21 PRO 3.09 test", () => {
   const client = new NiimbotVirtualClient();
 
   let info: PrinterInfo;
-  let rfidInfo: RfidInfo;
+  let rfidInfo: CombinedRfidInfo;
 
   before(async () => {
     client.loadHexDump(dumps.B21_PRO_V3_09);
     await client.connect();
 
     info = client.getPrinterInfo();
-    rfidInfo = await client.protocol.rfidInfo();
+    rfidInfo = client.getRfidInfo();
   });
 
   after(async () => {
@@ -75,8 +76,8 @@ describe("Virtual B21 PRO 3.09 test", () => {
     test("batteryPercents", () => strictEqual(info.batteryPercents, 50));
   });
 
-  test("rfidInfo", () =>
-    deepStrictEqual(rfidInfo, {
+  test("labelRfidInfo", () =>
+    deepStrictEqual(rfidInfo.labelRfidInfo, {
       allPaper: 276,
       barCode: "10262260",
       capacity: 230,
@@ -92,13 +93,13 @@ describe("Virtual B21 PRO 3.13 test", () => {
   const client = new NiimbotVirtualClient();
 
   let info: PrinterInfo;
-  let rfidInfo: RfidInfo;
+  let rfidInfo: CombinedRfidInfo;
 
   before(async () => {
     client.loadHexDump(dumps.B21_PRO_V3_13);
     await client.connect();
     info = client.getPrinterInfo();
-    rfidInfo = await client.protocol.rfidInfo();
+    rfidInfo = client.getRfidInfo();
   });
 
   after(async () => {
@@ -116,8 +117,8 @@ describe("Virtual B21 PRO 3.13 test", () => {
     test("batteryPercents", () => strictEqual(info.batteryPercents, 50));
   });
 
-  test("rfidInfo", () =>
-    deepStrictEqual(rfidInfo, {
+  test("labelRfidInfo", () =>
+    deepStrictEqual(rfidInfo.labelRfidInfo, {
       allPaper: 276,
       barCode: "10262260",
       capacity: 230,

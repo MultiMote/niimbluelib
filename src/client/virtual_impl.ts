@@ -99,7 +99,7 @@ export class NiimbotVirtualClient extends NiimbotAbstractClient {
 
     const result: ConnectionInfo = {
       deviceName: "Virtual",
-      result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
+      result: this.printerInfo.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
     this.emit("connect", new ConnectEvent(result));

@@ -61,7 +61,7 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
 
     const result: ConnectionInfo = {
       deviceName: `Serial (VID:${info.usbVendorId?.toString(16)} PID:${info.usbProductId?.toString(16)})`,
-      result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
+      result: this.printerInfo.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
     this.emit("connect", new ConnectEvent(result));

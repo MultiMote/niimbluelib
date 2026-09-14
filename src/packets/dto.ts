@@ -25,7 +25,6 @@ export interface PrinterInfo {
   mac?: string;
   batteryPercents?: number;
   autoShutdownTime?: AutoShutdownTime;
-  labelType?: LabelType;
   printheadWidth?: number;
   supportColor?: boolean;
   softwareVersion?: string;
