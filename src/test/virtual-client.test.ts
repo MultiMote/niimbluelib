@@ -1,6 +1,6 @@
 import { test, describe, before, after } from "node:test";
-import { match, strictEqual, rejects, ifError } from "node:assert";
-import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } from "..";
+import { match, strictEqual, rejects, ifError, deepStrictEqual } from "node:assert";
+import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData, RfidInfo } from "..";
 import * as dumps from "./dumps";
 
 describe("Virtual bad client", () => {
@@ -50,12 +50,14 @@ describe("Virtual B21 PRO 3.09 test", () => {
   const client = new NiimbotVirtualClient();
 
   let info: PrinterInfo;
+  let rfidInfo: RfidInfo;
 
   before(async () => {
     client.loadHexDump(dumps.B21_PRO_V3_09);
     await client.connect();
 
     info = client.getPrinterInfo();
+    rfidInfo = await client.protocol.rfidInfo();
   });
 
   after(async () => {
@@ -72,6 +74,60 @@ describe("Virtual B21 PRO 3.09 test", () => {
     test("resolutionClass", () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
     test("batteryPercents", () => strictEqual(info.batteryPercents, 50));
   });
+
+  test("rfidInfo", () =>
+    deepStrictEqual(rfidInfo, {
+      allPaper: 276,
+      barCode: "10262260",
+      capacity: 230,
+      consumablesType: 1,
+      serialNumber: "PZ1G221322004205",
+      tagPresent: true,
+      usedPaper: 153,
+      uuid: "881d7e4fd9970000",
+    }));
+});
+
+describe("Virtual B21 PRO 3.13 test", () => {
+  const client = new NiimbotVirtualClient();
+
+  let info: PrinterInfo;
+  let rfidInfo: RfidInfo;
+
+  before(async () => {
+    client.loadHexDump(dumps.B21_PRO_V3_13);
+    await client.connect();
+    info = client.getPrinterInfo();
+    rfidInfo = await client.protocol.rfidInfo();
+  });
+
+  after(async () => {
+    await client.disconnect();
+  });
+
+  describe("getPrinterInfo", () => {
+    test("modelId", () => strictEqual(info.modelId, 785));
+    test("hardwareVersion", () => strictEqual(info.hardwareVersion, "3.01"));
+    test("softwareVersion", () => strictEqual(info.softwareVersion, "3.13"));
+    test("printheadWidth", () => strictEqual(info.printheadWidth, 576));
+    test("protocolVersion", () => strictEqual(info.protocolVersion, 5));
+    test("serial", () => strictEqual(info.serial, "H613040618"));
+    test("resolutionClass", () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
+    test("batteryPercents", () => strictEqual(info.batteryPercents, 50));
+  });
+
+  test("rfidInfo", () =>
+    deepStrictEqual(rfidInfo, {
+      allPaper: 276,
+      barCode: "10262260",
+      capacity: 230,
+      consumablesType: 1,
+      serialNumber: "PZ1G221322004205",
+      tagPresent: true,
+      usedPaper: 155,
+      uuid2: "881d7e4fd9970000",
+      uuid: "881d7e4fd9970000",
+    }));
 });
 
 describe("Virtual D110 5.34 test", () => {
@@ -211,7 +267,6 @@ describe("Virtual B21S 40.28 test", () => {
     test("lidClosed", () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 });
-
 
 describe("Virtual B2 PRO 2.12 test", () => {
   const client = new NiimbotVirtualClient();

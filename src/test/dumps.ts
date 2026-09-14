@@ -57,6 +57,33 @@ export const B21_PRO_V3_09 = `
 << 55 55 1b 29 88 1d 7e 4f d9 97 00 00 08 31 30 32 36 32 32 36 30 10 50 5a 31 47 32 32 31 33 32 32 30 30 34 32 30 35 01 14 00 99 01 00 e6 d5 aa aa (In_RfidInfo)
 `;
 
+export const B21_PRO_V3_13 = `
+>> 03 55 55 c1 01 01 c1 aa aa (Connect)
+<< 55 55 c2 01 03 c0 aa aa (In_Connect)
+>> 55 55 a5 01 01 a5 aa aa (PrinterStatusData)
+<< 55 55 b5 10 30 30 07 d0 00 64 00 00 00 0f 01 03 02 03 f5 00 ef aa aa (In_PrinterStatusData)
+>> 55 55 40 01 08 49 aa aa (PrinterInfo)
+<< 55 55 48 02 03 11 58 aa aa (In_PrinterInfoPrinterCode)
+>> 55 55 40 01 0b 4a aa aa (PrinterInfo)
+<< 55 55 4b 0a 48 36 31 33 30 34 30 36 31 38 36 aa aa (In_PrinterInfoSerialNumber)
+>> 55 55 40 01 0d 4c aa aa (PrinterInfo)
+<< 55 55 4d 06 03 16 13 04 06 18 57 aa aa (In_PrinterInfoBluetoothAddress)
+>> 55 55 40 01 0a 4b aa aa (PrinterInfo)
+<< 55 55 4a 01 02 49 aa aa (In_PrinterInfoChargeLevel)
+>> 55 55 40 01 07 46 aa aa (PrinterInfo)
+<< 55 55 47 01 03 45 aa aa (In_PrinterInfoAutoShutDownTime)
+>> 55 55 40 01 03 42 aa aa (PrinterInfo)
+<< 55 55 43 01 01 43 aa aa (In_PrinterInfoLabelType)
+>> 55 55 dc 01 03 de aa aa (Heartbeat)
+<< 55 55 de 0a 03 01 03 0d 02 40 03 02 01 00 9a aa aa (In_HeartbeatBasic)
+>> 55 55 dc 01 04 d9 aa aa (Heartbeat)
+<< 55 55 d9 09 1d c7 02 4d 00 00 01 00 00 44 aa aa (In_HeartbeatAdvanced2)
+>> 55 55 1a 01 01 1a aa aa (RfidInfo)
+<< 55 55 1b 31 88 1d 7e 4f d9 97 00 00 08 31 30 32 36 32 32 36 30 10 50 5a 31 47 32 32 31 33 32 32 30 30 34 32 30 35 01 14 00 9b 01 00 e6 88 1d 7e 4f d9 97 00 00 25 aa aa (In_RfidInfo)
+>> 55 55 1c 01 01 1c aa aa (RfidInfo2)
+<< 55 55 00 01 01 00 aa aa (In_NotSupported)
+`;
+
 export const D110_V13_14 = `
 >> 03 55 55 c1 01 01 c1 aa aa (Connect)
 << 55 55 c2 01 02 c1 aa aa (In_Connect)
