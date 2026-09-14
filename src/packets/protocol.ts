@@ -79,9 +79,16 @@ export class NiimbotProtocol {
     throw lastError;
   }
 
-  public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
-    for (const p of packets) {
-      await this.send(p, forceTimeout);
+  public async sendAll(
+    packets: NiimbotPacket[],
+    forceTimeout?: number,
+    onProgress?: (current: number, total: number) => void,
+  ): Promise<void> {
+    const total = packets.length;
+
+    for (let i = 0; i < total; i++) {
+      onProgress?.(i + 1, total);
+      await this.send(packets[i], forceTimeout);
     }
   }
 

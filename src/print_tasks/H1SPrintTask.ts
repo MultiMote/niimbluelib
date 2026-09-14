@@ -24,7 +24,8 @@ export class H1SPrintTask extends AbstractPrintTask {
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
-      this.printOptions.pageTimeoutMs
+      this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
     );
   }
 

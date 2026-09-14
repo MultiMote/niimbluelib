@@ -1,3 +1,4 @@
+import { PrintPacketProgressEvent } from "..";
 import { EncodedImage } from "../image_encoder";
 import { LabelType, PageColorType } from "../packets";
 import { NiimbotProtocol } from "../packets/protocol";
@@ -159,5 +160,19 @@ export abstract class AbstractPrintTask {
   /** Check if this print task supports a specified page color */
   isSupportColor(pageColor: PageColorType): boolean {
     return pageColor === PageColorType.SingleColor;
+  }
+
+  protected makePacketProgressCallback(stepPercent: number = 5) {
+    let lastReportedStep = -1;
+
+    return (current: number, total: number) => {
+      const percent = Math.floor((current / total) * 100);
+      const step = Math.floor(percent / stepPercent);
+
+      if (step > lastReportedStep || current === total) {
+        lastReportedStep = step;
+        this.protocol.getClient().emit("printpacketprogress", new PrintPacketProgressEvent(percent))
+      }
+    };
   }
 }

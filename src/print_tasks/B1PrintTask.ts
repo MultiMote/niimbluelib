@@ -25,6 +25,7 @@ export class B1PrintTask extends AbstractPrintTask {
         PacketGenerator.pageEnd(),
       ],
       this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
     );
   }
 

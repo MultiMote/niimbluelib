@@ -165,6 +165,20 @@ export class PrintProgressEvent extends NiimbotEvent {
 }
 
 /**
+ * Fired on every 5% of packets sent in {@link AbstractPrintTask.printPage}
+ * @category Events
+ */
+export class PrintPacketProgressEvent extends NiimbotEvent {
+  /** 0-100 */
+  readonly progress: number;
+
+  constructor(progress: number) {
+    super("printpacketprogress");
+    this.progress = progress;
+  }
+}
+
+/**
  * Fired on firmware upload progress during {@link NiimbotProtocol.firmwareUpgrade}.
  * @category Events
  */
@@ -195,5 +209,6 @@ export type ClientEventMap = {
   printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
   rfidinfofetched: (event: RfidInfoFetchedEvent) => void;
   printprogress: (event: PrintProgressEvent) => void;
+  printpacketprogress: (event: PrintPacketProgressEvent) => void;
   firmwareprogress: (event: FirmwareProgressEvent) => void;
 };

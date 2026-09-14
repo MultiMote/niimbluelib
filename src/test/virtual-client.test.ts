@@ -131,7 +131,7 @@ describe("Virtual B21 PRO 3.13 test", () => {
     }));
 });
 
-describe("Virtual D110 5.34 test", () => {
+describe("Virtual D110 13.14 test", () => {
   const client = new NiimbotVirtualClient();
 
   let info: PrinterInfo;

@@ -30,7 +30,8 @@ export class B21V1PrintTask extends AbstractPrintTask {
           }),
           PacketGenerator.pageEnd(),
         ],
-        this.printOptions.pageTimeoutMs
+        this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
       );
     }
   }

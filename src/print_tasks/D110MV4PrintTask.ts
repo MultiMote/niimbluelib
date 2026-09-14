@@ -52,6 +52,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
         PacketGenerator.pageEnd(),
       ],
       this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
     );
   }
 
