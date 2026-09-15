@@ -8,6 +8,7 @@
   - `RfidInfo` is fetched automatically when connecting and whenever the RFID state changes in a heartbeat.
 * **BREAKING:** Remove `labelType` field from `PrinterInfo` (шt's better to retrieve this property on demand).
 * `printPage` in print tasks now fires `printpacketprogress` events.
+* Add `printTasksCapabilities`.
 
 # 0.46.0
 

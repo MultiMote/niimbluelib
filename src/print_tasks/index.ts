@@ -8,6 +8,14 @@ import { D110MV4PrintTask } from "./D110MV4PrintTask";
 import { H1SPrintTask } from "./H1SPrintTask";
 
 /**
+ * @category Print tasks
+ */
+export enum PrintTaskCapability {
+  SupportDoubleColor,
+  SupportTubePrinting,
+}
+
+/**
  * Define available print tasks.
  * @category Print tasks
  */
@@ -32,6 +40,20 @@ export type PrintTaskName = keyof typeof printTasks;
  * @category Print tasks
  */
 export const printTaskNames = Object.keys(printTasks) as PrintTaskName[];
+
+/**
+ * Define available print task capabilities.
+ * @category Print tasks
+ */
+export const printTasksCapabilities: Record<PrintTaskName, PrintTaskCapability[]> = {
+  D11_V1: [],
+  D110: [],
+  B1: [PrintTaskCapability.SupportDoubleColor],
+  B21_V1: [],
+  B21_L2B: [],
+  D110M_V4: [PrintTaskCapability.SupportDoubleColor, PrintTaskCapability.SupportTubePrinting],
+  H1S: [],
+};
 
 /** @category Printer model library */
 export type ModelWithProtocol = {
@@ -66,8 +88,8 @@ export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName
 
   const foundExact = tasks.find((key) =>
     modelPrintTasks[key]?.find(
-      (o: ModelWithProtocol | M) => typeof o === "object" && o.v === protocolVersion && o.m === model
-    )
+      (o: ModelWithProtocol | M) => typeof o === "object" && o.v === protocolVersion && o.m === model,
+    ),
   );
 
   return foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
