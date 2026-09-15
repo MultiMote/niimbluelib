@@ -55,6 +55,8 @@ export const B21_PRO_V3_09 = `
 << 55 55 de 0a 03 01 03 09 02 40 03 02 01 00 9e aa aa (In_HeartbeatBasic)
 >> 55 55 1a 01 01 1a aa aa (RfidInfo)
 << 55 55 1b 29 88 1d 7e 4f d9 97 00 00 08 31 30 32 36 32 32 36 30 10 50 5a 31 47 32 32 31 33 32 32 30 30 34 32 30 35 01 14 00 99 01 00 e6 d5 aa aa (In_RfidInfo)
+>> 55 55 59 01 01 59 AA AA
+<< 55 55 69 04 00 23 00 23 6D AA AA
 `;
 
 export const B21_PRO_V3_13 = `
@@ -82,6 +84,8 @@ export const B21_PRO_V3_13 = `
 << 55 55 1b 31 88 1d 7e 4f d9 97 00 00 08 31 30 32 36 32 32 36 30 10 50 5a 31 47 32 32 31 33 32 32 30 30 34 32 30 35 01 14 00 9b 01 00 e6 88 1d 7e 4f d9 97 00 00 25 aa aa (In_RfidInfo)
 >> 55 55 1c 01 01 1c aa aa (RfidInfo2)
 << 55 55 00 01 01 00 aa aa (In_NotSupported)
+>> 55 55 59 01 01 59 AA AA
+<< 55 55 69 12 00 46 03 0B 01 00 3C 02 94 01 D8 01 90 00 00 00 00 00 D6 AA AA
 `;
 
 export const D110_V13_14 = `

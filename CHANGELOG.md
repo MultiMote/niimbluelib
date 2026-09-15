@@ -9,6 +9,8 @@
 * **BREAKING:** Remove `labelType` field from `PrinterInfo` (шt's better to retrieve this property on demand).
 * `printPage` in print tasks now fires `printpacketprogress` events.
 * Add `printTasksCapabilities`.
+* Add `NiimbotProtocol.getPaperInfo` to get paper dimensions from RFID (auto called and stored in `NiimbotAbstractClient.rfidInfo`).
+* Auto update RFID data on lid state change (for old printers).
 
 # 0.46.0
 

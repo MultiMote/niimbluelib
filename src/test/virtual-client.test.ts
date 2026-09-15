@@ -1,8 +1,8 @@
 import { test, describe, before, after } from "node:test";
 import { match, strictEqual, rejects, ifError, deepStrictEqual } from "node:assert";
-import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData, RfidInfo } from "..";
+import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } from "..";
 import * as dumps from "./dumps";
-import { CombinedRfidInfo } from "../client/abstract_client";
+import { CombinedRfidInfo } from "../packets";
 
 describe("Virtual bad client", () => {
   const client = new NiimbotVirtualClient();
@@ -87,6 +87,11 @@ describe("Virtual B21 PRO 3.09 test", () => {
       usedPaper: 153,
       uuid: "881d7e4fd9970000",
     }));
+
+  test("paperInfo", () =>
+    deepStrictEqual(rfidInfo.paperInfo, {
+      valid: false
+    }));
 });
 
 describe("Virtual B21 PRO 3.13 test", () => {
@@ -128,6 +133,24 @@ describe("Virtual B21 PRO 3.13 test", () => {
       usedPaper: 155,
       uuid2: "881d7e4fd9970000",
       uuid: "881d7e4fd9970000",
+    }));
+
+
+  test("paperInfo", () =>
+    deepStrictEqual(rfidInfo.paperInfo, {
+      valid: true,
+      gapHeightPixel: 70,
+      totalHeightPixel: 779,
+      paperType: 1,
+      gapHeight: 6,
+      totalHeight: 66,
+      paperWidthPixel: 472,
+      paperWidth: 40,
+      direction: 0,
+      tailLengthPixel: 0,
+      tailLength: 0,
+      paperHeight: 60,
+      paperHeightPixel: 709,
     }));
 });
 

@@ -21,7 +21,7 @@ import {
 } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
-import { HeartbeatData, PrinterInfo, PrintError, RfidInfo } from "../packets/dto";
+import { CombinedRfidInfo, HeartbeatData, PrinterInfo, PrintError } from "../packets/dto";
 import { NiimbotClientType } from ".";
 
 /**
@@ -37,11 +37,6 @@ export type ConnectionInfo = {
 export const NIIMBOT_CLIENT_DEFAULTS = {
   packetIntervalMs: 10,
   heartbeatIntervalMs: 2_000,
-};
-
-export type CombinedRfidInfo = {
-  labelRfidInfo?: RfidInfo;
-  ribbonRfidInfo?: RfidInfo;
 };
 
 /**
@@ -279,26 +274,30 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Fetch label and ribbon RFID information and store it. Do not throws exceptions.
    */
   public async fetchRfidInfo(): Promise<CombinedRfidInfo> {
-    let labelRfidInfo: RfidInfo | undefined = undefined;
-    let ribbonRfidInfo: RfidInfo | undefined = undefined;
+    let info: CombinedRfidInfo = {};
 
     try {
-      labelRfidInfo = await this.protocol.rfidInfo();
+      info.labelRfidInfo = await this.protocol.rfidInfo();
     } catch (e) {
       console.warn("Unable to fetch RFID info", e);
     }
 
     try {
-      ribbonRfidInfo = await this.protocol.rfidInfo2();
+      info.paperInfo = await this.protocol.getPaperInfo();
     } catch (e) {
       // ignore
     }
 
-    this.rfidInfo.labelRfidInfo = labelRfidInfo;
-    this.rfidInfo.ribbonRfidInfo = ribbonRfidInfo;
+    try {
+      info.ribbonRfidInfo = await this.protocol.rfidInfo2();
+    } catch (e) {
+      // ignore
+    }
 
-    this.emit("rfidinfofetched", new RfidInfoFetchedEvent(labelRfidInfo, ribbonRfidInfo));
-    return { labelRfidInfo, ribbonRfidInfo };
+    this.rfidInfo = info;
+
+    this.emit("rfidinfofetched", new RfidInfoFetchedEvent(info));
+    return info;
   }
 
   /**
@@ -402,10 +401,11 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     if (this.skipNextHeartbeatRfidCheck) {
       this.skipNextHeartbeatRfidCheck = false;
     } else {
-      const paperRfidChanged = this.getHeartbeatData()?.paperRfidSuccess !== data?.paperRfidSuccess;
-      const ribbonRfidChanged = this.getHeartbeatData()?.ribbonRfidSuccess !== data?.ribbonRfidSuccess;
+      const paperRfidChanged = this.heartbeatData?.paperRfidSuccess !== data?.paperRfidSuccess;
+      const ribbonRfidChanged = this.heartbeatData?.ribbonRfidSuccess !== data?.ribbonRfidSuccess;
+      const lidChanged = this.heartbeatData?.lidClosed !== data?.lidClosed;
 
-      if (paperRfidChanged || ribbonRfidChanged) {
+      if (lidChanged || paperRfidChanged || ribbonRfidChanged) {
         this.fetchRfidInfo();
       }
     }

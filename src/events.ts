@@ -1,4 +1,4 @@
-import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, RfidInfo } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, RfidInfo, CombinedRfidInfo } from ".";
 
 /**
  * Base client event
@@ -131,13 +131,11 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
  * @category Events
  */
 export class RfidInfoFetchedEvent extends NiimbotEvent {
-  readonly labelRfid?: RfidInfo;
-  readonly ribbonRfid?: RfidInfo;
+  readonly info: CombinedRfidInfo;
 
-  constructor(labelRfid?: RfidInfo, ribbonRfid?: RfidInfo) {
+  constructor(info: CombinedRfidInfo) {
     super("rfidinfofetched");
-    this.labelRfid = labelRfid;
-    this.ribbonRfid = ribbonRfid;
+    this.info = info;
   }
 }
 

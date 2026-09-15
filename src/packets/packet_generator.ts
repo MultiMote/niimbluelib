@@ -458,4 +458,8 @@ export class PacketGenerator {
       date.getSeconds(),
     ]);
   }
+
+  public static getPaperInfo(): NiimbotPacket {
+    return this.mapped(TX.GetPaperInfo);
+  }
 }

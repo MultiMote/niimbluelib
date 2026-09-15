@@ -121,3 +121,32 @@ export interface PrinterStatusData {
   supportColor: boolean;
   protocolVersion: number;
 }
+
+/*
+ * @category Client
+ */
+export type CombinedRfidInfo = {
+  labelRfidInfo?: RfidInfo;
+  paperInfo?: PaperInfo;
+  ribbonRfidInfo?: RfidInfo;
+};
+
+
+/**
+ * @category Packets
+ */
+export interface PaperInfo {
+  valid: boolean;
+  gapHeightPixel?: number;
+  totalHeightPixel?: number;
+  paperType?: LabelType;
+  gapHeight?: number;
+  totalHeight?: number;
+  paperWidthPixel?: number;
+  paperWidth?: number;
+  paperHeightPixel?: number;
+  paperHeight?: number;
+  direction?: number;
+  tailLengthPixel?: number;
+  tailLength?: number;
+}

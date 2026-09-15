@@ -6,6 +6,7 @@ import {
   LabelType,
   NiimbotCrc32Packet,
   NiimbotPacket,
+  PaperInfo,
   PrinterStatusData,
   PrintStatus,
   ResolutionClass,
@@ -362,5 +363,38 @@ export class PacketParser {
   public static parseFirmwareResultResponse(packet: NiimbotPacket): boolean {
     Validators.arrayLengthEquals(packet.data, 1);
     return packet.data[0] === 1;
+  }
+
+  public static parsePaperInfoResponse(packet: NiimbotPacket): PaperInfo {
+    Validators.arrayLengthAtLeast(packet.data, 4);
+
+    const info: PaperInfo = {
+      valid: false
+    };
+
+    // dataLength can be 4 bytes, but it return some unknown sizes
+
+    if (packet.dataLength === 18) {
+      info.valid = true;
+
+      const r = new SequentialDataReader(packet.data);
+      info.gapHeightPixel = r.readI16();
+      info.totalHeightPixel = r.readI16();
+      info.paperType = r.readI8() as LabelType;
+      info.gapHeight = r.readI16() / 10;
+      info.totalHeight = r.readI16() / 10;
+      info.paperWidthPixel = r.readI16();
+      info.paperWidth = r.readI16() / 10;
+      info.direction = r.readI8();
+      info.tailLengthPixel = r.readI16();
+      info.tailLength = r.readI16() / 10;
+      r.end();
+
+      info.paperHeight = info.totalHeight - info.gapHeight;
+      info.paperHeightPixel = info.totalHeightPixel - info.gapHeightPixel;
+    }
+
+
+    return info;
   }
 }
