@@ -31,7 +31,7 @@ export {
   NiimbotVirtualClient,
 };
 
-export {ConnectionInfo, NIIMBOT_CLIENT_DEFAULTS} from "./abstract_client";
+export {ConnectionInfo, CombinedRfidInfo, NIIMBOT_CLIENT_DEFAULTS} from "./abstract_client";
 export {NiimbotCapacitorBleClientConnectOptions} from "./capacitor_ble_impl";
 export {NiimbotBluetoothClientConnectOptions} from "./bluetooth_impl";
 export {NiimbotSerialClientConnectOptions} from "./serial_impl";
