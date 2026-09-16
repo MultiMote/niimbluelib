@@ -150,3 +150,72 @@ export interface PaperInfo {
   tailLengthPixel?: number;
   tailLength?: number;
 }
+
+
+export interface PrinterCapabilities {
+  language?: number;
+  printMode?: number;
+  /** 200 (not 203) or 300 */
+  uhfRfid?: number;
+  printheadDpi?: number;
+  rfidSupport?: number;
+
+  batteryRange?: {
+    max: number;
+    min: number;
+  };
+
+  densityRange?: {
+    max: number;
+    min: number;
+  };
+
+  speedRange?: {
+    max: number;
+    min: number;
+  };
+
+  supportedLabelTypes?: number;
+  printheadWidth?: number;
+  maxPrintHeight?: number;
+  labelHeightAndGap?: number;
+  printheadPosition?: number;
+
+  volumeSupport?: number;
+  hostStyle?: number;
+  printProtocol?: number;
+
+  autoShutdownRange?: {
+    max: number;
+    min: number;
+  };
+
+  cutterSupport?: number;
+
+  cutterDepthRange?: {
+    max: number;
+    min: number;
+  };
+
+  printControl?: number;
+  pauseTimeSupport?: number;
+  paperDetection?: number;
+  realTimeClock?: number;
+
+  keyFunctions?: Map<number, number>;
+
+  unknown19?: number;
+
+  printColor?: number;
+  speedQualityMode?: number;
+  tubeCalibration?: number;
+  partialRetransmitSupport?: number;
+
+  maxCompressLines?: number;
+  tubeSupport?: number;
+  sixteenGrayMaxBuffer?: number;
+  localTemplateSupport?: number;
+  imageCompressSupport?: number;
+  maxImageCompressBytes?: number;
+  localTemplateMaxTimeCount?: number;
+}

@@ -7,6 +7,8 @@ import {
   NiimbotCrc32Packet,
   NiimbotPacket,
   PaperInfo,
+  PrinterCapabilities,
+  PrinterCapabilitiesField as CapId,
   PrinterStatusData,
   PrintStatus,
   ResolutionClass,
@@ -125,9 +127,8 @@ export class PacketParser {
   public static parsePrinterStatusDataResponse(packet: NiimbotPacket): PrinterStatusData {
     const result: PrinterStatusData = {
       protocolVersion: 0,
-      supportColor: false
-    }
-
+      supportColor: false,
+    };
 
     if (packet.dataLength >= 13) {
       result.supportColor = packet.data[10] > 0;
@@ -336,7 +337,7 @@ export class PacketParser {
 
   public static parseBatteryChargeLevelResponse(packet: NiimbotPacket): number {
     Validators.arrayLengthEquals(packet.data, 1);
-    const value = packet.data[0]
+    const value = packet.data[0];
     return value <= 4 ? value * 25 : value;
   }
 
@@ -369,7 +370,7 @@ export class PacketParser {
     Validators.arrayLengthAtLeast(packet.data, 4);
 
     const info: PaperInfo = {
-      valid: false
+      valid: false,
     };
 
     // dataLength can be 4 bytes, but it return some unknown sizes
@@ -394,7 +395,141 @@ export class PacketParser {
       info.paperHeightPixel = info.totalHeightPixel - info.gapHeightPixel;
     }
 
-
     return info;
+  }
+
+  static parsePrinterCapabilities(pkt: NiimbotPacket): PrinterCapabilities {
+    const data: PrinterCapabilities = {};
+    const reader = new SequentialDataReader(pkt.data);
+
+    while (reader.canRead(2)) {
+      const type = reader.readI8();
+      const length = reader.readI8();
+
+      if (!reader.canRead(length)) {
+        break;
+      }
+
+      const val = reader.readBytes(length);
+
+      switch (type) {
+        case CapId.Language:
+          data.language = val[0];
+          break;
+        case CapId.PrintMode:
+          data.printMode = val[0];
+          break;
+        case CapId.UhfRfid:
+          data.uhfRfid = val[0];
+          break;
+        case CapId.PrintheadDpi:
+          data.printheadDpi = Utils.bytesToI16(val);
+          break;
+        case CapId.RfidSupport:
+          data.rfidSupport = val[0];
+          break;
+        case CapId.BatteryRange:
+          data.batteryRange = { max: val[0], min: val[1] };
+          break;
+        case CapId.DensityRange:
+          data.densityRange = { max: val[0], min: val[1] };
+          break;
+        case CapId.SpeedRange:
+          data.speedRange = { max: val[0], min: val[1] };
+          break;
+        case CapId.SupportedLabelTypes:
+          data.supportedLabelTypes = Utils.bytesToI32(val);
+          break;
+        case CapId.PrintheadWidth:
+          data.printheadWidth = Utils.bytesToI16(val);
+          break;
+        case CapId.MaxPrintHeight:
+          data.maxPrintHeight = Utils.bytesToI16(val);
+          break;
+        case CapId.LabelHeightAndGap:
+          data.labelHeightAndGap = val[0];
+          break;
+        case CapId.PrintheadPosition:
+          data.printheadPosition = val[0];
+          break;
+        case CapId.VolumeSupport:
+          data.volumeSupport = val[0];
+          break;
+        case CapId.HostStyle:
+          data.hostStyle = val[0];
+          break;
+        case CapId.PrintProtocol:
+          data.printProtocol = val[0];
+          break;
+        case CapId.AutoShutdownRange:
+          data.autoShutdownRange = { max: val[0], min: val[1] };
+          break;
+        case CapId.CutterSupport:
+          data.cutterSupport = val[0];
+          break;
+        case CapId.CutterDepthRange:
+          data.cutterDepthRange = { max: val[0], min: val[1] };
+          break;
+        case CapId.PrintControl:
+          data.printControl = val[0];
+          break;
+        case CapId.PauseTimeSupport:
+          data.pauseTimeSupport = val[0];
+          break;
+        case CapId.PaperDetection:
+          data.paperDetection = val[0];
+          break;
+        case CapId.RealTimeClock:
+          data.realTimeClock = val[0];
+          break;
+        case CapId.KeyFunctions: {
+          data.keyFunctions = new Map<number, number>();
+          for (let i = 0; i < val.length; i += 5) {
+            const keyId = val[i];
+            const keyVal = Utils.bytesToI32(val.subarray(i + 1, i + 5));
+            data.keyFunctions.set(keyId, keyVal);
+          }
+          break;
+        }
+        case CapId.Unknown19:
+          data.unknown19 = val[0];
+          break;
+        case CapId.PrintColor:
+          data.printColor = val[0];
+          break;
+        case CapId.SpeedQualityMode:
+          data.speedQualityMode = val[0];
+          break;
+        case CapId.TubeCalibration:
+          data.tubeCalibration = val[0];
+          break;
+        case CapId.PartialRetransmitSupport:
+          data.partialRetransmitSupport = val[0];
+          break;
+        case CapId.MaxCompressLines:
+          data.maxCompressLines = Utils.bytesToI16(val);
+          break;
+        case CapId.TubeSupport:
+          data.tubeSupport = val[0];
+          break;
+        case CapId.SixteenGrayMaxBuffer:
+          data.sixteenGrayMaxBuffer = Utils.bytesToI16(val);
+          break;
+        case CapId.LocalTemplateSupport:
+          data.localTemplateSupport = val[0];
+          break;
+        case CapId.ImageCompressSupport:
+          data.imageCompressSupport = val[0];
+          break;
+        case CapId.MaxImageCompressBytes:
+          data.maxImageCompressBytes = Utils.bytesToI32(val);
+          break;
+        case CapId.LocalTemplateMaxTimeCount:
+          data.localTemplateMaxTimeCount = val[0];
+          break;
+      }
+    }
+
+    return data;
   }
 }
