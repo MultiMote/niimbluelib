@@ -1,4 +1,4 @@
-import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, RfidInfo, CombinedRfidInfo } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, CombinedRfidInfo } from ".";
 
 /**
  * Base client event
@@ -130,6 +130,19 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
  * Fired when RFID info fetched from printer (after {@link NiimbotAbstractClient.fetchRfidInfo} finished).
  * @category Events
  */
+export class PrintEndEvent extends NiimbotEvent {
+  readonly pagesPrinted: number;
+
+  constructor(pagesPrinted: number) {
+    super("printend");
+    this.pagesPrinted = pagesPrinted;
+  }
+}
+
+/**
+ * Fired when RFID info fetched from printer (after {@link NiimbotAbstractClient.fetchRfidInfo} finished).
+ * @category Events
+ */
 export class RfidInfoFetchedEvent extends NiimbotEvent {
   readonly info: CombinedRfidInfo;
 
@@ -207,6 +220,7 @@ export type ClientEventMap = {
   printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
   rfidinfofetched: (event: RfidInfoFetchedEvent) => void;
   printprogress: (event: PrintProgressEvent) => void;
+  printend: (event: PrintEndEvent) => void;
   printpacketprogress: (event: PrintPacketProgressEvent) => void;
   firmwareprogress: (event: FirmwareProgressEvent) => void;
 };

@@ -59,6 +59,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
   private packetBuf: Uint8Array = new Uint8Array();
+  private fetchRfidOnPrintEnd: boolean = true;
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
@@ -79,6 +80,12 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       this.printerInfo = {};
       this.rfidInfo = {};
       this.heartbeatData = {};
+    });
+
+    this.on("printend", async () => {
+      if (this.fetchRfidOnPrintEnd) {
+        await this.fetchRfidInfo();
+      }
     });
   }
 
@@ -480,6 +487,14 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
   public getHeartbeatMaxFails(): number {
     return this.heartbeatMaxFails;
+  }
+
+  public isFetchRfidOnPrintEnd(): boolean {
+    return this.fetchRfidOnPrintEnd;
+  }
+
+  public setFetchRfidOnPrintEnd(value: boolean) {
+    this.fetchRfidOnPrintEnd = value;
   }
 
   public abstract getType(): NiimbotClientType;

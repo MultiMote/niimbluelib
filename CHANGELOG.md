@@ -1,11 +1,11 @@
 # 0.47.0
 
 * Fix parsing RfidInfo packet response with extra uuid field.
-* **BREAKING:** `NiimbotAbstractClient` now stores the state of `RfidInfo` and `HeartbeatData`:
+* **BREAKING:** `NiimbotAbstractClient` now stores and maintains the state of `RfidInfo` and `HeartbeatData`:
   - Add `fetchRfidInfo` and `fetchHeartbeatData`.
   - Add `getRfidInfo`, `getHeartbeatData`, and `setHeartbeatMaxFails`.
   - The client now disconnects automatically when the number of failed heartbeats exceeds the maximum allowed value.
-  - `RfidInfo` is fetched automatically when connecting and whenever the RFID state changes in a heartbeat.
+  - `RfidInfo` is fetched automatically when connecting, RFID state change in a heartbeat, print end.
 * **BREAKING:** Remove `labelType` field from `PrinterInfo` (шt's better to retrieve this property on demand).
 * `printPage` in print tasks now fires `printpacketprogress` events.
 * Add `printTasksCapabilities`.

@@ -74,6 +74,8 @@ export class D110MV4PrintTask extends AbstractPrintTask {
 
     await this.protocol.send(pkt);
 
+    this.emitPrintEndEvent();
+
     return result;
   }
 

@@ -40,7 +40,7 @@ export class B21L2BPrintTask extends AbstractPrintTask {
 
   override async waitForPageFinished(): Promise<void> {
     await Utils.doUntilTrue(() => this.protocol.pageEnd(), 20, 500);
-    this.protocol.getClient().emit("printprogress", new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, 100, 100));
+    this.emitProgressEvent();
   }
 
   override waitForFinished(): Promise<void> {

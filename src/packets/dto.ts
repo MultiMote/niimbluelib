@@ -122,7 +122,7 @@ export interface PrinterStatusData {
   protocolVersion: number;
 }
 
-/*
+/**
  * @category Client
  */
 export type CombinedRfidInfo = {
