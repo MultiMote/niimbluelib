@@ -46,7 +46,7 @@ export class Utils {
     return new Uint8Array(
       match.map((h) => {
         return parseInt(h, 16);
-      })
+      }),
     );
   }
 
@@ -97,7 +97,7 @@ export class Utils {
   public static countPixelsForBitmapPacket(
     buf: Uint8Array,
     printheadPixels: number,
-    mode: "auto" | "split" | "total" = "auto"
+    mode: "auto" | "split" | "total" = "auto",
   ): PixelCountResult {
     let total: number = 0;
     const parts: [number, number, number] = [0, 0, 0];
@@ -110,7 +110,7 @@ export class Utils {
       if (buf.byteLength > chunkSize * 3) {
         console.warn(
           `Can't use split mode: buffer size (${buf.byteLength}) is large than chunk size * 3 (${chunkSize * 3}), ` +
-            "maybe printheadPixels is set incorrectly"
+            "maybe printheadPixels is set incorrectly",
         );
       } else {
         split = true;
@@ -156,7 +156,7 @@ export class Utils {
    */
   public static u16ToBytes(n: number): [number, number] {
     const h = (n >> 8) & 0xff;
-    const l = n % 256 & 0xff;
+    const l = (n % 256) & 0xff;
     return [h, l];
   }
 
@@ -181,6 +181,30 @@ export class Utils {
   public static bytesToI32(arr: Uint8Array): number {
     Validators.arrayLengthEquals(arr, 4);
     return new DataView(arr.buffer).getInt32(0, false);
+  }
+
+  /**
+   * 1-based indexing, LSB first
+   * input [ 0, 0, 0, 23 ] => output [1, 2, 3, 5]
+   */
+  public static bytesToBitPositions(arr: Uint8Array): number[] {
+    const result: number[] = [];
+    const len = arr.length;
+
+    for (let i = 0; i < len; i++) {
+      const byte = arr[i];
+
+      if (byte === 0) continue;
+
+      const byteOffset = (len - 1 - i) * 8;
+
+      for (let bit = 0; bit < 8; bit++) {
+        if ((byte & (1 << bit)) !== 0) {
+          result.push(byteOffset + bit + 1);
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -246,11 +270,7 @@ export class Utils {
     return true;
   }
 
-  public static async doUntilTrue(
-    fn: () => Promise<boolean>,
-    attempts: number,
-    delay: number,
-  ): Promise<void> {
+  public static async doUntilTrue(fn: () => Promise<boolean>, attempts: number, delay: number): Promise<void> {
     let lastError: Error = new Error("Maximum attempts reached");
 
     for (let attempt = 0; attempt < attempts; attempt++) {

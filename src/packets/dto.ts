@@ -1,4 +1,3 @@
-import { Bitmask } from "../utils";
 import {
   AutoShutdownTime,
   ConnectResult,
@@ -158,70 +157,47 @@ export interface PaperInfo {
   tailLength?: number;
 }
 
+export type ValueRange = {
+  max: number;
+  min: number;
+};
+
 export interface PrinterCapabilities {
-  language?: Bitmask;
-  printMode?: Bitmask;
-  uhfRfid?: Bitmask;
+  language?: number[];
+  printMode?: number[];
+  uhfRfid?: number[];
   /** 200 (not 203) or 300 */
   printheadDpi?: number;
-  rfidSupport?: Bitmask;
-
-  batteryRange?: {
-    max: number;
-    min: number;
-  };
-
-  densityRange?: {
-    max: number;
-    min: number;
-  };
-
-  speedRange?: {
-    max: number;
-    min: number;
-  };
-
-  supportedLabelTypes?: Bitmask;
+  rfidSupport?: number[];
+  batteryRange?: ValueRange;
+  densityRange?: ValueRange;
+  speedRange?: ValueRange;
+  supportedLabelTypes?: number[];
   printheadWidth?: number;
   maxPrintHeight?: number;
   labelHeightAndGap?: number;
   printheadPosition?: number;
-
-  volumeSupport?: Bitmask;
-  hostStyle?: Bitmask;
-  printProtocol?: Bitmask;
-
-  autoShutdownRange?: {
-    max: number;
-    min: number;
-  };
-
-  cutterSupport?: Bitmask;
-
-  cutterDepthRange?: {
-    max: number;
-    min: number;
-  };
-
-  printControl?: Bitmask;
-  pauseTimeSupport?: Bitmask;
+  volumeSupport?: number[];
+  hostStyle?: number[];
+  printProtocol?: number[];
+  autoShutdownRange?: ValueRange;
+  cutterSupport?: number[];
+  cutterDepthRange?: ValueRange;
+  printControl?: number[];
+  pauseTimeSupport?: number[];
   paperDetection?: number;
-  realTimeClock?: Bitmask;
-
-  keyFunctions?: Array<{key: number, function: Bitmask}>;
-
+  realTimeClock?: number[];
+  keyFunctions?: Array<{ key: number; functions: number[] }>;
   unknown19?: number;
-
-  printColor?: Bitmask;
-  speedQualityMode?: Bitmask;
-  tubeCalibration?: Bitmask;
-  partialRetransmitSupport?: Bitmask;
-
+  printColor?: number[];
+  speedQualityMode?: number[];
+  tubeCalibration?: number[];
+  partialRetransmitSupport?: number[];
   maxCompressLines?: number;
-  tubeSupport?: Bitmask;
+  tubeSupport?: number[];
   sixteenGrayMaxBuffer?: number;
-  localTemplateSupport?: Bitmask;
-  imageCompressSupport?: Bitmask;
+  localTemplateSupport?: number[];
+  imageCompressSupport?: number[];
   maxImageCompressBytes?: number;
   localTemplateMaxTimeCount?: number;
 }
