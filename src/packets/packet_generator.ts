@@ -14,7 +14,7 @@ import {
   PageColorType,
   BitmapColorMode,
 } from ".";
-import { EncodedImage, ImageEncoder } from "../image_encoder";
+import { EncodedImage, ImageEncoder } from "../utils";
 import { Utils, Validators } from "../utils";
 
 export interface ImagePacketsGenerateOptions {

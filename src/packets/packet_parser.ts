@@ -15,7 +15,7 @@ import {
   RfidInfo,
   SequentialDataReader,
 } from ".";
-import { Utils, Validators } from "../utils";
+import { Utils, Validators, Bitmask } from "../utils";
 
 /**
  * Packet parsers.
@@ -414,19 +414,19 @@ export class PacketParser {
 
       switch (type) {
         case CapId.Language:
-          data.language = val[0];
+          data.language = Bitmask.fromBytes(val);
           break;
         case CapId.PrintMode:
-          data.printMode = val[0];
+          data.printMode = Bitmask.fromBytes(val);
           break;
         case CapId.UhfRfid:
-          data.uhfRfid = val[0];
+          data.uhfRfid = Bitmask.fromBytes(val);
           break;
         case CapId.PrintheadDpi:
           data.printheadDpi = Utils.bytesToI16(val);
           break;
         case CapId.RfidSupport:
-          data.rfidSupport = val[0];
+          data.rfidSupport = Bitmask.fromBytes(val);
           break;
         case CapId.BatteryRange:
           data.batteryRange = { max: val[0], min: val[1] };
@@ -438,7 +438,7 @@ export class PacketParser {
           data.speedRange = { max: val[0], min: val[1] };
           break;
         case CapId.SupportedLabelTypes:
-          data.supportedLabelTypes = Utils.bytesToI32(val);
+          data.supportedLabelTypes = Bitmask.fromBytes(val);
           break;
         case CapId.PrintheadWidth:
           data.printheadWidth = Utils.bytesToI16(val);
@@ -453,41 +453,39 @@ export class PacketParser {
           data.printheadPosition = val[0];
           break;
         case CapId.VolumeSupport:
-          data.volumeSupport = val[0];
+          data.volumeSupport = Bitmask.fromBytes(val);
           break;
         case CapId.HostStyle:
-          data.hostStyle = val[0];
+          data.hostStyle = Bitmask.fromBytes(val);
           break;
         case CapId.PrintProtocol:
-          data.printProtocol = val[0];
+          data.printProtocol = Bitmask.fromBytes(val);
           break;
         case CapId.AutoShutdownRange:
           data.autoShutdownRange = { max: val[0], min: val[1] };
           break;
         case CapId.CutterSupport:
-          data.cutterSupport = val[0];
+          data.cutterSupport = Bitmask.fromBytes(val);
           break;
         case CapId.CutterDepthRange:
           data.cutterDepthRange = { max: val[0], min: val[1] };
           break;
         case CapId.PrintControl:
-          data.printControl = val[0];
+          data.printControl = Bitmask.fromBytes(val);
           break;
         case CapId.PauseTimeSupport:
-          data.pauseTimeSupport = val[0];
+          data.pauseTimeSupport = Bitmask.fromBytes(val);
           break;
         case CapId.PaperDetection:
           data.paperDetection = val[0];
           break;
         case CapId.RealTimeClock:
-          data.realTimeClock = val[0];
+          data.realTimeClock = Bitmask.fromBytes(val);
           break;
         case CapId.KeyFunctions: {
-          data.keyFunctions = new Map<number, number>();
+          data.keyFunctions = [];
           for (let i = 0; i < val.length; i += 5) {
-            const keyId = val[i];
-            const keyVal = Utils.bytesToI32(val.subarray(i + 1, i + 5));
-            data.keyFunctions.set(keyId, keyVal);
+            data.keyFunctions.push({ key: val[i], function: Bitmask.fromBytes(val.subarray(i + 1, i + 5)) });
           }
           break;
         }
@@ -495,31 +493,31 @@ export class PacketParser {
           data.unknown19 = val[0];
           break;
         case CapId.PrintColor:
-          data.printColor = val[0];
+          data.printColor = Bitmask.fromBytes(val);
           break;
         case CapId.SpeedQualityMode:
-          data.speedQualityMode = val[0];
+          data.speedQualityMode = Bitmask.fromBytes(val);
           break;
         case CapId.TubeCalibration:
-          data.tubeCalibration = val[0];
+          data.tubeCalibration = Bitmask.fromBytes(val);
           break;
         case CapId.PartialRetransmitSupport:
-          data.partialRetransmitSupport = val[0];
+          data.partialRetransmitSupport = Bitmask.fromBytes(val);
           break;
         case CapId.MaxCompressLines:
           data.maxCompressLines = Utils.bytesToI16(val);
           break;
         case CapId.TubeSupport:
-          data.tubeSupport = val[0];
+          data.tubeSupport = Bitmask.fromBytes(val);
           break;
         case CapId.SixteenGrayMaxBuffer:
           data.sixteenGrayMaxBuffer = Utils.bytesToI16(val);
           break;
         case CapId.LocalTemplateSupport:
-          data.localTemplateSupport = val[0];
+          data.localTemplateSupport = Bitmask.fromBytes(val);
           break;
         case CapId.ImageCompressSupport:
-          data.imageCompressSupport = val[0];
+          data.imageCompressSupport = Bitmask.fromBytes(val);
           break;
         case CapId.MaxImageCompressBytes:
           data.maxImageCompressBytes = Utils.bytesToI32(val);

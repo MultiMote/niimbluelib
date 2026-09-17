@@ -1,4 +1,12 @@
-import { AutoShutdownTime, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
+import { Bitmask } from "../utils";
+import {
+  AutoShutdownTime,
+  ConnectResult,
+  LabelType,
+  ResolutionClass,
+  SoundSettingsItemType,
+  SoundSettingsType,
+} from "./enumerations";
 
 /**
  * @category Packets
@@ -131,7 +139,6 @@ export type CombinedRfidInfo = {
   ribbonRfidInfo?: RfidInfo;
 };
 
-
 /**
  * @category Packets
  */
@@ -151,18 +158,13 @@ export interface PaperInfo {
   tailLength?: number;
 }
 
-
 export interface PrinterCapabilities {
-  /** bitmask */
-  language?: number;
-  /** bitmask */
-  printMode?: number;
-  /** bitmask */
-  uhfRfid?: number;
+  language?: Bitmask;
+  printMode?: Bitmask;
+  uhfRfid?: Bitmask;
   /** 200 (not 203) or 300 */
   printheadDpi?: number;
-  /** bitmask */
-  rfidSupport?: number;
+  rfidSupport?: Bitmask;
 
   batteryRange?: {
     max: number;
@@ -179,63 +181,47 @@ export interface PrinterCapabilities {
     min: number;
   };
 
-  /** bitmask */
-  supportedLabelTypes?: number;
+  supportedLabelTypes?: Bitmask;
   printheadWidth?: number;
   maxPrintHeight?: number;
   labelHeightAndGap?: number;
   printheadPosition?: number;
 
-  /** bitmask */
-  volumeSupport?: number;
-  /** bitmask */
-  hostStyle?: number;
-  /** bitmask */
-  printProtocol?: number;
+  volumeSupport?: Bitmask;
+  hostStyle?: Bitmask;
+  printProtocol?: Bitmask;
 
   autoShutdownRange?: {
     max: number;
     min: number;
   };
 
-  /** bitmask */
-  cutterSupport?: number;
+  cutterSupport?: Bitmask;
 
   cutterDepthRange?: {
     max: number;
     min: number;
   };
 
-  /** bitmask */
-  printControl?: number;
-  /** bitmask */
-  pauseTimeSupport?: number;
+  printControl?: Bitmask;
+  pauseTimeSupport?: Bitmask;
   paperDetection?: number;
-  /** bitmask */
-  realTimeClock?: number;
+  realTimeClock?: Bitmask;
 
-  /** bitmask (values) */
-  keyFunctions?: Map<number, number>;
+  keyFunctions?: Array<{key: number, function: Bitmask}>;
 
   unknown19?: number;
 
-  /** bitmask */
-  printColor?: number;
-  /** bitmask */
-  speedQualityMode?: number;
-  /** bitmask */
-  tubeCalibration?: number;
-  /** bitmask */
-  partialRetransmitSupport?: number;
+  printColor?: Bitmask;
+  speedQualityMode?: Bitmask;
+  tubeCalibration?: Bitmask;
+  partialRetransmitSupport?: Bitmask;
 
   maxCompressLines?: number;
-  /** bitmask */
-  tubeSupport?: number;
+  tubeSupport?: Bitmask;
   sixteenGrayMaxBuffer?: number;
-  /** bitmask */
-  localTemplateSupport?: number;
-  /** bitmask */
-  imageCompressSupport?: number;
+  localTemplateSupport?: Bitmask;
+  imageCompressSupport?: Bitmask;
   maxImageCompressBytes?: number;
   localTemplateMaxTimeCount?: number;
 }

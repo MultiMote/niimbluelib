@@ -1,4 +1,4 @@
-import { EncodedImage } from "../image_encoder";
+import { EncodedImage } from "../utils";
 import { PacketGenerator } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
