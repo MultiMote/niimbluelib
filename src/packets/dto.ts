@@ -153,11 +153,15 @@ export interface PaperInfo {
 
 
 export interface PrinterCapabilities {
+  /** bitmask */
   language?: number;
+  /** bitmask */
   printMode?: number;
-  /** 200 (not 203) or 300 */
+  /** bitmask */
   uhfRfid?: number;
+  /** 200 (not 203) or 300 */
   printheadDpi?: number;
+  /** bitmask */
   rfidSupport?: number;
 
   batteryRange?: {
@@ -175,14 +179,18 @@ export interface PrinterCapabilities {
     min: number;
   };
 
+  /** bitmask */
   supportedLabelTypes?: number;
   printheadWidth?: number;
   maxPrintHeight?: number;
   labelHeightAndGap?: number;
   printheadPosition?: number;
 
+  /** bitmask */
   volumeSupport?: number;
+  /** bitmask */
   hostStyle?: number;
+  /** bitmask */
   printProtocol?: number;
 
   autoShutdownRange?: {
@@ -190,6 +198,7 @@ export interface PrinterCapabilities {
     min: number;
   };
 
+  /** bitmask */
   cutterSupport?: number;
 
   cutterDepthRange?: {
@@ -197,24 +206,35 @@ export interface PrinterCapabilities {
     min: number;
   };
 
+  /** bitmask */
   printControl?: number;
+  /** bitmask */
   pauseTimeSupport?: number;
   paperDetection?: number;
+  /** bitmask */
   realTimeClock?: number;
 
+  /** bitmask (values) */
   keyFunctions?: Map<number, number>;
 
   unknown19?: number;
 
+  /** bitmask */
   printColor?: number;
+  /** bitmask */
   speedQualityMode?: number;
+  /** bitmask */
   tubeCalibration?: number;
+  /** bitmask */
   partialRetransmitSupport?: number;
 
   maxCompressLines?: number;
+  /** bitmask */
   tubeSupport?: number;
   sixteenGrayMaxBuffer?: number;
+  /** bitmask */
   localTemplateSupport?: number;
+  /** bitmask */
   imageCompressSupport?: number;
   maxImageCompressBytes?: number;
   localTemplateMaxTimeCount?: number;
