@@ -273,6 +273,10 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       this.printerInfo.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
     }
 
+    if (this.printerInfo.protocolVersion !== undefined && this.printerInfo.protocolVersion >= 4) {
+      this.printerInfo.capabilities = await safeGet(this.protocol.gePrinterCapabilities(), "printer capabilities");
+    }
+
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
     return this.printerInfo;
   }

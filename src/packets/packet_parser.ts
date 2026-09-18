@@ -398,6 +398,7 @@ export class PacketParser {
     return info;
   }
 
+  /** Payload is Type–length–value data */
   static parsePrinterCapabilities(pkt: NiimbotPacket): PrinterCapabilities {
     const data: PrinterCapabilities = {};
     const reader = new SequentialDataReader(pkt.data);

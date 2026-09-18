@@ -37,6 +37,8 @@ export interface PrinterInfo {
   softwareVersion?: string;
   hardwareVersion?: string;
   resolutionClass?: ResolutionClass;
+  /** For protocol v4+ */
+  capabilities?: PrinterCapabilities
 }
 
 /**
