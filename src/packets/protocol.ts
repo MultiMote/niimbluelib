@@ -13,7 +13,7 @@ import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
-import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterCapabilities as PrinterCapabilities, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -432,5 +432,11 @@ export class NiimbotProtocol {
   public async getPaperInfo(): Promise<PaperInfo> {
     const response = await this.send(PacketGenerator.getPaperInfo());
     return PacketParser.parsePaperInfoResponse(response);
+  }
+
+  /** Only for protocol >= 5 */
+  public async gePrinterCapabilities(): Promise<PrinterCapabilities> {
+    const response = await this.send(PacketGenerator.getPrinterCapabilities());
+    return PacketParser.parsePrinterCapabilities(response);
   }
 }

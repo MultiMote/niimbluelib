@@ -11,6 +11,7 @@
 * Add `printTasksCapabilities`.
 * Add `NiimbotProtocol.getPaperInfo` to get paper dimensions from RFID (auto called and stored in `NiimbotAbstractClient.rfidInfo`).
 * Auto update RFID data on lid state change (for old printers).
+* Use `GetPrinterCapabilities` command to extend `NiimbotAbstractClient.printerInfo`.
 
 # 0.46.0
 

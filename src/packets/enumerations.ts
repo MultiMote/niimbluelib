@@ -144,7 +144,6 @@ export enum PrinterErrorCode {
   NonDedicatedRibbon = 0x35,
 }
 
-
 /**
  * Sent with {@link RequestCommandId.PrintStart}
  * @category Packets
@@ -174,4 +173,79 @@ export enum BitmapColorMode {
 export enum ResolutionClass {
   DPI203 = 2,
   DPI300 = 3,
+}
+
+export enum PrinterCapabilitiesField {
+  /** uint8, 1 byte (bitmask) */
+  Language = 0x01,
+  /** uint8, 1 byte (bitmask) */
+  PrintMode = 0x02,
+  /** uint8, 1 byte (bitmask) */
+  UhfRfid = 0x03,
+  /** uint16, 2 bytes */
+  PrintheadDpi = 0x04,
+  /** uint8, 1 byte (bitmask) */
+  RfidSupport = 0x05,
+  /** uint8[], 2 bytes */
+  BatteryRange = 0x06,
+  /** uint8[], 2 bytes */
+  DensityRange = 0x07,
+  /** uint8[], 2 bytes */
+  SpeedRange = 0x08,
+  /** uint8[], 4 bytes (bitmask) */
+  SupportedLabelTypes = 0x09,
+  /** uint16, 2 bytes */
+  PrintheadWidth = 0x0a,
+  /** uint16, 2 bytes */
+  MaxPrintHeight = 0x0b,
+  /** uint8, 1 byte */
+  LabelHeightAndGap = 0x0c,
+  /** uint8, 1 byte */
+  PrintheadPosition = 0x0d,
+  /** uint8, 1 byte (bitmask) */
+  VolumeSupport = 0x0e,
+  /** uint8, 1 byte (bitmask) */
+  HostStyle = 0x0f,
+  /** uint8, 1 byte (bitmask) */
+  PrintProtocol = 0x10,
+  /** uint8[], 2 bytes */
+  AutoShutdownRange = 0x11,
+  /** uint8, 1 byte (bitmask) */
+  CutterSupport = 0x12,
+  /** uint8[], 2 bytes */
+  CutterDepthRange = 0x13,
+  /** uint8, 1 byte (bitmask) */
+  PrintControl = 0x14,
+  /** uint8, 1 byte (bitmask) */
+  PauseTimeSupport = 0x15,
+  /** uint8, 1 byte */
+  PaperDetection = 0x16,
+  /** uint8, 1 byte (bitmask) */
+  RealTimeClock = 0x17,
+  /** uint8[], variable bytes (bitmask) */
+  KeyFunctions = 0x18,
+  /** uint8, 1 byte */
+  Unknown19 = 0x19,
+  /** uint8, 1 byte (bitmask) */
+  PrintColor = 0x1a,
+  /** uint8, 1 byte (bitmask) */
+  SpeedQualityMode = 0x1b,
+  /** uint8, 1 byte (bitmask) */
+  TubeCalibration = 0x1c,
+  /** uint8, 1 byte (bitmask) */
+  PartialRetransmitSupport = 0x1d,
+  /** uint16, 2 bytes */
+  MaxCompressLines = 0x1e,
+  /** uint8, 1 byte (bitmask) */
+  TubeSupport = 0x1f,
+  /** uint16, 2 bytes */
+  SixteenGrayMaxBuffer = 0x20,
+  /** uint8, 1 byte (bitmask) */
+  LocalTemplateSupport = 0x21,
+  /** uint8, 1 byte (bitmask) */
+  ImageCompressSupport = 0x22,
+  /** uint32, 4 bytes */
+  MaxImageCompressBytes = 0x23,
+  /** uint8, 1 byte */
+  LocalTemplateMaxTimeCount = 0x24,
 }

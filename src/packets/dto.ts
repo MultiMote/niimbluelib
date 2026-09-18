@@ -1,4 +1,11 @@
-import { AutoShutdownTime, ConnectResult, LabelType, ResolutionClass, SoundSettingsItemType, SoundSettingsType } from "./enumerations";
+import {
+  AutoShutdownTime,
+  ConnectResult,
+  LabelType,
+  ResolutionClass,
+  SoundSettingsItemType,
+  SoundSettingsType,
+} from "./enumerations";
 
 /**
  * @category Packets
@@ -30,6 +37,8 @@ export interface PrinterInfo {
   softwareVersion?: string;
   hardwareVersion?: string;
   resolutionClass?: ResolutionClass;
+  /** For protocol v4+ */
+  capabilities?: PrinterCapabilities
 }
 
 /**
@@ -131,7 +140,6 @@ export type CombinedRfidInfo = {
   ribbonRfidInfo?: RfidInfo;
 };
 
-
 /**
  * @category Packets
  */
@@ -149,4 +157,49 @@ export interface PaperInfo {
   direction?: number;
   tailLengthPixel?: number;
   tailLength?: number;
+}
+
+export type ValueRange = {
+  max: number;
+  min: number;
+};
+
+export interface PrinterCapabilities {
+  language?: number[];
+  printMode?: number[];
+  uhfRfid?: number[];
+  /** 200 (not 203) or 300 */
+  printheadDpi?: number;
+  rfidSupport?: number[];
+  batteryRange?: ValueRange;
+  densityRange?: ValueRange;
+  speedRange?: ValueRange;
+  supportedLabelTypes?: number[];
+  printheadWidth?: number;
+  maxPrintHeight?: number;
+  labelHeightAndGap?: number;
+  printheadPosition?: number;
+  volumeSupport?: number[];
+  hostStyle?: number[];
+  printProtocol?: number[];
+  autoShutdownRange?: ValueRange;
+  cutterSupport?: number[];
+  cutterDepthRange?: ValueRange;
+  printControl?: number[];
+  pauseTimeSupport?: number[];
+  paperDetection?: number;
+  realTimeClock?: number[];
+  keyFunctions?: Array<{ key: number; functions: number[] }>;
+  unknown19?: number;
+  printColor?: number[];
+  speedQualityMode?: number[];
+  tubeCalibration?: number[];
+  partialRetransmitSupport?: number[];
+  maxCompressLines?: number;
+  tubeSupport?: number[];
+  sixteenGrayMaxBuffer?: number;
+  localTemplateSupport?: number[];
+  imageCompressSupport?: number[];
+  maxImageCompressBytes?: number;
+  localTemplateMaxTimeCount?: number;
 }

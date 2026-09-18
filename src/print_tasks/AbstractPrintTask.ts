@@ -1,5 +1,5 @@
 import { PrintEndEvent, PrintPacketProgressEvent, PrintProgressEvent } from "..";
-import { EncodedImage } from "../image_encoder";
+import { EncodedImage } from "../utils";
 import { LabelType, PageColorType } from "../packets";
 import { NiimbotProtocol } from "../packets/protocol";
 

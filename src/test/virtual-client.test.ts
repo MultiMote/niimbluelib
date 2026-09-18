@@ -4,8 +4,14 @@ import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } fro
 import * as dumps from "./dumps";
 import { CombinedRfidInfo } from "../packets";
 
-describe("Virtual bad client", () => {
+const newClient = () => {
   const client = new NiimbotVirtualClient();
+  client.setHeartbeatAutoStart(false);
+  return client;
+};
+
+describe("Virtual bad client", () => {
+  const client = newClient();
 
   test("Failed connection with no connect packet", async () => {
     await rejects(() => client.connect());
@@ -13,7 +19,7 @@ describe("Virtual bad client", () => {
 });
 
 describe("Virtual B1 5.22 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -48,7 +54,7 @@ describe("Virtual B1 5.22 test", () => {
 });
 
 describe("Virtual B21 PRO 3.09 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let rfidInfo: CombinedRfidInfo;
@@ -90,12 +96,12 @@ describe("Virtual B21 PRO 3.09 test", () => {
 
   test("paperInfo", () =>
     deepStrictEqual(rfidInfo.paperInfo, {
-      valid: false
+      valid: false,
     }));
 });
 
 describe("Virtual B21 PRO 3.13 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let rfidInfo: CombinedRfidInfo;
@@ -135,7 +141,6 @@ describe("Virtual B21 PRO 3.13 test", () => {
       uuid: "881d7e4fd9970000",
     }));
 
-
   test("paperInfo", () =>
     deepStrictEqual(rfidInfo.paperInfo, {
       valid: true,
@@ -155,7 +160,7 @@ describe("Virtual B21 PRO 3.13 test", () => {
 });
 
 describe("Virtual D110 13.14 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -189,7 +194,7 @@ describe("Virtual D110 13.14 test", () => {
 });
 
 describe("Virtual D110M 4.23 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -215,6 +220,9 @@ describe("Virtual D110M 4.23 test", () => {
     test("printheadWidth", () => strictEqual(info.printheadWidth, 96));
     test("resolutionClass", () => strictEqual(info.resolutionClass, ResolutionClass.DPI203));
     test("batteryPercents", () => strictEqual(info.batteryPercents, 100));
+
+    test("capabilities:printheadWidth", () => strictEqual(info.capabilities?.printheadWidth, 96));
+    test("capabilities:supportedLabelTypes", () => deepStrictEqual(info.capabilities?.supportedLabelTypes, [1, 2, 3, 5]));
   });
 
   describe("heartbeatInfo", () => {
@@ -224,7 +232,7 @@ describe("Virtual D110M 4.23 test", () => {
 });
 
 describe("Virtual B2 PRO 2.09 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -259,7 +267,7 @@ describe("Virtual B2 PRO 2.09 test", () => {
 });
 
 describe("Virtual B21S 40.28 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -293,7 +301,7 @@ describe("Virtual B21S 40.28 test", () => {
 });
 
 describe("Virtual B2 PRO 2.12 test", () => {
-  const client = new NiimbotVirtualClient();
+  const client = newClient();
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
@@ -323,6 +331,44 @@ describe("Virtual B2 PRO 2.12 test", () => {
 
   describe("heartbeatInfo", () => {
     test("batteryPercents", () => strictEqual(heartbeatInfo.batteryPercents, 40));
+    test("lidClosed", () => strictEqual(heartbeatInfo.lidClosed, true));
+  });
+});
+
+describe("Virtual C1 3.12 test", () => {
+  const client = newClient();
+
+  let info: PrinterInfo;
+  let heartbeatInfo: HeartbeatData;
+
+  before(async () => {
+    client.loadHexDump(dumps.C1_V3_12);
+    await client.connect();
+
+    info = client.getPrinterInfo();
+    heartbeatInfo = await client.protocol.heartbeat();
+  });
+
+  after(async () => {
+    await client.disconnect();
+  });
+
+  describe("getPrinterInfo", () => {
+    test("modelId", () => strictEqual(info.modelId, 5120));
+    test("hardwareVersion", () => strictEqual(info.hardwareVersion!, "3.01"));
+    test("softwareVersion", () => strictEqual(info.softwareVersion!, "3.12"));
+    test("protocolVersion", () => strictEqual(info.protocolVersion, 5));
+    test("serial", () => strictEqual(info.serial, "HC22010295"));
+    test("printheadWidth", () => strictEqual(info.printheadWidth, 128));
+    test("resolutionClass", () => strictEqual(info.resolutionClass, ResolutionClass.DPI300));
+    test("batteryPercents", () => strictEqual(info.batteryPercents, 100));
+
+    test("capabilities:printheadWidth", () => strictEqual(info.capabilities?.printheadWidth, 128));
+    test("capabilities:supportedLabelTypes", () => deepStrictEqual(info.capabilities?.supportedLabelTypes, [3]));
+  });
+
+  describe("heartbeatInfo", () => {
+    test("batteryPercents", () => strictEqual(heartbeatInfo.batteryPercents, 100));
     test("lidClosed", () => strictEqual(heartbeatInfo.lidClosed, true));
   });
 });

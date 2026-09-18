@@ -1,7 +1,5 @@
-import { PrintProgressEvent } from "../events";
-import { EncodedImage } from "../image_encoder";
 import { PacketGenerator } from "../packets";
-import { Utils } from "../utils";
+import { Utils, EncodedImage } from "../utils";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
