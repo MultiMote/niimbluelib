@@ -14,8 +14,7 @@ import {
   PageColorType,
   BitmapColorMode,
 } from ".";
-import { EncodedImage, ImageEncoder } from "../utils";
-import { Utils, Validators } from "../utils";
+import { EncodedImage, ImageEncoder, Utils, Validators } from "../utils";
 
 export interface ImagePacketsGenerateOptions {
   /** Mode for "black pixel count" section of bitmap packet. */

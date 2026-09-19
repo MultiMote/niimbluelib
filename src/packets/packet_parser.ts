@@ -308,7 +308,7 @@ export class PacketParser {
     const v1 = packet.data[1] / 100 + packet.data[0];
     const v2 = (packet.data[0] * 256 + packet.data[1]) / 100.0;
 
-    return `0x${Utils.bufToHex(packet.data, "")} (${v1.toFixed(2)} or ${v2.toFixed(2)})`;
+    return `${v1.toFixed(2)}/${v2.toFixed(2)}`;
   }
 
   public static parsePrinterSerialNumberResponse(packet: NiimbotPacket): string {

@@ -7,6 +7,7 @@ import {
   PacketParser,
   PrinterErrorCode,
   ResponseCommandId,
+  SoundSettingsItemType,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import {
@@ -39,6 +40,13 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
   heartbeatIntervalMs: 2_000,
 };
 
+export const PRINTER_INFO_DEFAULT = {
+  settings: {
+    connectionSound: false,
+    powerSound: false,
+  },
+};
+
 /**
  * Abstract class representing a client with common functionality for interacting with a printer.
  * Hardware interface must be defined after extending this class.
@@ -47,7 +55,7 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
  */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly protocol: NiimbotProtocol;
-  protected printerInfo: PrinterInfo = {};
+  protected printerInfo: PrinterInfo = PRINTER_INFO_DEFAULT;
   protected rfidInfo: CombinedRfidInfo = {};
   protected heartbeatData: HeartbeatData = {};
   private heartbeatTimer?: NodeJS.Timeout;
@@ -77,7 +85,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.on("disconnect", () => {
       this.stopHeartbeat();
       this.packetBuf = new Uint8Array();
-      this.printerInfo = {};
+      this.printerInfo = PRINTER_INFO_DEFAULT;
       this.rfidInfo = {};
       this.heartbeatData = {};
     });
@@ -261,6 +269,13 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.printerInfo.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
     this.printerInfo.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
 
+    this.printerInfo.settings.connectionSound =
+      (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.BluetoothConnectionSound), "sound value")) ??
+      false;
+
+    this.printerInfo.settings.powerSound =
+      (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.PowerSound), "sound value")) ?? false;
+
     try {
       const i = await this.protocol.heartbeatPrinterInfo();
       this.printerInfo.printheadWidth = i.printheadWidth;
@@ -357,6 +372,20 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     }
 
     return undefined;
+  }
+
+  public async setSoundEnabled(soundType: SoundSettingsItemType, value: boolean) {
+    await this.protocol.setSoundEnabled(soundType, value);
+
+    if (soundType === SoundSettingsItemType.BluetoothConnectionSound) {
+      this.printerInfo.settings.connectionSound = value;
+    }
+
+    if (soundType === SoundSettingsItemType.PowerSound) {
+      this.printerInfo.settings.powerSound = value;
+    }
+
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
   }
 
   /**

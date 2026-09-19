@@ -79,7 +79,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     const disconnectListener = () => {
       this.gattServer = undefined;
       this.channel = undefined;
-      this.printerInfo = {};
       this.emit("disconnect", new DisconnectEvent());
       device.removeEventListener("gattserverdisconnected", disconnectListener);
     };
@@ -152,7 +151,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.gattServer?.disconnect();
     this.gattServer = undefined;
     this.channel = undefined;
-    this.printerInfo = {};
   }
 
   public async sendRaw(data: Uint8Array, force?: boolean) {
