@@ -108,7 +108,6 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
     this.deviceId = undefined;
     this.serviceUUID = undefined;
     this.characteristicUUID = undefined;
-    this.printerInfo = {};
     this.emit("disconnect", new DisconnectEvent());
   }
 
@@ -123,7 +122,6 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       await BleClient.disconnect(this.deviceId);
     }
     this.deviceId = undefined;
-    this.printerInfo = {};
   }
 
   public async sendRaw(data: Uint8Array, force?: boolean) {

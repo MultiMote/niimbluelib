@@ -38,7 +38,8 @@ export interface PrinterInfo {
   hardwareVersion?: string;
   resolutionClass?: ResolutionClass;
   /** For protocol v4+ */
-  capabilities?: PrinterCapabilities
+  capabilities?: PrinterCapabilities;
+  settings: PrinterSettings;
 }
 
 /**
@@ -202,4 +203,9 @@ export interface PrinterCapabilities {
   imageCompressSupport?: number[];
   maxImageCompressBytes?: number;
   localTemplateMaxTimeCount?: number;
+}
+
+export interface PrinterSettings {
+  powerSound: boolean;
+  connectionSound: boolean;
 }
