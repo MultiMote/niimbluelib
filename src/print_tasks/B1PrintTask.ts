@@ -1,4 +1,4 @@
-import { EncodedImage } from "../image_encoder";
+import { EncodedImage } from "../utils";
 import { PacketGenerator, PageColorType } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
@@ -25,6 +25,7 @@ export class B1PrintTask extends AbstractPrintTask {
         PacketGenerator.pageEnd(),
       ],
       this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
     );
   }
 

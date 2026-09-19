@@ -13,7 +13,7 @@ import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
-import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterCapabilities as PrinterCapabilities, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -79,9 +79,16 @@ export class NiimbotProtocol {
     throw lastError;
   }
 
-  public async sendAll(packets: NiimbotPacket[], forceTimeout?: number): Promise<void> {
-    for (const p of packets) {
-      await this.send(p, forceTimeout);
+  public async sendAll(
+    packets: NiimbotPacket[],
+    forceTimeout?: number,
+    onProgress?: (current: number, total: number) => void,
+  ): Promise<void> {
+    const total = packets.length;
+
+    for (let i = 0; i < total; i++) {
+      onProgress?.(i + 1, total);
+      await this.send(packets[i], forceTimeout);
     }
   }
 
@@ -420,5 +427,16 @@ export class NiimbotProtocol {
 
   public async setPrinterTime(value: Date = new Date()): Promise<void> {
     await this.send(PacketGenerator.setPrinterTime(value));
+  }
+
+  public async getPaperInfo(): Promise<PaperInfo> {
+    const response = await this.send(PacketGenerator.getPaperInfo());
+    return PacketParser.parsePaperInfoResponse(response);
+  }
+
+  /** Only for protocol >= 5 */
+  public async gePrinterCapabilities(): Promise<PrinterCapabilities> {
+    const response = await this.send(PacketGenerator.getPrinterCapabilities());
+    return PacketParser.parsePrinterCapabilities(response);
   }
 }

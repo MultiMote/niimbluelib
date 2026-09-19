@@ -1,4 +1,5 @@
-import { PageColorType, Utils } from ".";
+import { Utils } from ".";
+import { PageColorType } from "../packets";
 
 /** @category Image encoder */
 export type ImageRow = {

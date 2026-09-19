@@ -2,11 +2,10 @@ import {
   Utils,
   RequestCommandId,
   ResponseCommandId,
-  NiimbotBluetoothClient,
   ImageEncoder,
-  NiimbotSerialClient,
   PageColorType,
   printTaskNames,
+  instantiateClient,
 } from "@mmote/niimbluelib";
 
 let client = null;
@@ -102,7 +101,7 @@ const repaint = () => {
   }
 };
 
-/** Add text to log pane */
+/** Add text to log pane, add listeners */
 const logger = (text) => {
   console.log(text);
   logPane.innerText += text + "\n";
@@ -115,11 +114,7 @@ const newClient = (transport) => {
     client.disconnect();
   }
 
-  if (transport === "ble") {
-    client = new NiimbotBluetoothClient();
-  } else if (transport === "serial") {
-    client = new NiimbotSerialClient();
-  }
+  client = instantiateClient(transport);
 
   client.on("packetsent", (e) => {
     logger(`>> ${Utils.bufToHex(e.packet.toBytes())} (${RequestCommandId[e.packet.command]})`);
@@ -164,7 +159,7 @@ disconnectButton.onclick = () => {
 
 /** On "Connect BLE" clicked */
 bleConnectButton.onclick = async () => {
-  newClient("ble");
+  newClient("bluetooth");
 
   try {
     await client.connect();

@@ -1,4 +1,4 @@
-import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData } from ".";
+import { ConnectionInfo, PrinterInfo, NiimbotPacket, HeartbeatData, CombinedRfidInfo } from ".";
 
 /**
  * Base client event
@@ -127,6 +127,32 @@ export class PrinterInfoFetchedEvent extends NiimbotEvent {
 }
 
 /**
+ * Fired when RFID info fetched from printer (after {@link NiimbotAbstractClient.fetchRfidInfo} finished).
+ * @category Events
+ */
+export class PrintEndEvent extends NiimbotEvent {
+  readonly pagesPrinted: number;
+
+  constructor(pagesPrinted: number) {
+    super("printend");
+    this.pagesPrinted = pagesPrinted;
+  }
+}
+
+/**
+ * Fired when RFID info fetched from printer (after {@link NiimbotAbstractClient.fetchRfidInfo} finished).
+ * @category Events
+ */
+export class RfidInfoFetchedEvent extends NiimbotEvent {
+  readonly info: CombinedRfidInfo;
+
+  constructor(info: CombinedRfidInfo) {
+    super("rfidinfofetched");
+    this.info = info;
+  }
+}
+
+/**
  * Fired on print progress received during {@link AbstractPrintTask.waitForFinished}.
  * @category Events
  */
@@ -146,6 +172,20 @@ export class PrintProgressEvent extends NiimbotEvent {
     this.pagesTotal = pagesTotal;
     this.pagePrintProgress = pagePrintProgress;
     this.pageFeedProgress = pageFeedProgress;
+  }
+}
+
+/**
+ * Fired on every 5% of packets sent in {@link AbstractPrintTask.printPage}
+ * @category Events
+ */
+export class PrintPacketProgressEvent extends NiimbotEvent {
+  /** 0-100 */
+  readonly progress: number;
+
+  constructor(progress: number) {
+    super("printpacketprogress");
+    this.progress = progress;
   }
 }
 
@@ -178,6 +218,9 @@ export type ClientEventMap = {
   heartbeat: (event: HeartbeatEvent) => void;
   heartbeatfailed: (event: HeartbeatFailedEvent) => void;
   printerinfofetched: (event: PrinterInfoFetchedEvent) => void;
+  rfidinfofetched: (event: RfidInfoFetchedEvent) => void;
   printprogress: (event: PrintProgressEvent) => void;
+  printend: (event: PrintEndEvent) => void;
+  printpacketprogress: (event: PrintPacketProgressEvent) => void;
   firmwareprogress: (event: FirmwareProgressEvent) => void;
 };

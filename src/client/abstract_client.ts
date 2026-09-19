@@ -7,6 +7,7 @@ import {
   PacketParser,
   PrinterErrorCode,
   ResponseCommandId,
+  SoundSettingsItemType,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import {
@@ -17,10 +18,11 @@ import {
   HeartbeatFailedEvent,
   PacketReceivedEvent,
   RawPacketReceivedEvent,
+  RfidInfoFetchedEvent,
 } from "../events";
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
-import { HeartbeatData, PrinterInfo, PrintError } from "../packets/dto";
+import { CombinedRfidInfo, HeartbeatData, PrinterInfo, PrintError } from "../packets/dto";
 import { NiimbotClientType } from ".";
 
 /**
@@ -38,6 +40,13 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
   heartbeatIntervalMs: 2_000,
 };
 
+export const PRINTER_INFO_DEFAULT = {
+  settings: {
+    connectionSound: false,
+    powerSound: false,
+  },
+};
+
 /**
  * Abstract class representing a client with common functionality for interacting with a printer.
  * Hardware interface must be defined after extending this class.
@@ -46,14 +55,19 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
  */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly protocol: NiimbotProtocol;
-  protected info: PrinterInfo = {};
+  protected printerInfo: PrinterInfo = PRINTER_INFO_DEFAULT;
+  protected rfidInfo: CombinedRfidInfo = {};
+  protected heartbeatData: HeartbeatData = {};
   private heartbeatTimer?: NodeJS.Timeout;
   private heartbeatFails: number = 0;
   private heartbeatIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.heartbeatIntervalMs;
   private heartbeatAutoStart: boolean = true;
+  private heartbeatMaxFails: number = 5;
+  private skipNextHeartbeatRfidCheck = false;
   protected mutex: Mutex = new Mutex();
   protected debug: boolean = false;
   private packetBuf: Uint8Array = new Uint8Array();
+  private fetchRfidOnPrintEnd: boolean = true;
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
@@ -64,18 +78,31 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
     this.on("connect", () => {
       if (this.heartbeatAutoStart) {
-        this.startHeartbeat()
+        this.startHeartbeat();
       }
     });
 
     this.on("disconnect", () => {
       this.stopHeartbeat();
       this.packetBuf = new Uint8Array();
+      this.printerInfo = PRINTER_INFO_DEFAULT;
+      this.rfidInfo = {};
+      this.heartbeatData = {};
+    });
+
+    this.on("printend", async () => {
+      if (this.fetchRfidOnPrintEnd) {
+        await this.fetchRfidInfo();
+      }
     });
   }
 
   public setHeartbeatAutoStart(value: boolean) {
     this.heartbeatAutoStart = value;
+  }
+
+  public getHeartbeatAutoStart(): boolean {
+    return this.heartbeatAutoStart;
   }
 
   /**
@@ -221,9 +248,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    **/
   protected async connectNegotiate(): Promise<void> {
     const result = await this.protocol.connectNegotiate();
-    this.info.connectResult = result.connectResult;
-    this.info.protocolVersion = result.protocolVersion;
-    this.info.supportColor = result.supportColor;
+    this.printerInfo.connectResult = result.connectResult;
+    this.printerInfo.protocolVersion = result.protocolVersion;
+    this.printerInfo.supportColor = result.supportColor;
   }
 
   /**
@@ -236,31 +263,71 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
         return undefined;
       });
 
-    this.info.modelId = await this.protocol.getPrinterModel();
-    this.info.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
-    this.info.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
-    this.info.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
-    this.info.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
-    this.info.labelType = await safeGet(this.protocol.getLabelType(), "label type");
+    this.printerInfo.modelId = await this.protocol.getPrinterModel();
+    this.printerInfo.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
+    this.printerInfo.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
+    this.printerInfo.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
+    this.printerInfo.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
+
+    this.printerInfo.settings.connectionSound =
+      (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.BluetoothConnectionSound), "sound value")) ??
+      false;
+
+    this.printerInfo.settings.powerSound =
+      (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.PowerSound), "sound value")) ?? false;
 
     try {
       const i = await this.protocol.heartbeatPrinterInfo();
-      this.info.printheadWidth = i.printheadWidth;
-      this.info.hardwareVersion = i.hardwareVersion;
-      this.info.softwareVersion = i.softwareVersion;
-      this.info.resolutionClass = i.resolutionClass;
+      this.printerInfo.printheadWidth = i.printheadWidth;
+      this.printerInfo.hardwareVersion = i.hardwareVersion;
+      this.printerInfo.softwareVersion = i.softwareVersion;
+      this.printerInfo.resolutionClass = i.resolutionClass;
     } catch (e) {
       console.warn(`Unable to get printhead width and some other info (${e})`);
-      this.info.hardwareVersion = await safeGet(this.protocol.getHardwareVersion(), "hardware version");
-      this.info.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
+      this.printerInfo.hardwareVersion = await safeGet(this.protocol.getHardwareVersion(), "hardware version");
+      this.printerInfo.softwareVersion = await safeGet(this.protocol.getSoftwareVersion(), "software version");
     }
 
-    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.info));
-    return this.info;
+    if (this.printerInfo.protocolVersion !== undefined && this.printerInfo.protocolVersion >= 4) {
+      this.printerInfo.capabilities = await safeGet(this.protocol.gePrinterCapabilities(), "printer capabilities");
+    }
+
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
+    return this.printerInfo;
   }
 
   /**
-   * Calls {@link connectNegotiate} (exceptions are not ignored) then calls {@link fetchPrinterInfo} (exceptions ignored)
+   * Fetch label and ribbon RFID information and store it. Do not throws exceptions.
+   */
+  public async fetchRfidInfo(): Promise<CombinedRfidInfo> {
+    let info: CombinedRfidInfo = {};
+
+    try {
+      info.labelRfidInfo = await this.protocol.rfidInfo();
+    } catch (e) {
+      console.warn("Unable to fetch RFID info", e);
+    }
+
+    try {
+      info.paperInfo = await this.protocol.getPaperInfo();
+    } catch (e) {
+      // ignore
+    }
+
+    try {
+      info.ribbonRfidInfo = await this.protocol.rfidInfo2();
+    } catch (e) {
+      // ignore
+    }
+
+    this.rfidInfo = info;
+
+    this.emit("rfidinfofetched", new RfidInfoFetchedEvent(info));
+    return info;
+  }
+
+  /**
+   * Calls {@link connectNegotiate} (exceptions are not ignored) then calls {@link fetchPrinterInfo} and {@link fetchRfidInfo} (exceptions ignored)
    * @param cleanup cleanup/disconnect function, called when initialNegotiate fails
    */
   protected async negotiateAndGetPrinterInfo(cleanup?: () => void) {
@@ -268,22 +335,78 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       await this.connectNegotiate();
     } catch (e) {
       if (cleanup) cleanup();
-      throw new Error(`Unable to perform initial negotiate: ${e}`)
+      throw new Error(`Unable to perform initial negotiate: ${e}`);
     }
 
     try {
       await this.fetchPrinterInfo();
     } catch (e) {
-      if (cleanup) cleanup(); 
+      if (cleanup) cleanup();
       throw new Error(`Unable to fetch printer info: ${e}`);
     }
+
+    await this.fetchRfidInfo();
+
+    this.skipNextHeartbeatRfidCheck = true;
   }
 
   /**
-   * Get the stored information about the printer.
+   * Fetch heartbeat information and store it. Emits `heartbeat`/`heartbeatfailed` event.  Do not throws exceptions.
+   */
+  public async fetchHeartbeatData(): Promise<HeartbeatData | undefined> {
+    try {
+      const data = await this.protocol.heartbeat();
+      this.heartbeatFails = 0;
+      this.heartbeatReceived(data);
+      this.emit("heartbeat", new HeartbeatEvent(data));
+      this.heartbeatData = data;
+      return data;
+    } catch (e) {
+      console.error(e);
+      this.heartbeatFails++;
+      this.emit("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
+
+      if (this.heartbeatFails > 0 && this.heartbeatFails >= this.heartbeatMaxFails) {
+        await this.disconnect();
+      }
+    }
+
+    return undefined;
+  }
+
+  public async setSoundEnabled(soundType: SoundSettingsItemType, value: boolean) {
+    await this.protocol.setSoundEnabled(soundType, value);
+
+    if (soundType === SoundSettingsItemType.BluetoothConnectionSound) {
+      this.printerInfo.settings.connectionSound = value;
+    }
+
+    if (soundType === SoundSettingsItemType.PowerSound) {
+      this.printerInfo.settings.powerSound = value;
+    }
+
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
+  }
+
+  /**
+   * Get the stored information about the printer. Call {@link fetchPrinterInfo} to update.
    */
   public getPrinterInfo(): PrinterInfo {
-    return this.info;
+    return this.printerInfo;
+  }
+
+  /**
+   * Get the stored information about RFID tags. Call {@link fetchRfidInfo} to update.
+   */
+  public getRfidInfo(): CombinedRfidInfo {
+    return this.rfidInfo;
+  }
+
+  /**
+   * Get the stored heartbeat information about RFID tags. Call {@link fetchHeartbeatData} to update.
+   */
+  public getHeartbeatData(): HeartbeatData {
+    return this.heartbeatData;
   }
 
   /**
@@ -295,6 +418,10 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.heartbeatIntervalMs = intervalMs;
   }
 
+  public getHeartbeatInterval(): number {
+    return this.heartbeatIntervalMs;
+  }
+
   /**
    * Starts the heartbeat timer, "heartbeat" is emitted after packet received.
    *
@@ -302,28 +429,25 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    */
   public startHeartbeat(): void {
     this.heartbeatFails = 0;
-
     this.stopHeartbeat();
-
-    this.heartbeatTimer = setInterval(() => {
-      this.protocol
-        .heartbeat()
-        .then((data) => {
-          this.heartbeatFails = 0;
-          this.heartbeatReceived(data);
-          this.emit("heartbeat", new HeartbeatEvent(data));
-        })
-        .catch((e) => {
-          console.error(e);
-          this.heartbeatFails++;
-          this.emit("heartbeatfailed", new HeartbeatFailedEvent(this.heartbeatFails));
-        });
-    }, this.heartbeatIntervalMs);
+    this.heartbeatTimer = setInterval(() => this.fetchHeartbeatData(), this.heartbeatIntervalMs);
   }
 
   private heartbeatReceived(data: HeartbeatData) {
     if (data.batteryPercents) {
-      this.info.batteryPercents = data.batteryPercents;
+      this.printerInfo.batteryPercents = data.batteryPercents;
+    }
+
+    if (this.skipNextHeartbeatRfidCheck) {
+      this.skipNextHeartbeatRfidCheck = false;
+    } else {
+      const paperRfidChanged = this.heartbeatData?.paperRfidSuccess !== data?.paperRfidSuccess;
+      const ribbonRfidChanged = this.heartbeatData?.ribbonRfidSuccess !== data?.ribbonRfidSuccess;
+      const lidChanged = this.heartbeatData?.lidClosed !== data?.lidClosed;
+
+      if (lidChanged || paperRfidChanged || ribbonRfidChanged) {
+        this.fetchRfidInfo();
+      }
     }
   }
 
@@ -346,10 +470,10 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Get printer capabilities based on the printer model. Model library is hardcoded.
    **/
   public getModelMetadata(): PrinterModelMeta | undefined {
-    if (this.info.modelId === undefined) {
+    if (this.printerInfo.modelId === undefined) {
       return undefined;
     }
-    return getPrinterMetaById(this.info.modelId);
+    return getPrinterMetaById(this.printerInfo.modelId);
   }
 
   /**
@@ -372,11 +496,38 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.packetIntervalMs = milliseconds;
   }
 
+  public getPacketInterval(): number {
+    return this.packetIntervalMs;
+  }
+
   /**
    * Enable some debug information logging.
    */
   public setDebug(value: boolean) {
     this.debug = value;
+  }
+
+  public getDebug(): boolean {
+    return this.debug;
+  }
+
+  /**
+   * Set max failed heartbeat attempts to disconnect. Use 0 to disable.
+   */
+  public setHeartbeatMaxFails(value: number) {
+    this.heartbeatMaxFails = value;
+  }
+
+  public getHeartbeatMaxFails(): number {
+    return this.heartbeatMaxFails;
+  }
+
+  public isFetchRfidOnPrintEnd(): boolean {
+    return this.fetchRfidOnPrintEnd;
+  }
+
+  public setFetchRfidOnPrintEnd(value: boolean) {
+    this.fetchRfidOnPrintEnd = value;
   }
 
   public abstract getType(): NiimbotClientType;

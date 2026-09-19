@@ -13,8 +13,6 @@ Used in [NiimBlue](https://github.com/MultiMote/niimblue) project.
 
 NiimBlueLib provides the most accurate open source implementation of the NIIMBOT printers protocol.
 
-This project is in Alpha state. Use only exact version when you add it to your project. API can be changed anytime.
-
 Also check out [niimblue-node](https://github.com/MultiMote/niimblue-node) for CLI use cases.
 
 ### Installation

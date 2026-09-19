@@ -1,4 +1,5 @@
-import { EncodedImage } from "../image_encoder";
+import { PrintEndEvent, PrintPacketProgressEvent, PrintProgressEvent } from "..";
+import { EncodedImage } from "../utils";
 import { LabelType, PageColorType } from "../packets";
 import { NiimbotProtocol } from "../packets/protocol";
 
@@ -153,11 +154,40 @@ export abstract class AbstractPrintTask {
     return this.protocol.getClient().getModelMetadata()?.printheadPixels;
   }
   /** End print, cleanup */
-  printEnd(): Promise<boolean> {
-    return this.protocol.printEnd();
+  async printEnd(): Promise<boolean> {
+    const result = await this.protocol.printEnd();
+    this.emitPrintEndEvent();
+    return result;
   }
   /** Check if this print task supports a specified page color */
   isSupportColor(pageColor: PageColorType): boolean {
     return pageColor === PageColorType.SingleColor;
+  }
+
+  protected makePacketProgressCallback(stepPercent: number = 5) {
+    let lastReportedStep = -1;
+
+    return (current: number, total: number) => {
+      const percent = Math.floor((current / total) * 100);
+      const step = Math.floor(percent / stepPercent);
+
+      if (step > lastReportedStep || current === total) {
+        lastReportedStep = step;
+        this.protocol.getClient().emit("printpacketprogress", new PrintPacketProgressEvent(percent));
+      }
+    };
+  }
+
+  protected emitProgressEvent(pagePrintProgress: number = 100, pageFeedProgress: number = 100) {
+    this.protocol
+      .getClient()
+      .emit(
+        "printprogress",
+        new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, pagePrintProgress, pageFeedProgress),
+      );
+  }
+
+  protected emitPrintEndEvent() {
+    this.protocol.getClient().emit("printend", new PrintEndEvent(this.pagesPrinted));
   }
 }

@@ -1,4 +1,4 @@
-import { EncodedImage } from "../image_encoder";
+import { EncodedImage } from "../utils";
 import { HeartbeatType, NiimbotPacket, PacketGenerator, LabelType, PageColorType } from "../packets";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
@@ -52,6 +52,7 @@ export class D110MV4PrintTask extends AbstractPrintTask {
         PacketGenerator.pageEnd(),
       ],
       this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
     );
   }
 
@@ -72,6 +73,8 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     const result = await this.protocol.printEnd();
 
     await this.protocol.send(pkt);
+
+    this.emitPrintEndEvent();
 
     return result;
   }

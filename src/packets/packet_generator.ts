@@ -14,8 +14,7 @@ import {
   PageColorType,
   BitmapColorMode,
 } from ".";
-import { EncodedImage, ImageEncoder } from "../image_encoder";
-import { Utils, Validators } from "../utils";
+import { EncodedImage, ImageEncoder, Utils, Validators } from "../utils";
 
 export interface ImagePacketsGenerateOptions {
   /** Mode for "black pixel count" section of bitmap packet. */
@@ -457,5 +456,13 @@ export class PacketGenerator {
       date.getMinutes(),
       date.getSeconds(),
     ]);
+  }
+
+  public static getPaperInfo(): NiimbotPacket {
+    return this.mapped(TX.GetPaperInfo);
+  }
+
+  public static getPrinterCapabilities(): NiimbotPacket {
+    return this.mapped(TX.GetPrinterCapabilities);
   }
 }

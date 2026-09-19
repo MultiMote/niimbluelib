@@ -1,7 +1,5 @@
-import { PrintProgressEvent } from "../events";
-import { EncodedImage } from "../image_encoder";
 import { PacketGenerator } from "../packets";
-import { Utils } from "../utils";
+import { Utils, EncodedImage } from "../utils";
 import { AbstractPrintTask } from "./AbstractPrintTask";
 
 /**
@@ -32,14 +30,15 @@ export class B21L2BPrintTask extends AbstractPrintTask {
           }),
           PacketGenerator.pageEnd(),
         ],
-        this.printOptions.pageTimeoutMs
+        this.printOptions.pageTimeoutMs,
+      this.makePacketProgressCallback(),
       );
     }
   }
 
   override async waitForPageFinished(): Promise<void> {
     await Utils.doUntilTrue(() => this.protocol.pageEnd(), 20, 500);
-    this.protocol.getClient().emit("printprogress", new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, 100, 100));
+    this.emitProgressEvent();
   }
 
   override waitForFinished(): Promise<void> {
