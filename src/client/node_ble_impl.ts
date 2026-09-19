@@ -149,7 +149,7 @@ export class NiimbotNodeBleClient extends NiimbotAbstractClient {
 
     const result: ConnectionInfo = {
       deviceName: this.device!.advertisement.localName ?? this.addr,
-      result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
+      result: this.printerInfo.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
     this.emit("connect", new ConnectEvent(result));

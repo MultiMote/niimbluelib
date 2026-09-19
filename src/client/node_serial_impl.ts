@@ -73,7 +73,7 @@ export class NiimbotNodeSerialClient extends NiimbotAbstractClient {
 
     const result: ConnectionInfo = {
       deviceName: `Serial (${this.portName})`,
-      result: this.info.connectResult ?? ConnectResult.FirmwareErrors,
+      result: this.printerInfo.connectResult ?? ConnectResult.FirmwareErrors,
     };
 
     this.emit("connect", new ConnectEvent(result));
