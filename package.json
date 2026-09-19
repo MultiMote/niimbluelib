@@ -1,6 +1,6 @@
 {
   "name": "@mmote/niimbluelib",
-  "version": "0.46.0-node",
+  "version": "0.47.0-node",
   "description": "Library for the communication with NIIMBOT printers",
   "keywords": [
     "reverse-engineering",
