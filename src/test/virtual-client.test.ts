@@ -1,6 +1,6 @@
 import { test, describe, before, after } from "node:test";
 import { match, strictEqual, rejects, ifError, deepStrictEqual } from "node:assert";
-import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } from "..";
+import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData, NiimbotAbstractClient } from "..";
 import * as dumps from "./dumps";
 import { CombinedRfidInfo } from "../packets";
 
@@ -11,7 +11,11 @@ const newClient = () => {
 };
 
 describe("Virtual bad client", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
+
+  before(async () => {
+    client = newClient();
+  });
 
   test("Failed connection with no connect packet", async () => {
     await rejects(() => client.connect());
@@ -19,12 +23,13 @@ describe("Virtual bad client", () => {
 });
 
 describe("Virtual B1 5.22 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B1_V5_22);
     await client.connect();
 
@@ -54,12 +59,13 @@ describe("Virtual B1 5.22 test", () => {
 });
 
 describe("Virtual B21 PRO 3.09 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let rfidInfo: CombinedRfidInfo;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B21_PRO_V3_09);
     await client.connect();
 
@@ -101,12 +107,13 @@ describe("Virtual B21 PRO 3.09 test", () => {
 });
 
 describe("Virtual B21 PRO 3.13 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let rfidInfo: CombinedRfidInfo;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B21_PRO_V3_13);
     await client.connect();
     info = client.getPrinterInfo();
@@ -160,12 +167,12 @@ describe("Virtual B21 PRO 3.13 test", () => {
 });
 
 describe("Virtual D110 13.14 test", () => {
-  const client = newClient();
-
+  let client: NiimbotVirtualClient;
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.D110_V13_14);
     await client.connect();
 
@@ -194,12 +201,12 @@ describe("Virtual D110 13.14 test", () => {
 });
 
 describe("Virtual D110M 4.23 test", () => {
-  const client = newClient();
-
+  let client: NiimbotVirtualClient;
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.D110M_V4_23);
     await client.connect();
 
@@ -232,12 +239,13 @@ describe("Virtual D110M 4.23 test", () => {
 });
 
 describe("Virtual B2 PRO 2.09 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B2_PRO_V2_01);
     await client.connect();
 
@@ -267,12 +275,13 @@ describe("Virtual B2 PRO 2.09 test", () => {
 });
 
 describe("Virtual B21S 40.28 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B21S_V40_28);
     await client.connect();
 
@@ -301,12 +310,13 @@ describe("Virtual B21S 40.28 test", () => {
 });
 
 describe("Virtual B2 PRO 2.12 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.B1_PRO_V2_12);
     await client.connect();
 
@@ -336,12 +346,13 @@ describe("Virtual B2 PRO 2.12 test", () => {
 });
 
 describe("Virtual C1 3.12 test", () => {
-  const client = newClient();
+  let client: NiimbotVirtualClient;
 
   let info: PrinterInfo;
   let heartbeatInfo: HeartbeatData;
 
   before(async () => {
+    client = newClient();
     client.loadHexDump(dumps.C1_V3_12);
     await client.connect();
 
