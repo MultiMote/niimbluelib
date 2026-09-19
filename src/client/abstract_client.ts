@@ -40,11 +40,13 @@ export const NIIMBOT_CLIENT_DEFAULTS = {
   heartbeatIntervalMs: 2_000,
 };
 
-export const PRINTER_INFO_DEFAULT = {
-  settings: {
-    connectionSound: false,
-    powerSound: false,
-  },
+export const createPrinterInfo = (): PrinterInfo => {
+  return {
+    settings: {
+      connectionSound: false,
+      powerSound: false,
+    },
+  };
 };
 
 /**
@@ -55,7 +57,7 @@ export const PRINTER_INFO_DEFAULT = {
  */
 export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap> {
   public readonly protocol: NiimbotProtocol;
-  protected printerInfo: PrinterInfo = PRINTER_INFO_DEFAULT;
+  protected printerInfo: PrinterInfo = createPrinterInfo();
   protected rfidInfo: CombinedRfidInfo = {};
   protected heartbeatData: HeartbeatData = {};
   private heartbeatTimer?: NodeJS.Timeout;
@@ -85,7 +87,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.on("disconnect", () => {
       this.stopHeartbeat();
       this.packetBuf = new Uint8Array();
-      this.printerInfo = PRINTER_INFO_DEFAULT;
+      this.printerInfo = createPrinterInfo();
       this.rfidInfo = {};
       this.heartbeatData = {};
     });
