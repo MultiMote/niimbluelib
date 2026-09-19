@@ -11,16 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '25'
           registry-url: 'https://registry.npmjs.org'
           scope: '@mmote'
           cache: npm
           cache-dependency-path: ./package-lock.json
+
+      - name: Install npm 11.19.1 to use stage publish
+        run: npm install -g npm@11.19.1
 
       - name: Install dependencies
         run: npm ci
