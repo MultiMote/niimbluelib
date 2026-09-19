@@ -38,6 +38,6 @@ jobs:
         run: npm run build:bundle
 
       - name: Publish
-        run: npm stage publish --access public
+        run: npm stage publish --access public --tag latest-node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
