@@ -33,8 +33,22 @@ jobs:
       - name: Install typedoc
         run: npm install -D typedoc@0.28.18 typedoc-plugin-include-example@3.0.2
 
-      - name: Build
+      - name: Build lib
+        run: npm run build
+
+      - name: Build docs
         run: npx typedoc
+
+      - name: Install example dependencies
+        run: npm ci
+        working-directory: example
+
+      - name: Build example
+        run: npm run build-rel
+        working-directory: example
+
+      - name: Copy example
+        run: cp -r example/dist docs/html/example
 
       - name: Setup SSH
         run: |

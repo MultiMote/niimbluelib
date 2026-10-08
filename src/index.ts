@@ -1,4 +1,6 @@
 /**
+ * [Live example](/example)
+ *
  * @includeExample example/main.js
  *
  * @module API
