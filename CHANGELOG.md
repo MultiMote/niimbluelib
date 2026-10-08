@@ -1,3 +1,7 @@
+# 0.47.1
+
+* findPrintTask: return `D110M_V4` if `protocolVersion >= 4`.
+
 # 0.47.0
 
 * Fix parsing RfidInfo packet response with extra uuid field.
