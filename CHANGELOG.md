@@ -1,6 +1,7 @@
 # 0.47.1
 
 * findPrintTask: return `D110M_V4` if `protocolVersion >= 4`.
+* Fix unsigned int packet fields parsed as signed int.
 
 # 0.47.0
 

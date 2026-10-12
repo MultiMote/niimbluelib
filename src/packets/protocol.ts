@@ -13,7 +13,7 @@ import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
-import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterCapabilities as PrinterCapabilities, PrinterInfo, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterCapabilities, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -104,7 +104,7 @@ export class NiimbotProtocol {
       const listener = (evt: PacketReceivedEvent) => {
         if (evt.packet.command === ResponseCommandId.In_PrinterPageIndex) {
           Validators.arrayLengthEquals(evt.packet.data, 2);
-          const page = Utils.bytesToI16(evt.packet.data);
+          const page = Utils.bytesToU16(evt.packet.data);
 
           this.client.emit("printprogress", new PrintProgressEvent(page, pagesToPrint, 100, 100));
 
@@ -351,7 +351,7 @@ export class NiimbotProtocol {
 
   public async getAutoShutDownTime(): Promise<AutoShutdownTime> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.AutoShutdownTime));
-    return PacketParser.parseAutoShutdownTimeResponse(packet) as AutoShutdownTime;
+    return PacketParser.parseAutoShutdownTimeResponse(packet);
   }
 
   public async getSoftwareVersion(): Promise<string> {

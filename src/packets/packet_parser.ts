@@ -11,7 +11,6 @@ import {
   PrinterCapabilitiesField as CapId,
   PrinterStatusData,
   PrintStatus,
-  ResolutionClass,
   RfidInfo,
   SequentialDataReader,
 } from ".";
@@ -106,14 +105,14 @@ export class PacketParser {
     Validators.arrayLengthAtLeast(packet.data, 4); // can be 8, 10, but ignore it for now
 
     const r = new SequentialDataReader(packet.data);
-    const page = r.readI16();
-    const pagePrintProgress = r.readI8();
-    const pageFeedProgress = r.readI8();
+    const page = r.readU16();
+    const pagePrintProgress = r.readU8();
+    const pageFeedProgress = r.readU8();
     let error: number = 0;
 
     if (packet.dataLength === 10) {
       r.skip(2);
-      error = r.readI8();
+      error = r.readU8();
     }
 
     return { page, pagePrintProgress, pageFeedProgress, error };
@@ -121,7 +120,7 @@ export class PacketParser {
 
   public static parseConnectResponse(packet: NiimbotPacket): ConnectResult {
     Validators.arrayLengthAtLeast(packet.data, 1);
-    return packet.data[0] as ConnectResult;
+    return packet.data[0];
   }
 
   public static parsePrinterStatusDataResponse(packet: NiimbotPacket): PrinterStatusData {
@@ -155,7 +154,7 @@ export class PacketParser {
     }
 
     Validators.arrayLengthEquals(packet.data, 2);
-    return Utils.bytesToI16(packet.data);
+    return Utils.bytesToU16(packet.data);
   }
 
   public static parseRfidInfoResponse(packet: NiimbotPacket): RfidInfo {
@@ -178,12 +177,12 @@ export class PacketParser {
     info.uuid = Utils.bufToHex(r.readBytes(8), "");
     info.barCode = r.readVString();
     info.serialNumber = r.readVString();
-    info.allPaper = r.readI16();
-    info.usedPaper = r.readI16();
-    info.consumablesType = r.readI8() as LabelType;
+    info.allPaper = r.readU16();
+    info.usedPaper = r.readU16();
+    info.consumablesType = r.readU8();
 
     if (r.canRead(2)) {
-      info.capacity = r.readI16();
+      info.capacity = r.readU16();
     }
 
     if (r.canRead(8)) {
@@ -206,9 +205,9 @@ export class PacketParser {
     const info: HeartbeatPrinterInfoData = {
       softwareVersion: (fwL / 100 + fwH).toFixed(2),
       hardwareVersion: (hwL / 100 + hwH).toFixed(2),
-      printheadWidth: r.readI16(),
-      resolutionClass: r.readI8() as ResolutionClass,
-      printheadAlignment: r.readI8(),
+      printheadWidth: r.readU16(),
+      resolutionClass: r.readU8(),
+      printheadAlignment: r.readU8(),
       supportsRFID: r.readBool(),
       supportsWriteRFID: r.readBool(),
     };
@@ -227,25 +226,25 @@ export class PacketParser {
     if (len === 10) {
       // d110
       r.skip(8);
-      info.lidClosed = r.readI8() === 0;
-      info.batteryPercents = r.readI8();
+      info.lidClosed = r.readU8() === 0;
+      info.batteryPercents = r.readU8();
     } else if (len === 13) {
       // b1
       r.skip(9);
-      info.lidClosed = r.readI8() === 0;
-      info.batteryPercents = r.readI8();
-      info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() !== 0;
+      info.lidClosed = r.readU8() === 0;
+      info.batteryPercents = r.readU8();
+      info.paperInserted = r.readU8() === 0;
+      info.paperRfidSuccess = r.readU8() !== 0;
     } else if (len === 19) {
       r.skip(15);
-      info.lidClosed = r.readI8() === 0;
-      info.batteryPercents = r.readI8();
-      info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() !== 0;
+      info.lidClosed = r.readU8() === 0;
+      info.batteryPercents = r.readU8();
+      info.paperInserted = r.readU8() === 0;
+      info.paperRfidSuccess = r.readU8() !== 0;
     } else if (len === 20) {
       r.skip(18);
-      info.paperInserted = r.readI8() === 0;
-      info.paperRfidSuccess = r.readI8() !== 0;
+      info.paperInserted = r.readU8() === 0;
+      info.paperRfidSuccess = r.readU8() !== 0;
     } else {
       throw new Error("Invalid heartbeat length");
     }
@@ -270,25 +269,25 @@ export class PacketParser {
 
     Validators.arrayLengthAtLeast(packet.data, 9);
     r.skip(2);
-    info.batteryPercents = r.readI8();
-    info.temp = r.readI8();
-    info.lidClosed = r.readI8() === 0;
-    info.paperInserted = r.readI8() === 0;
-    info.paperRfidSuccess = r.readI8() !== 0;
-    info.ribbonRfidSuccess = r.readI8() !== 0;
-    info.ribbonInserted = r.readI8() === 0;
+    info.batteryPercents = r.readU8();
+    info.temp = r.readU8();
+    info.lidClosed = r.readU8() === 0;
+    info.paperInserted = r.readU8() === 0;
+    info.paperRfidSuccess = r.readU8() !== 0;
+    info.ribbonRfidSuccess = r.readU8() !== 0;
+    info.ribbonInserted = r.readU8() === 0;
 
     if (r.canRead(2)) {
-      info.wifiRssi = r.readI16();
+      info.wifiRssi = r.readU16();
     }
 
     if (r.canRead(2)) {
       r.skip(1);
-      info.lightingErrorCode = r.readI8();
+      info.lightingErrorCode = r.readU8();
     }
 
     if (r.canRead(1)) {
-      info.voltageState = r.readI8();
+      info.voltageState = r.readU8();
     }
 
     r.end();
@@ -348,7 +347,7 @@ export class PacketParser {
 
   public static parseLabelTypeResponse(packet: NiimbotPacket): LabelType {
     Validators.arrayLengthEquals(packet.data, 1);
-    return packet.data[0] as LabelType;
+    return packet.data[0];
   }
 
   public static parseBooleanResponse(packet: NiimbotPacket): boolean {
@@ -379,16 +378,16 @@ export class PacketParser {
       info.valid = true;
 
       const r = new SequentialDataReader(packet.data);
-      info.gapHeightPixel = r.readI16();
-      info.totalHeightPixel = r.readI16();
-      info.paperType = r.readI8() as LabelType;
-      info.gapHeight = r.readI16() / 10;
-      info.totalHeight = r.readI16() / 10;
-      info.paperWidthPixel = r.readI16();
-      info.paperWidth = r.readI16() / 10;
-      info.direction = r.readI8();
-      info.tailLengthPixel = r.readI16();
-      info.tailLength = r.readI16() / 10;
+      info.gapHeightPixel = r.readU16();
+      info.totalHeightPixel = r.readU16();
+      info.paperType = r.readU8();
+      info.gapHeight = r.readU16() / 10;
+      info.totalHeight = r.readU16() / 10;
+      info.paperWidthPixel = r.readU16();
+      info.paperWidth = r.readU16() / 10;
+      info.direction = r.readU8();
+      info.tailLengthPixel = r.readU16();
+      info.tailLength = r.readU16() / 10;
       r.end();
 
       info.paperHeight = info.totalHeight - info.gapHeight;
@@ -404,127 +403,158 @@ export class PacketParser {
     const reader = new SequentialDataReader(pkt.data);
 
     while (reader.canRead(2)) {
-      const type = reader.readI8();
-      const length = reader.readI8();
+      const type: CapId = reader.readU8();
+      const length = reader.readU8();
 
-      if (!reader.canRead(length)) {
-        break;
-      }
+      if (!reader.canRead(length)) break;
 
-      const val = reader.readBytes(length);
+      const skipIfLengthIsNot = (expected: number) => {
+        if (length === expected) return false;
+        reader.skip(length);
+        return true;
+      };
 
       switch (type) {
         case CapId.Language:
-          data.language = Utils.bytesToBitPositions(val);
+          data.language = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PrintMode:
-          data.printMode = Utils.bytesToBitPositions(val);
+          data.printMode = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.UhfRfid:
-          data.uhfRfid = Utils.bytesToBitPositions(val);
+          data.uhfRfid = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PrintheadDpi:
-          data.printheadDpi = Utils.bytesToI16(val);
+          if (skipIfLengthIsNot(2)) break;
+          data.printheadDpi = reader.readU16();
           break;
         case CapId.RfidSupport:
-          data.rfidSupport = Utils.bytesToBitPositions(val);
+          data.rfidSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.BatteryRange:
-          data.batteryRange = { max: val[0], min: val[1] };
+          if (skipIfLengthIsNot(2)) break;
+          data.batteryRange = { max: reader.readU8(), min: reader.readU8() };
           break;
         case CapId.DensityRange:
-          data.densityRange = { max: val[0], min: val[1] };
+          if (skipIfLengthIsNot(2)) break;
+          data.densityRange = { max: reader.readU8(), min: reader.readU8() };
           break;
         case CapId.SpeedRange:
-          data.speedRange = { max: val[0], min: val[1] };
+          if (skipIfLengthIsNot(2)) break;
+          data.speedRange = { max: reader.readU8(), min: reader.readU8() };
           break;
         case CapId.SupportedLabelTypes:
-          data.supportedLabelTypes = Utils.bytesToBitPositions(val);
+          data.supportedLabelTypes = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PrintheadWidth:
-          data.printheadWidth = Utils.bytesToI16(val);
+          if (skipIfLengthIsNot(2)) break;
+          data.printheadWidth = reader.readU16();
           break;
         case CapId.MaxPrintHeight:
-          data.maxPrintHeight = Utils.bytesToI16(val);
+          if (skipIfLengthIsNot(2)) break;
+          data.maxPrintHeight = reader.readU16();
           break;
         case CapId.LabelHeightAndGap:
-          data.labelHeightAndGap = val[0];
+          if (skipIfLengthIsNot(1)) break;
+          data.labelHeightAndGap = reader.readU8();
           break;
         case CapId.PrintheadPosition:
-          data.printheadPosition = val[0];
+          if (skipIfLengthIsNot(1)) break;
+          data.printheadPosition = reader.readU8();
           break;
         case CapId.VolumeSupport:
-          data.volumeSupport = Utils.bytesToBitPositions(val);
+          data.volumeSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.HostStyle:
-          data.hostStyle = Utils.bytesToBitPositions(val);
+          data.hostStyle = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PrintProtocol:
-          data.printProtocol = Utils.bytesToBitPositions(val);
+          data.printProtocol = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.AutoShutdownRange:
-          data.autoShutdownRange = { max: val[0], min: val[1] };
+          if (skipIfLengthIsNot(2)) break;
+          data.autoShutdownRange = { max: reader.readU8(), min: reader.readU8() };
           break;
         case CapId.CutterSupport:
-          data.cutterSupport = Utils.bytesToBitPositions(val);
+          data.cutterSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.CutterDepthRange:
-          data.cutterDepthRange = { max: val[0], min: val[1] };
+          if (skipIfLengthIsNot(2)) break;
+          data.cutterDepthRange = { max: reader.readU8(), min: reader.readU8() };
           break;
         case CapId.PrintControl:
-          data.printControl = Utils.bytesToBitPositions(val);
+          data.printControl = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PauseTimeSupport:
-          data.pauseTimeSupport = Utils.bytesToBitPositions(val);
+          data.pauseTimeSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PaperDetection:
-          data.paperDetection = val[0];
+          if (skipIfLengthIsNot(1)) break;
+          data.paperDetection = reader.readU8();
           break;
         case CapId.RealTimeClock:
-          data.realTimeClock = Utils.bytesToBitPositions(val);
+          data.realTimeClock = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.KeyFunctions: {
-          data.keyFunctions = [];
-          for (let i = 0; i < val.length; i += 5) {
-            data.keyFunctions.push({ key: val[i], functions: Utils.bytesToBitPositions(val.subarray(i + 1, i + 5)) });
+          if (length % 5 !== 0) {
+            reader.skip(length);
+            break;
           }
+
+          data.keyFunctions = [];
+
+          for (let i = 0; i < length; i += 5) {
+            data.keyFunctions.push({
+              key: reader.readU8(),
+              functions: Utils.bytesToBitPositions(reader.readBytes(4)),
+            });
+          }
+
           break;
         }
         case CapId.Unknown19:
-          data.unknown19 = val[0];
+          if (skipIfLengthIsNot(1)) break;
+          data.unknown19 = reader.readU8();
           break;
         case CapId.PrintColor:
-          data.printColor = Utils.bytesToBitPositions(val);
+          data.printColor = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.SpeedQualityMode:
-          data.speedQualityMode = Utils.bytesToBitPositions(val);
+          data.speedQualityMode = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.TubeCalibration:
-          data.tubeCalibration = Utils.bytesToBitPositions(val);
+          data.tubeCalibration = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.PartialRetransmitSupport:
-          data.partialRetransmitSupport = Utils.bytesToBitPositions(val);
+          data.partialRetransmitSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.MaxCompressLines:
-          data.maxCompressLines = Utils.bytesToI16(val);
+          if (skipIfLengthIsNot(2)) break;
+          data.maxCompressLines = reader.readU16();
           break;
         case CapId.TubeSupport:
-          data.tubeSupport = Utils.bytesToBitPositions(val);
+          data.tubeSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.SixteenGrayMaxBuffer:
-          data.sixteenGrayMaxBuffer = Utils.bytesToI16(val);
+          if (skipIfLengthIsNot(2)) break;
+          data.sixteenGrayMaxBuffer = reader.readU16();
           break;
         case CapId.LocalTemplateSupport:
-          data.localTemplateSupport = Utils.bytesToBitPositions(val);
+          data.localTemplateSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.ImageCompressSupport:
-          data.imageCompressSupport = Utils.bytesToBitPositions(val);
+          data.imageCompressSupport = Utils.bytesToBitPositions(reader.readBytes(length));
           break;
         case CapId.MaxImageCompressBytes:
-          data.maxImageCompressBytes = Utils.bytesToI32(val);
+          if (skipIfLengthIsNot(4)) break;
+          data.maxImageCompressBytes = reader.readU32();
           break;
         case CapId.LocalTemplateMaxTimeCount:
-          data.localTemplateMaxTimeCount = val[0];
+          if (skipIfLengthIsNot(1)) break;
+          data.localTemplateMaxTimeCount = reader.readU8();
+          break;
+        default:
+          reader.skip(length);
           break;
       }
     }

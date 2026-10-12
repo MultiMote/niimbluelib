@@ -92,9 +92,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       this.heartbeatData = {};
     });
 
-    this.on("printend", async () => {
+    this.on("printend", () => {
       if (this.fetchRfidOnPrintEnd) {
-        await this.fetchRfidInfo();
+        void this.fetchRfidInfo();
       }
     });
   }
@@ -302,7 +302,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Fetch label and ribbon RFID information and store it. Do not throws exceptions.
    */
   public async fetchRfidInfo(): Promise<CombinedRfidInfo> {
-    let info: CombinedRfidInfo = {};
+    const info: CombinedRfidInfo = {};
 
     try {
       info.labelRfidInfo = await this.protocol.rfidInfo();
@@ -432,7 +432,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
   public startHeartbeat(): void {
     this.heartbeatFails = 0;
     this.stopHeartbeat();
-    this.heartbeatTimer = setInterval(() => this.fetchHeartbeatData(), this.heartbeatIntervalMs);
+    this.heartbeatTimer = setInterval(() => void this.fetchHeartbeatData(), this.heartbeatIntervalMs);
   }
 
   private heartbeatReceived(data: HeartbeatData) {
@@ -448,7 +448,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       const lidChanged = this.heartbeatData?.lidClosed !== data?.lidClosed;
 
       if (lidChanged || paperRfidChanged || ribbonRfidChanged) {
-        this.fetchRfidInfo();
+        void this.fetchRfidInfo();
       }
     }
   }
