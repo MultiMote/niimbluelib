@@ -2,6 +2,7 @@
 
 * findPrintTask: return `D110M_V4` if `protocolVersion >= 4`.
 * Fix unsigned int packet fields parsed as signed int.
+* Catch firmware reject error.
 
 # 0.47.0
 

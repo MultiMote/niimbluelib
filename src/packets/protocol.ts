@@ -13,7 +13,17 @@ import { FirmwareProgressEvent, PacketReceivedEvent, PrintProgressEvent } from "
 import { PrintTaskName, printTasks } from "../print_tasks";
 import { AbstractPrintTask, PrintOptions } from "../print_tasks/AbstractPrintTask";
 import { Validators, Utils } from "../utils";
-import { ConnectNegotiateResult, HeartbeatData, HeartbeatPrinterInfoData, PaperInfo, PrinterCapabilities, PrintError, PrinterStatusData, PrintStatus, RfidInfo } from "./dto";
+import {
+  ConnectNegotiateResult,
+  HeartbeatData,
+  HeartbeatPrinterInfoData,
+  PaperInfo,
+  PrinterCapabilities,
+  PrintError,
+  PrinterStatusData,
+  PrintStatus,
+  RfidInfo,
+} from "./dto";
 import { NiimbotCrc32Packet, NiimbotPacket } from "./packet";
 import { PacketGenerator } from "./packet_generator";
 import CRC32 from "crc-32";
@@ -200,51 +210,79 @@ export class NiimbotProtocol {
   }
 
   public async firmwareUpgrade(data: Uint8Array, version: string): Promise<void> {
+    const chunkSize = 200;
+    const totalChunks = Math.ceil(data.byteLength / chunkSize);
     const crc = CRC32.buf(data);
+
     await this.send(PacketGenerator.startFirmwareUpgrade(version));
 
     await this.client.waitForPacket([ResponseCommandId.In_RequestFirmwareCrc], true, 5_000);
 
     await this.send(PacketGenerator.sendFirmwareChecksum(crc));
 
-    const chunkSize = 200;
-    const totalChunks = Math.floor(data.byteLength / chunkSize);
-    console.log("Chunks to send:", totalChunks);
+    let rejectFirmwareError!: (error: Error) => void;
 
-    // Send chunks
-    while (true) {
-      const p = await this.client.waitForPacket(
-        [ResponseCommandId.In_RequestFirmwareChunk, ResponseCommandId.In_FirmwareResult],
-        true,
-        5_000,
-      );
+    const firmwareError = new Promise<never>((_, reject) => {
+      rejectFirmwareError = reject;
+    });
 
-      if (p.command === ResponseCommandId.In_FirmwareResult) {
-        //fixme
-        throw new Error("Unexpected firmware result");
+    // This is required because In_FirmwareResult received RIGHT AFTER In_RequestFirmwareChunk!
+    const packetListener = (e: PacketReceivedEvent) => {
+      const packet = e.packet;
+
+      if (
+        packet.command === ResponseCommandId.In_FirmwareResult &&
+        packet instanceof NiimbotCrc32Packet &&
+        packet.dataLength === 1 &&
+        packet.data[0] === 0
+      ) {
+        rejectFirmwareError(new Error("Firmware rejected: invalid file or downgrade protection."));
       }
+    };
 
-      if (!(p instanceof NiimbotCrc32Packet)) {
-        throw new Error("Not a firmware packet");
+    this.client.on("packetreceived", packetListener);
+
+    try {
+      // Send chunks
+      while (true) {
+        const packet = await Promise.race([
+          this.client.waitForPacket(
+            [ResponseCommandId.In_RequestFirmwareChunk, ResponseCommandId.In_FirmwareResult],
+            true,
+            5_000,
+          ),
+          firmwareError,
+        ]);
+
+        if (!(packet instanceof NiimbotCrc32Packet)) {
+          throw new Error("Not a firmware packet");
+        }
+
+        if (packet.command === ResponseCommandId.In_FirmwareResult) {
+          throw new Error("Firmware error");
+        }
+
+        const offset = packet.chunkNumber * chunkSize;
+
+        if (offset >= data.byteLength) {
+          break;
+        }
+
+        const chunk = data.subarray(offset, offset + chunkSize);
+
+        await Promise.race([this.send(PacketGenerator.sendFirmwareChunk(packet.chunkNumber, chunk)), firmwareError]);
+
+        this.client.emit("firmwareprogress", new FirmwareProgressEvent(packet.chunkNumber + 1, totalChunks));
       }
-
-      if (p.chunkNumber * chunkSize >= data.length) {
-        console.log("No more chunks");
-        break;
-      }
-
-      const part = data.slice(p.chunkNumber * chunkSize, p.chunkNumber * chunkSize + chunkSize);
-
-      await this.send(PacketGenerator.sendFirmwareChunk(p.chunkNumber, part));
-
-      this.client.emit("firmwareprogress", new FirmwareProgressEvent(p.chunkNumber, totalChunks));
+    } finally {
+      this.client.off("packetreceived", packetListener);
     }
 
     await this.send(PacketGenerator.firmwareNoMoreChunks());
 
-    const uploadResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareCheckResult], true, 5_000);
+    const checkResult = await this.client.waitForPacket([ResponseCommandId.In_FirmwareCheckResult], true, 5_000);
 
-    if (!PacketParser.parseFirmwareCheckResultResponse(uploadResult)) {
+    if (!PacketParser.parseFirmwareCheckResultResponse(checkResult)) {
       throw new Error("Firmware check error (maybe CRC does not match)");
     }
 
@@ -278,12 +316,11 @@ export class NiimbotProtocol {
     return PacketParser.parsePrinterStatusDataResponse(packet);
   }
 
-
   public async connectNegotiate(): Promise<ConnectNegotiateResult> {
     const result: ConnectNegotiateResult = {
       protocolVersion: 0,
       supportColor: false,
-      connectResult: ConnectResult.Disconnect
+      connectResult: ConnectResult.Disconnect,
     };
 
     result.connectResult = await this.sendConnect();
@@ -298,8 +335,6 @@ export class NiimbotProtocol {
 
     return result;
   }
-
-
 
   public async getPrinterModel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.PrinterModelId));
@@ -346,7 +381,7 @@ export class NiimbotProtocol {
 
   public async getBatteryChargeLevel(): Promise<number> {
     const packet = await this.send(PacketGenerator.getPrinterInfo(PrinterInfoType.BatteryChargeLevel));
-    return PacketParser.parseBatteryChargeLevelResponse(packet)
+    return PacketParser.parseBatteryChargeLevelResponse(packet);
   }
 
   public async getAutoShutDownTime(): Promise<AutoShutdownTime> {
