@@ -203,7 +203,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     }
 
     if (data instanceof DataView) {
-      data = new Uint8Array(data.buffer);
+      data = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
     }
 
     this.packetBuf = Utils.u8ArrayAppend(this.packetBuf, data);

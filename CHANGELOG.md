@@ -1,6 +1,8 @@
 # 0.47.2
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.
+* `NiimbotCapacitorBleClient`: fix disconnect event always fired on connection.
+* `B21L2BPrintTask`: fix progress event invalid argument order.
 
 # 0.47.1
 

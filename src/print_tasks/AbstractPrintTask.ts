@@ -183,7 +183,7 @@ export abstract class AbstractPrintTask {
       .getClient()
       .emit(
         "printprogress",
-        new PrintProgressEvent(this.printOptions.totalPages, this.pagesPrinted, pagePrintProgress, pageFeedProgress),
+        new PrintProgressEvent(this.pagesPrinted, this.printOptions.totalPages, pagePrintProgress, pageFeedProgress),
       );
   }
 

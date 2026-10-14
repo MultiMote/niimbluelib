@@ -144,7 +144,7 @@ export class NiimbotProtocol {
   }
 
   /**
-   * Poll printer every {@link pollIntervalMs} and resolve when printer pages equals {@link pagesToPrint}, pagePrintProgress=100, pageFeedProgress=100.
+   * Poll printer every {@link pollIntervalMs} and resolve when printer pages equals {@link pagesToPrint}.
    *
    * printprogress event is firing during this process.
    *

@@ -54,9 +54,10 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
 
     await BleClient.discoverServices(device.deviceId);
 
-    const { service, characteristic } = await this.findSuitableCharacteristic(device.deviceId).finally(() =>
-      this.onBleDisconnect()
-    );
+    const { service, characteristic } = await this.findSuitableCharacteristic(device.deviceId).catch((error) => {
+      this.onBleDisconnect();
+      throw error;
+    });
 
     this.deviceId = device.deviceId;
     this.serviceUUID = service;
