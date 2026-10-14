@@ -465,7 +465,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Checks if the heartbeat timer has been started.
    */
   public isHeartbeatStarted(): boolean {
-    return this.heartbeatTimer === undefined;
+    return this.heartbeatTimer !== undefined;
   }
 
   /**

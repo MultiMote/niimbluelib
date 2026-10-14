@@ -1,3 +1,7 @@
+# 0.47.2
+
+* Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.
+
 # 0.47.1
 
 * findPrintTask: return `D110M_V4` if `protocolVersion >= 4`.
