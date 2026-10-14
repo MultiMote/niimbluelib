@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, before, after } from "node:test";
 import { match, strictEqual, rejects, ifError, deepStrictEqual } from "node:assert";
-import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData, NiimbotAbstractClient } from "..";
+import { NiimbotVirtualClient, ResolutionClass, PrinterInfo, HeartbeatData } from "..";
 import * as dumps from "./dumps";
 import { CombinedRfidInfo } from "../packets";
 
@@ -13,7 +14,7 @@ const newClient = () => {
 describe("Virtual bad client", () => {
   let client: NiimbotVirtualClient;
 
-  before(async () => {
+  before(() => {
     client = newClient();
   });
 

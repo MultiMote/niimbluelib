@@ -1,5 +1,5 @@
 import { Utils, Validators } from "../utils";
-import { RequestCommandId, ResponseCommandId } from ".";
+import { RequestCommandId, ResponseCommandId, SequentialDataReader } from ".";
 import CRC32 from "crc-32";
 
 /**
@@ -22,7 +22,7 @@ export class NiimbotPacket {
   constructor(
     command: RequestCommandId | ResponseCommandId,
     data: Uint8Array | number[],
-    validResponseIds: ResponseCommandId[] = []
+    validResponseIds: ResponseCommandId[] = [],
   ) {
     this._command = command;
     this._data = data instanceof Uint8Array ? data : new Uint8Array(data);
@@ -85,7 +85,7 @@ export class NiimbotPacket {
         1 + // dataLength
         this._data.length +
         1 + // checksum
-        NiimbotPacket.TAIL.length
+        NiimbotPacket.TAIL.length,
     );
 
     const arr = new Uint8Array(buf);
@@ -120,12 +120,12 @@ export class NiimbotPacket {
   }
 
   public static fromBytes(buf: Uint8Array): NiimbotPacket {
-    const head = new Uint8Array(buf.slice(0, 2));
-    const tail = new Uint8Array(buf.slice(buf.length - 2));
+    const reader = new SequentialDataReader(buf);
+
     const minPacketSize =
-      NiimbotPacket.HEAD.length + // head
+      NiimbotPacket.HEAD.length +
       1 + // cmd
-      1 + // dataLength
+      1 + // dataLen
       1 + // checksum
       NiimbotPacket.TAIL.length;
 
@@ -133,19 +133,22 @@ export class NiimbotPacket {
       throw new Error(`Packet is too small (${buf.length} < ${minPacketSize})`);
     }
 
-    Validators.u8ArraysEqual(head, NiimbotPacket.HEAD, "Invalid packet head");
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.HEAD.length), NiimbotPacket.HEAD, "Invalid packet head");
 
-    Validators.u8ArraysEqual(tail, NiimbotPacket.TAIL, "Invalid packet tail");
-
-    const cmd: number = buf[2];
-    const dataLen: number = buf[3];
+    const cmd = reader.readU8();
+    const dataLen = reader.readU8();
 
     if (buf.length !== minPacketSize + dataLen) {
       throw new Error(`Invalid packet size (${buf.length} < ${minPacketSize + dataLen})`);
     }
 
-    const data: Uint8Array = buf.slice(4, 4 + dataLen);
-    const checksum: number = buf[4 + dataLen];
+    const data = reader.readBytes(dataLen);
+    const checksum = reader.readU8();
+
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.TAIL.length), NiimbotPacket.TAIL, "Invalid packet tail");
+
+    reader.end();
+
     const packet = new NiimbotPacket(cmd, data);
 
     if (packet.checksum !== checksum) {
@@ -172,7 +175,7 @@ export class NiimbotCrc32Packet extends NiimbotPacket {
     command: RequestCommandId | ResponseCommandId,
     chunkNumber: RequestCommandId | ResponseCommandId,
     data: Uint8Array | number[],
-    validResponseIds: ResponseCommandId[] = []
+    validResponseIds: ResponseCommandId[] = [],
   ) {
     super(command, data, validResponseIds);
     this._chunkNumber = chunkNumber;
@@ -185,19 +188,17 @@ export class NiimbotCrc32Packet extends NiimbotPacket {
   /** Calculate CRC checksum from command and data */
   public override get checksum(): number {
     const data = [this._command, ...Utils.u16ToBytes(this._chunkNumber), this._data.length, ...this._data];
-    return CRC32.buf(data);
+    return CRC32.buf(data) >>> 0; // convert to unsigned
   }
 
   public static override fromBytes(buf: Uint8Array): NiimbotCrc32Packet {
-    //throw new Error("Not implemented");
+    const reader = new SequentialDataReader(buf);
 
-    const head = new Uint8Array(buf.slice(0, 2));
-    const tail = new Uint8Array(buf.slice(buf.length - 2));
     const minPacketSize =
-      NiimbotPacket.HEAD.length + // head
+      NiimbotPacket.HEAD.length +
       1 + // cmd
       2 + // chunkNumber
-      1 + // dataLength
+      1 + // dataLen
       4 + // checksum
       NiimbotPacket.TAIL.length;
 
@@ -205,23 +206,22 @@ export class NiimbotCrc32Packet extends NiimbotPacket {
       throw new Error(`Packet is too small (${buf.length} < ${minPacketSize})`);
     }
 
-    Validators.u8ArraysEqual(head, NiimbotPacket.HEAD, "Invalid packet head");
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.HEAD.length), NiimbotPacket.HEAD, "Invalid packet head");
 
-    Validators.u8ArraysEqual(tail, NiimbotPacket.TAIL, "Invalid packet tail");
-
-    const cmd: number = buf[2];
-
-    const chunkNumber: number = Utils.bytesToI16(buf.slice(3, 5));
-
-    const dataLen: number = buf[5];
+    const cmd = reader.readU8();
+    const chunkNumber = reader.readU16();
+    const dataLen = reader.readU8();
 
     if (buf.length !== minPacketSize + dataLen) {
       throw new Error(`Invalid packet size (${buf.length} < ${minPacketSize + dataLen})`);
     }
 
-    const data: Uint8Array = buf.slice(6, 6 + dataLen);
+    const data = reader.readBytes(dataLen);
+    const checksum = reader.readU32();
 
-    const checksum: number = Utils.bytesToI32(buf.slice(6 + dataLen, 6 + dataLen + 4));
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.TAIL.length), NiimbotPacket.TAIL, "Invalid packet tail");
+
+    reader.end();
 
     const packet = new NiimbotCrc32Packet(cmd, chunkNumber, data);
 
@@ -241,7 +241,7 @@ export class NiimbotCrc32Packet extends NiimbotPacket {
         1 + // dataLength
         this._data.length +
         4 + // checksum
-        NiimbotPacket.TAIL.length
+        NiimbotPacket.TAIL.length,
     );
 
     const arr = new Uint8Array(buf);
@@ -279,5 +279,9 @@ export class NiimbotCrc32Packet extends NiimbotPacket {
     arr.set(NiimbotPacket.TAIL, pos);
 
     return arr;
+  }
+
+  public static override fromHex(hex: string): NiimbotCrc32Packet {
+    return NiimbotCrc32Packet.fromBytes(Utils.hexToBuf(hex));
   }
 }

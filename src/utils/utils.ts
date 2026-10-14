@@ -176,11 +176,27 @@ export class Utils {
   }
 
   /**
+   * Converts a Uint8Array of length 2 to a 16-bit unsigned integer (big endian).
+   */
+  public static bytesToU16(arr: Uint8Array): number {
+    Validators.arrayLengthEquals(arr, 2);
+    return new DataView(arr.buffer).getUint16(0, false);
+  }
+
+  /**
    * Converts a Uint8Array of length 2 to a 16-bit signed integer (big endian).
    */
   public static bytesToI32(arr: Uint8Array): number {
     Validators.arrayLengthEquals(arr, 4);
     return new DataView(arr.buffer).getInt32(0, false);
+  }
+
+  /**
+   * Converts a Uint8Array of length 2 to a 16-bit unsigned integer (big endian).
+   */
+  public static bytesToU32(arr: Uint8Array): number {
+    Validators.arrayLengthEquals(arr, 4);
+    return new DataView(arr.buffer).getUint32(0, false);
   }
 
   /**

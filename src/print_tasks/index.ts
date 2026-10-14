@@ -92,7 +92,13 @@ export const findPrintTask = (model: M, protocolVersion?: number): PrintTaskName
     ),
   );
 
-  return foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
+  const task = foundExact ?? tasks.find((key) => modelPrintTasks[key]?.includes(model));
+
+  if (!task && protocolVersion && protocolVersion >= 4) {
+    return "D110M_V4";
+  }
+
+  return task;
 };
 
 export { AbstractPrintTask, PrintOptions } from "./AbstractPrintTask";

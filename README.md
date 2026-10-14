@@ -39,10 +39,12 @@ const client = new niimbluelib.NiimbotBluetoothClient();
 
 See [example/main.js](example/main.js)
 
+Live: https://libdocs.niim.blue/example
+
 ### Misc
 
 Eslint not included. Install it with:
 
 ```
-npm install --no-save --no-package-lock eslint@9.x globals @eslint/js typescript-eslint
+npm install --no-save --no-package-lock eslint globals @eslint/js typescript-eslint
 ```
