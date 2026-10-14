@@ -466,7 +466,17 @@ export class NiimbotProtocol {
 
   public async getPaperInfo(): Promise<PaperInfo> {
     const response = await this.send(PacketGenerator.getPaperInfo());
-    return PacketParser.parsePaperInfoResponse(response);
+    let totalHeightIncludesGap = false;
+
+    const modelId = this.client.getPrinterInfo().modelId;
+
+    // B21_PRO adds gap to totalHeight
+    // todo: check other models?
+    if (modelId !== undefined && [785].includes(modelId)) {
+      totalHeightIncludesGap = true;
+    }
+
+    return PacketParser.parsePaperInfoResponse(response, totalHeightIncludesGap);
   }
 
   /** Only for protocol >= 5 */

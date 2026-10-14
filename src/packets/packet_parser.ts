@@ -365,7 +365,7 @@ export class PacketParser {
     return packet.data[0] === 1;
   }
 
-  public static parsePaperInfoResponse(packet: NiimbotPacket): PaperInfo {
+  public static parsePaperInfoResponse(packet: NiimbotPacket, totalHeightIncludesGap: boolean = false): PaperInfo {
     Validators.arrayLengthAtLeast(packet.data, 4);
 
     const info: PaperInfo = {
@@ -390,8 +390,13 @@ export class PacketParser {
       info.tailLength = r.readU16() / 10;
       r.end();
 
-      info.paperHeight = info.totalHeight - info.gapHeight;
-      info.paperHeightPixel = info.totalHeightPixel - info.gapHeightPixel;
+      info.paperHeight = info.totalHeight;
+      info.paperHeightPixel = info.totalHeightPixel;
+
+      if (totalHeightIncludesGap) {
+        info.paperHeight -= info.gapHeight;
+        info.paperHeightPixel -= info.gapHeightPixel;
+      }
     }
 
     return info;
