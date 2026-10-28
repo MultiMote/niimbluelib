@@ -46,6 +46,7 @@ export const createPrinterInfo = (): PrinterInfo => {
     settings: {
       connectionSound: false,
       powerSound: false,
+      autoShutdownTime: AutoShutdownTime.ShutdownTime1,
     },
   };
 };
@@ -390,6 +391,12 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       this.printerInfo.settings.powerSound = value;
     }
 
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
+  }
+
+  public async setAutoShutdownTime(value: AutoShutdownTime) {
+    await this.protocol.setAutoShutDownTime(value);
+    this.printerInfo.settings.autoShutdownTime = value;
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
   }
 
