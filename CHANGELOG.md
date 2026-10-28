@@ -4,7 +4,7 @@
 * `NiimbotCapacitorBleClient`: fix disconnect event always fired on connection.
 * `B21L2BPrintTask`: fix progress event invalid argument order.
 * Add `NiimbotAbstractClient.setAutoShutdownTime`.
-* Move `NiimbotAbstractClient.printerInfo.autoShutdownTime` to `NiimbotAbstractClient.printerInfo.settings.autoShutdownTime`.
+* **BREAKING:** Move `NiimbotAbstractClient.printerInfo.autoShutdownTime` to `NiimbotAbstractClient.printerInfo.settings.autoShutdownTime`.
 
 # 0.47.1
 
