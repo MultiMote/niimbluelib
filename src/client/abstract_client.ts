@@ -8,6 +8,7 @@ import {
   PrinterErrorCode,
   ResponseCommandId,
   SoundSettingsItemType,
+  AutoShutdownTime,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import {
@@ -203,7 +204,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     }
 
     if (data instanceof DataView) {
-      data = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+      data = new Uint8Array(data.buffer);
     }
 
     this.packetBuf = Utils.u8ArrayAppend(this.packetBuf, data);
@@ -269,7 +270,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.printerInfo.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
     this.printerInfo.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
     this.printerInfo.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
-    this.printerInfo.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
+
+    this.printerInfo.settings.autoShutdownTime =
+      (await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time")) ?? AutoShutdownTime.ShutdownTime1;
 
     this.printerInfo.settings.connectionSound =
       (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.BluetoothConnectionSound), "sound value")) ??
@@ -465,7 +468,7 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
    * Checks if the heartbeat timer has been started.
    */
   public isHeartbeatStarted(): boolean {
-    return this.heartbeatTimer !== undefined;
+    return this.heartbeatTimer === undefined;
   }
 
   /**

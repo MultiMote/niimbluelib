@@ -1,8 +1,9 @@
-# 0.47.2
+# 0.48.0
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.
 * `NiimbotCapacitorBleClient`: fix disconnect event always fired on connection.
 * `B21L2BPrintTask`: fix progress event invalid argument order.
+* Move `NiimbotAbstractClient.printerInfo.autoShutdownTime` to `NiimbotAbstractClient.printerInfo.settings.autoShutdownTime`.
 
 # 0.47.1
 
