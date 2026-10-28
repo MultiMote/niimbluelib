@@ -10,7 +10,7 @@ export class SequentialDataReader {
   private offset: number;
 
   constructor(bytes: Uint8Array) {
-    this.view = new DataView(bytes.buffer);
+    this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     this.offset = 0;
   }
 

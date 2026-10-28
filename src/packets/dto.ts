@@ -31,7 +31,6 @@ export interface PrinterInfo {
   serial?: string;
   mac?: string;
   batteryPercents?: number;
-  autoShutdownTime?: AutoShutdownTime;
   printheadWidth?: number;
   supportColor?: boolean;
   softwareVersion?: string;
@@ -208,4 +207,5 @@ export interface PrinterCapabilities {
 export interface PrinterSettings {
   powerSound: boolean;
   connectionSound: boolean;
+  autoShutdownTime: AutoShutdownTime;
 }

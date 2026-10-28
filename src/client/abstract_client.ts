@@ -8,6 +8,7 @@ import {
   PrinterErrorCode,
   ResponseCommandId,
   SoundSettingsItemType,
+  AutoShutdownTime,
 } from "../packets";
 import { PrinterModelMeta, getPrinterMetaById } from "../printer_models";
 import {
@@ -45,6 +46,7 @@ export const createPrinterInfo = (): PrinterInfo => {
     settings: {
       connectionSound: false,
       powerSound: false,
+      autoShutdownTime: AutoShutdownTime.ShutdownTime1,
     },
   };
 };
@@ -269,7 +271,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.printerInfo.serial = await safeGet(this.protocol.getPrinterSerialNumber(), "serial number");
     this.printerInfo.mac = await safeGet(this.protocol.getPrinterBluetoothMacAddress(), "bluetooth address");
     this.printerInfo.batteryPercents = await safeGet(this.protocol.getBatteryChargeLevel(), "charge level");
-    this.printerInfo.autoShutdownTime = await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time");
+
+    this.printerInfo.settings.autoShutdownTime =
+      (await safeGet(this.protocol.getAutoShutDownTime(), "auto shutdown time")) ?? AutoShutdownTime.ShutdownTime1;
 
     this.printerInfo.settings.connectionSound =
       (await safeGet(this.protocol.isSoundEnabled(SoundSettingsItemType.BluetoothConnectionSound), "sound value")) ??
@@ -387,6 +391,12 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
       this.printerInfo.settings.powerSound = value;
     }
 
+    this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
+  }
+
+  public async setAutoShutdownTime(value: AutoShutdownTime) {
+    await this.protocol.setAutoShutDownTime(value);
+    this.printerInfo.settings.autoShutdownTime = value;
     this.emit("printerinfofetched", new PrinterInfoFetchedEvent(this.printerInfo));
   }
 
