@@ -10,12 +10,13 @@ import {
   commandsMap,
   NiimbotCrc32Packet,
   NiimbotPacket16,
+  NiimbotPacket32,
   PrinterConfig2Type,
   PrinterConfig2Action,
   PageColorType,
   BitmapColorMode,
 } from ".";
-import { EncodedImage, ImageEncoder, Utils, Validators } from "../utils";
+import { EncodedImage, ImageEncoder, Utils, Validators, lzo1xCompress } from "../utils";
 
 export interface ImagePacketsGenerateOptions {
   /** Mode for "black pixel count" section of bitmap packet. */
@@ -63,6 +64,22 @@ export class PacketGenerator {
     }
 
     return new NiimbotPacket16(sendCmd, data, respIds);
+  }
+
+  /**
+   * Same as {@link mapped}, but uses a 32-bit data length.
+   * Required for compressed image packets.
+   */
+  public static mapped32(sendCmd: TX, data: Uint8Array | number[] = [1]): NiimbotPacket32 {
+    const respIds: RX[] | null = commandsMap[sendCmd];
+
+    if (respIds === null) {
+      const p = new NiimbotPacket32(sendCmd, data);
+      p.oneWay = true;
+      return p;
+    }
+
+    return new NiimbotPacket32(sendCmd, data, respIds);
   }
 
   public static connect(): NiimbotPacket {
@@ -382,6 +399,22 @@ export class PacketGenerator {
   }
 
   /**
+   * A chunk of LZO-compressed image rows.
+   *
+   * The printer answers every packet with {@link ResponseCommandId.In_GetCompress}.
+   *
+   * @param index Zero-based compressed chunk index.
+   * @param data LZO1X-compressed row data.
+   */
+  public static printBitmapRowCompressed(index: number, data: Uint8Array): NiimbotPacket32 {
+    if (index < 0 || index > 0xffff) {
+      throw new Error(`Compressed image packet index must be in 0..65535 range (got ${index})`);
+    }
+
+    return this.mapped32(TX.PrintBitmapRowCompressed, [...Utils.u16ToBytes(index), ...data]);
+  }
+
+  /**
    * Pack a grayscale row and encode runs of equal pixels.
    *
    * Run descriptor: `(pixelCount + 2) | ((dataPosition >> 8) & 1)`, then `dataPosition & 0xFF`.
@@ -541,6 +574,99 @@ export class PacketGenerator {
     }
 
     return out;
+  }
+
+  /**
+   * Generate LZO-compressed grayscale image packets.
+   *
+   * Every row is included, including white rows (which are sent as zero-filled
+   * row data instead of `0x84` empty-row packets). Rows are accumulated until
+   * adding the next row would exceed {@link maxChunkBytes}, then the whole chunk
+   * is compressed with LZO1X and sent as a `0xA7` packet.
+   *
+   * This matches the official SDK's `sendCompressData` path for printers that
+   * advertise `imageCompressSupport` bit 1.
+   *
+   * @param image Encoded grayscale image.
+   * @param maxChunkBytes Maximum uncompressed bytes per compressed packet.
+   *   Usually `PrinterCapabilities.maxImageCompressBytes`.
+   */
+  public static writeImageDataGrayCompressed(image: EncodedImage, maxChunkBytes: number): NiimbotPacket32[] {
+    if (image.pageColor !== PageColorType.MultiorderColor) {
+      throw new Error("EncodedImage.pageColor must be PageColorType.MultiorderColor");
+    }
+
+    if (image.cols % 2 !== 0) {
+      throw new Error(`Grayscale image width must be even (got ${image.cols})`);
+    }
+
+    if (!Number.isInteger(maxChunkBytes) || maxChunkBytes <= 0) {
+      throw new Error(`maxChunkBytes must be a positive integer (got ${maxChunkBytes})`);
+    }
+
+    const rowBytes = image.cols / 2;
+    const emptyRow = new Uint8Array(rowBytes);
+    const chunks: Uint8Array[] = [];
+    let currentRows: Uint8Array[] = [];
+    let currentLength = 0;
+    let totalRows = 0;
+
+    const flush = () => {
+      if (currentRows.length === 0) return;
+
+      const raw = new Uint8Array(currentLength);
+      let offset = 0;
+
+      for (const row of currentRows) {
+        raw.set(row, offset);
+        offset += row.length;
+      }
+
+      chunks.push(lzo1xCompress(raw));
+      currentRows = [];
+      currentLength = 0;
+    };
+
+    const pushRow = (row: Uint8Array) => {
+      if (currentLength > 0 && currentLength + row.length > maxChunkBytes) {
+        flush();
+      }
+
+      currentRows.push(row);
+      currentLength += row.length;
+    };
+
+    for (const d of image.rowsData) {
+      if (d.dataType === "pixels") {
+        if (!d.rowDataGray) {
+          throw new Error(`Gray row ${d.rowNumber} has no row data`);
+        }
+
+        if (d.rowDataGray.length !== rowBytes) {
+          throw new Error(
+            `Gray row ${d.rowNumber} has ${d.rowDataGray.length} bytes, expected ${rowBytes}`,
+          );
+        }
+
+        for (let i = 0; i < d.repeat; i++) {
+          pushRow(d.rowDataGray);
+          totalRows++;
+        }
+      } else if (d.dataType === "void") {
+        for (let i = 0; i < d.repeat; i++) {
+          pushRow(emptyRow);
+          totalRows++;
+        }
+      }
+    }
+
+    flush();
+
+    if (totalRows !== image.rows) {
+      throw new Error(`Encoded image has ${totalRows} rows of data, expected ${image.rows}`);
+    }
+
+    return chunks.map((chunk, index) => this.printBitmapRowCompressed(index, chunk));
   }
 
   public static writeImageDataDoubleColor(image: EncodedImage): NiimbotPacket[] {

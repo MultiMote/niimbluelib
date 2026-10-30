@@ -39,6 +39,8 @@ export type ConnectionInfo = {
 export const NIIMBOT_CLIENT_DEFAULTS = {
   packetIntervalMs: 10,
   heartbeatIntervalMs: 2_000,
+  bleWriteChunkSize: 244,
+  bleWriteChunkIntervalMs: 1,
 };
 
 export const createPrinterInfo = (): PrinterInfo => {
@@ -75,6 +77,18 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
   /** @see https://github.com/MultiMote/niimblue/issues/5 */
   protected packetIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.packetIntervalMs;
+
+  /**
+   * Maximum number of bytes sent in a single BLE write.
+   *
+   * BLE stacks reject writes larger than `ATT MTU - 3`. The default (244) fits the
+   * 247-byte MTU commonly negotiated on Android and Linux and is well below the
+   * 512-byte limit used by Windows and Chromium on Android.
+   */
+  protected bleWriteChunkSize: number = NIIMBOT_CLIENT_DEFAULTS.bleWriteChunkSize;
+
+  /** Delay between chunks of a single packet, in milliseconds. */
+  protected bleWriteChunkIntervalMs: number = NIIMBOT_CLIENT_DEFAULTS.bleWriteChunkIntervalMs;
 
   constructor() {
     super();
@@ -510,6 +524,56 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
 
   public getPacketInterval(): number {
     return this.packetIntervalMs;
+  }
+
+  /**
+   * Set the maximum number of bytes sent in a single BLE write.
+   *
+   * Lower this value if the connection uses a small ATT MTU and large packets fail.
+   * Ignored by non-BLE clients.
+   */
+  public setBleWriteChunkSize(bytes: number) {
+    if (!Number.isInteger(bytes) || bytes <= 0) {
+      throw new Error(`BLE write chunk size must be a positive integer (got ${bytes})`);
+    }
+
+    this.bleWriteChunkSize = bytes;
+  }
+
+  public getBleWriteChunkSize(): number {
+    return this.bleWriteChunkSize;
+  }
+
+  /**
+   * Set the delay between chunks of a single BLE packet, in milliseconds.
+   */
+  public setBleWriteChunkInterval(milliseconds: number) {
+    if (!Number.isFinite(milliseconds) || milliseconds < 0) {
+      throw new Error(`BLE write chunk interval must be a non-negative number (got ${milliseconds})`);
+    }
+
+    this.bleWriteChunkIntervalMs = milliseconds;
+  }
+
+  public getBleWriteChunkInterval(): number {
+    return this.bleWriteChunkIntervalMs;
+  }
+
+  /**
+   * Split a raw packet into BLE-sized writes. Returns a single chunk if it already fits.
+   */
+  protected splitRawData(data: Uint8Array): Uint8Array[] {
+    if (data.length <= this.bleWriteChunkSize) {
+      return [data];
+    }
+
+    const chunks: Uint8Array[] = [];
+
+    for (let offset = 0; offset < data.length; offset += this.bleWriteChunkSize) {
+      chunks.push(data.subarray(offset, Math.min(offset + this.bleWriteChunkSize, data.length)));
+    }
+
+    return chunks;
   }
 
   /**

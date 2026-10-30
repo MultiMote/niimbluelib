@@ -70,6 +70,13 @@ export enum RequestCommandId {
   GetPrinterFree = 0xc3,
   PrintBitmapRowDoubleColor = 0x8a,
   /**
+   * LZO-compressed image rows with a 32-bit data length.
+   *
+   * Payload: `INDEX_HI INDEX_LO COMPRESSED_DATA...`, where the index is the
+   * zero-based compressed chunk number.
+   */
+  PrintBitmapRowCompressed = 0xa7,
+  /**
    * Grayscale (16 levels) row wrapper with a 16-bit data length.
    *
    * Nested rows reuse existing row command IDs:
@@ -182,6 +189,7 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.PrintBitmapRowIndexed]: null,
   [TX.PrintEmptyRow]: null,
   [TX.PrintBitmapRowDoubleColor]: null,
+  [TX.PrintBitmapRowCompressed]: null,
   [TX.PrintBitmapRowGray]: null,
   [TX.Connect]: [RX.In_Connect],
   [TX.CancelPrint]: [RX.In_CancelPrint],

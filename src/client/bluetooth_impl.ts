@@ -22,7 +22,7 @@ export interface NiimbotBluetoothClientConnectOptions {
    * await client.connect({ authorizedDevice });
    * ```
    */
-  authorizedDevice?: BluetoothDevice
+  authorizedDevice?: BluetoothDevice;
 }
 
 /**
@@ -71,7 +71,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       device = await navigator.bluetooth.requestDevice(options);
     }
 
-
     if (device.gatt === undefined) {
       throw new Error("Device has no Bluetooth Generic Attribute Profile");
     }
@@ -87,9 +86,8 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
 
     const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect();
 
-    const channel: BluetoothRemoteGATTCharacteristic | undefined = await this.findSuitableBluetoothCharacteristic(
-      gattServer
-    );
+    const channel: BluetoothRemoteGATTCharacteristic | undefined =
+      await this.findSuitableBluetoothCharacteristic(gattServer);
 
     if (channel === undefined) {
       gattServer.disconnect();
@@ -121,7 +119,7 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
   }
 
   private async findSuitableBluetoothCharacteristic(
-    gattServer: BluetoothRemoteGATTServer
+    gattServer: BluetoothRemoteGATTServer,
   ): Promise<BluetoothRemoteGATTCharacteristic | undefined> {
     const services: BluetoothRemoteGATTService[] = await gattServer.getPrimaryServices();
 
@@ -159,7 +157,18 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
         throw new Error("Channel is closed");
       }
       await Utils.sleep(this.packetIntervalMs);
-      await this.channel.writeValueWithoutResponse(data.buffer as ArrayBuffer);
+
+      const chunks = this.splitRawData(data);
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        await this.channel.writeValueWithoutResponse(chunk.buffer as ArrayBuffer);
+
+        if (i < chunks.length - 1) {
+          await Utils.sleep(this.bleWriteChunkIntervalMs);
+        }
+      }
+
       this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
 

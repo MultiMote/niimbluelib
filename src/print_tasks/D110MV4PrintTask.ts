@@ -51,10 +51,21 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     // (the known working B21 Pro flow sends 575 for 576-dot rows).
     const pageWidth = image.pageColor === PageColorType.MultiorderColor ? Math.max(1, image.cols - 1) : image.cols;
 
+    const capabilities = this.protocol.getClient().getPrinterInfo().capabilities;
+    const maxImageCompressBytes = capabilities?.maxImageCompressBytes ?? 0;
+    const useImageCompression =
+      image.pageColor === PageColorType.MultiorderColor &&
+      capabilities?.imageCompressSupport?.includes(1) === true &&
+      maxImageCompressBytes > 0;
+
+    const imagePackets = useImageCompression
+      ? PacketGenerator.writeImageDataGrayCompressed(image, maxImageCompressBytes)
+      : PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() });
+
     return this.protocol.sendAll(
       [
         PacketGenerator.setPageSize13b(image.rows, pageWidth, quantity ?? 1, this.printOptions.cutHeight, this.printOptions.cutType),
-        ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
+        ...imagePackets,
         PacketGenerator.pageEnd(),
       ],
       this.printOptions.pageTimeoutMs,

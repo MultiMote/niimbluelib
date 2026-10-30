@@ -52,6 +52,16 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
 
     await BleClient.connect(device.deviceId, () => this.onBleDisconnect());
 
+    try {
+      const value = await BleClient.getMtu(device.deviceId);
+      if (value > 3) {
+        // Android rejects writes larger than 512 bytes regardless of the negotiated MTU.
+        this.setBleWriteChunkSize(Math.min(value - 3, 512));
+      }
+    } catch {
+      // MTU is not exposed on all platforms (e.g. web), keep the default chunk size.
+    }
+
     await BleClient.discoverServices(device.deviceId);
 
     const { service, characteristic } = await this.findSuitableCharacteristic(device.deviceId).catch((error) => {
@@ -132,8 +142,17 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
       }
       await Utils.sleep(this.packetIntervalMs);
 
-      const dw = new DataView(data.buffer, data.byteOffset, data.byteLength);
-      await BleClient.writeWithoutResponse(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw);
+      const chunks = this.splitRawData(data);
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const dw = new DataView(chunk.buffer, chunk.byteOffset, chunk.byteLength);
+        await BleClient.writeWithoutResponse(this.deviceId!, this.serviceUUID!, this.characteristicUUID!, dw);
+
+        if (i < chunks.length - 1) {
+          await Utils.sleep(this.bleWriteChunkIntervalMs);
+        }
+      }
 
       this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
