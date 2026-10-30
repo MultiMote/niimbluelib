@@ -29,9 +29,11 @@ export class D110MV4PrintTask extends AbstractPrintTask {
       pkts.push(PacketGenerator.setHalfCut(this.printOptions.halfCut));
     }
 
-    pkts.push(
-      PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.pageColor, this.printOptions.speed),
-    );
+    // Grayscale printing was only verified with speed 0 (the known working B21 Pro flow
+    // calls printStart9b(..., pageColor=3, speed=0)).
+    const speed = this.printOptions.pageColor === PageColorType.MultiorderColor ? 0 : this.printOptions.speed;
+
+    pkts.push(PacketGenerator.printStart9b(this.printOptions.totalPages, this.printOptions.pageColor, speed));
 
     return this.protocol.sendAll(pkts);
   }
@@ -45,9 +47,13 @@ export class D110MV4PrintTask extends AbstractPrintTask {
     statusPacket.oneWay = true;
     await this.protocol.send(statusPacket);
 
+    // Grayscale rows address the full color head. The page width is one less than the row width
+    // (the known working B21 Pro flow sends 575 for 576-dot rows).
+    const pageWidth = image.pageColor === PageColorType.MultiorderColor ? Math.max(1, image.cols - 1) : image.cols;
+
     return this.protocol.sendAll(
       [
-        PacketGenerator.setPageSize13b(image.rows, image.cols, quantity ?? 1, this.printOptions.cutHeight, this.printOptions.cutType),
+        PacketGenerator.setPageSize13b(image.rows, pageWidth, quantity ?? 1, this.printOptions.cutHeight, this.printOptions.cutType),
         ...PacketGenerator.writeImageData(image, { printheadPixels: this.printheadPixels() }),
         PacketGenerator.pageEnd(),
       ],
@@ -80,6 +86,10 @@ export class D110MV4PrintTask extends AbstractPrintTask {
   }
 
   override isSupportColor(pageColor: PageColorType): boolean {
-    return pageColor === PageColorType.SingleColor || pageColor === PageColorType.DoubleColor;
+    return (
+      pageColor === PageColorType.SingleColor ||
+      pageColor === PageColorType.DoubleColor ||
+      pageColor === PageColorType.MultiorderColor
+    );
   }
 }

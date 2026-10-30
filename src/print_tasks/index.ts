@@ -13,6 +13,7 @@ import { H1SPrintTask } from "./H1SPrintTask";
 export enum PrintTaskCapability {
   SupportDoubleColor,
   SupportTubePrinting,
+  SupportGrayscale,
 }
 
 /**
@@ -51,7 +52,11 @@ export const printTasksCapabilities: Record<PrintTaskName, PrintTaskCapability[]
   B1: [PrintTaskCapability.SupportDoubleColor],
   B21_V1: [],
   B21_L2B: [],
-  D110M_V4: [PrintTaskCapability.SupportDoubleColor, PrintTaskCapability.SupportTubePrinting],
+  D110M_V4: [
+    PrintTaskCapability.SupportDoubleColor,
+    PrintTaskCapability.SupportTubePrinting,
+    PrintTaskCapability.SupportGrayscale,
+  ],
   H1S: [],
 };
 

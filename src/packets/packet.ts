@@ -164,6 +164,112 @@ export class NiimbotPacket {
 }
 
 /**
+ * NIIMBOT packet object with a 16-bit data length.
+ *
+ * Used by grayscale row packets (`0x8D`) whose payload can exceed 255 bytes.
+ * Checksum is XOR over command, both length bytes, and data.
+ *
+ * @category Packets
+ */
+export class NiimbotPacket16 extends NiimbotPacket {
+  public override get length(): number {
+    return (
+      NiimbotPacket.HEAD.length + // head
+      1 + // cmd
+      2 + // dataLength
+      this.dataLength +
+      1 + // checksum
+      NiimbotPacket.TAIL.length
+    );
+  }
+
+  public override get checksum(): number {
+    let checksum = 0;
+    checksum ^= this._command;
+    checksum ^= (this._data.length >> 8) & 0xff;
+    checksum ^= this._data.length & 0xff;
+    this._data.forEach((i: number) => (checksum ^= i));
+    return checksum;
+  }
+
+  /** [0x55, 0x55, CMD, DATA_LEN_HI, DATA_LEN_LO, DA =//= TA, CHECKSUM, 0xAA, 0xAA] */
+  public override toBytes(): Uint8Array {
+    if (this._data.length > 0xffff) {
+      throw new Error(`Packet data is too large for 16-bit length (${this._data.length} > 65535)`);
+    }
+
+    const buf = new ArrayBuffer(this.length);
+    const arr = new Uint8Array(buf);
+
+    let pos = 0;
+
+    arr.set(NiimbotPacket.HEAD, pos);
+    pos += NiimbotPacket.HEAD.length;
+
+    arr[pos] = this._command;
+    pos += 1;
+
+    arr[pos] = (this._data.length >> 8) & 0xff;
+    pos += 1;
+    arr[pos] = this._data.length & 0xff;
+    pos += 1;
+
+    arr.set(this._data, pos);
+    pos += this._data.length;
+
+    arr[pos] = this.checksum;
+    pos += 1;
+
+    arr.set(NiimbotPacket.TAIL, pos);
+
+    return arr;
+  }
+
+  public static override fromBytes(buf: Uint8Array): NiimbotPacket16 {
+    const reader = new SequentialDataReader(buf);
+
+    const minPacketSize =
+      NiimbotPacket.HEAD.length +
+      1 + // cmd
+      2 + // dataLen
+      1 + // checksum
+      NiimbotPacket.TAIL.length;
+
+    if (buf.length < minPacketSize) {
+      throw new Error(`Packet is too small (${buf.length} < ${minPacketSize})`);
+    }
+
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.HEAD.length), NiimbotPacket.HEAD, "Invalid packet head");
+
+    const cmd = reader.readU8();
+    const dataLen = reader.readU16();
+
+    if (buf.length !== minPacketSize + dataLen) {
+      throw new Error(`Invalid packet size (${buf.length} !== ${minPacketSize + dataLen})`);
+    }
+
+    const data = reader.readBytes(dataLen);
+    const checksum = reader.readU8();
+
+    Validators.u8ArraysEqual(reader.readBytes(NiimbotPacket.TAIL.length), NiimbotPacket.TAIL, "Invalid packet tail");
+
+    reader.end();
+
+    const packet = new NiimbotPacket16(cmd, data);
+
+    if (packet.checksum !== checksum) {
+      throw new Error(`Invalid packet checksum (${packet.checksum} !== ${checksum})`);
+    }
+
+    return packet;
+  }
+
+  public static override fromHex(hex: string): NiimbotPacket16 {
+    return NiimbotPacket16.fromBytes(Utils.hexToBuf(hex));
+  }
+}
+
+/**
  * NIIMBOT packet object with CRC32 checksum. Used in firmware process.
  *
  * @category Packets

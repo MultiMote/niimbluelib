@@ -69,6 +69,14 @@ export enum RequestCommandId {
   GetCompress = 0x89,
   GetPrinterFree = 0xc3,
   PrintBitmapRowDoubleColor = 0x8a,
+  /**
+   * Grayscale (16 levels) row wrapper with a 16-bit data length.
+   *
+   * Nested rows reuse existing row command IDs:
+   * - `0x86` - grayscale row (same ID as {@link PrinterCheckLine})
+   * - `0x84` - empty rows (same ID as {@link PrintEmptyRow})
+   */
+  PrintBitmapRowGray = 0x8d,
   SetLabelMaterial = 0x2d,
   TubeSettings = 0x0e,
   Pause = 0xa6,
@@ -174,6 +182,7 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.PrintBitmapRowIndexed]: null,
   [TX.PrintEmptyRow]: null,
   [TX.PrintBitmapRowDoubleColor]: null,
+  [TX.PrintBitmapRowGray]: null,
   [TX.Connect]: [RX.In_Connect],
   [TX.CancelPrint]: [RX.In_CancelPrint],
   [TX.GetPaperInfo]: [RX.In_GetPaperInfo],

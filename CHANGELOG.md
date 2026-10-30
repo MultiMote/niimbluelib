@@ -1,3 +1,9 @@
+# 0.49.0
+
+* Add 16-level grayscale printing via `PageColorType.MultiorderColor` for `D110M_V4` (protocol v4).
+* Add `NiimbotPacket16` for packets with a 16-bit data length.
+* `example`: draw a grayscale gradient when `PageColorType.MultiorderColor` is selected.
+
 # 0.48.0
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.

@@ -8,8 +8,15 @@ export type ImageRow = {
   repeat: number;
   blackPixelsCount: number;
   redPixelsCount: number;
+  /** Number of non-white pixels (grayscale mode only). */
+  grayPixelsCount?: number;
   rowDataBlack?: Uint8Array;
   rowDataRed?: Uint8Array;
+  /**
+   * Two 4-bit grayscale levels per byte (high nibble first).
+   * `0` is white, `15` is black.
+   */
+  rowDataGray?: Uint8Array;
 };
 
 /** @category Image encoder */
@@ -63,6 +70,9 @@ export type PrintDirection = "left" | "top";
  * - Black (0x000000) - first color
  * - Red (0xff0000) - second color
  *
+ * `PageColorType.MultiorderColor` enables 16-level grayscale mode. Pixel colors are
+ * converted to luminance and packed as two 4-bit dots per byte (`0` = white, `15` = black).
+ *
  * @category Helpers
  * @category Image encoder
  */
@@ -77,12 +87,27 @@ export class ImageEncoder {
     return ImageEncoder.encode(imageSource, pageColor, printDirection);
   }
 
+  /**
+   * Convert a `0xRRGGBB` color to a 4-bit grayscale level.
+   * `0` is white and `15` is black.
+   */
+  public static colorToGrayLevel(color: number): number {
+    const red = (color >> 16) & 0xff;
+    const green = (color >> 8) & 0xff;
+    const blue = color & 0xff;
+
+    // ITU-R BT.601 luminance, inverted because 0 is white in the printer protocol.
+    const luminance = 0.299 * red + 0.587 * green + 0.114 * blue;
+    return Math.max(0, Math.min(15, Math.round((1 - luminance / 255) * 15)));
+  }
+
   public static encode(
     source: ImageSource,
     pageColor: PageColorType,
     printDirection: PrintDirection,
   ): EncodedImage {
     const rowsData: ImageRow[] = [];
+    const isGray = pageColor === PageColorType.MultiorderColor;
 
     let originalCols: number = source.width;
     let rows: number = source.height;
@@ -99,33 +124,58 @@ export class ImageEncoder {
       let isVoid: boolean = true;
       let blackPixelsCount: number = 0;
       let redPixelsCount: number = 0;
-      const blackRowData = new Uint8Array(cols / 8);
-      const redRowData = new Uint8Array(cols / 8);
+      let grayPixelsCount: number = 0;
+      const blackRowData = isGray ? undefined : new Uint8Array(cols / 8);
+      const redRowData = isGray ? undefined : new Uint8Array(cols / 8);
+      const grayRowData = isGray ? new Uint8Array(cols / 2) : undefined;
 
-      for (let colOct = 0; colOct < cols / 8; colOct++) {
-        let blackPixelsOctet: number = 0;
-        let redPixelsOctet: number = 0;
+      if (isGray) {
+        for (let colPair = 0; colPair < cols / 2; colPair++) {
+          const col1 = colPair * 2;
+          const col2 = col1 + 1;
 
-        for (let colBit = 0; colBit < 8; colBit++) {
-          const col = colOct * 8 + colBit;
-          const color = source.getPixelColor(col, row, printDirection);
+          const level1 =
+            col1 < originalCols ? ImageEncoder.colorToGrayLevel(source.getPixelColor(col1, row, printDirection)) : 0;
+          const level2 =
+            col2 < originalCols ? ImageEncoder.colorToGrayLevel(source.getPixelColor(col2, row, printDirection)) : 0;
 
-          if (col >= originalCols) {
-            continue;
+          if (level1 !== 0) {
+            isVoid = false;
+            grayPixelsCount++;
+          }
+          if (level2 !== 0) {
+            isVoid = false;
+            grayPixelsCount++;
           }
 
-          if (color === 0xff0000 && pageColor === PageColorType.DoubleColor) {
-            redPixelsOctet |= 1 << (7 - colBit);
-            isVoid = false;
-            redPixelsCount++;
-          } else if (color !== 0xffffff) {
-            blackPixelsOctet |= 1 << (7 - colBit);
-            isVoid = false;
-            blackPixelsCount++;
-          }
+          grayRowData![colPair] = (level1 << 4) | level2;
         }
-        blackRowData[colOct] = blackPixelsOctet;
-        redRowData[colOct] = redPixelsOctet;
+      } else {
+        for (let colOct = 0; colOct < cols / 8; colOct++) {
+          let blackPixelsOctet: number = 0;
+          let redPixelsOctet: number = 0;
+
+          for (let colBit = 0; colBit < 8; colBit++) {
+            const col = colOct * 8 + colBit;
+            const color = source.getPixelColor(col, row, printDirection);
+
+            if (col >= originalCols) {
+              continue;
+            }
+
+            if (color === 0xff0000 && pageColor === PageColorType.DoubleColor) {
+              redPixelsOctet |= 1 << (7 - colBit);
+              isVoid = false;
+              redPixelsCount++;
+            } else if (color !== 0xffffff) {
+              blackPixelsOctet |= 1 << (7 - colBit);
+              isVoid = false;
+              blackPixelsCount++;
+            }
+          }
+          blackRowData![colOct] = blackPixelsOctet;
+          redRowData![colOct] = redPixelsOctet;
+        }
       }
 
       const newPart: ImageRow = {
@@ -134,8 +184,10 @@ export class ImageEncoder {
         repeat: 1,
         rowDataBlack: isVoid ? undefined : blackRowData,
         rowDataRed: isVoid ? undefined : redRowData,
+        rowDataGray: isVoid ? undefined : grayRowData,
         blackPixelsCount,
         redPixelsCount,
+        grayPixelsCount,
       };
 
       // Check previous row and increment repeats instead of adding new row if data is same
@@ -146,9 +198,13 @@ export class ImageEncoder {
         let same: boolean = newPart.dataType === lastPacket.dataType;
 
         if (same && newPart.dataType === "pixels") {
-          same =
-            Utils.u8ArraysEqual(newPart.rowDataBlack!, lastPacket.rowDataBlack!) &&
-            Utils.u8ArraysEqual(newPart.rowDataRed!, lastPacket.rowDataRed!);
+          if (isGray) {
+            same = Utils.u8ArraysEqual(newPart.rowDataGray!, lastPacket.rowDataGray!);
+          } else {
+            same =
+              Utils.u8ArraysEqual(newPart.rowDataBlack!, lastPacket.rowDataBlack!) &&
+              Utils.u8ArraysEqual(newPart.rowDataRed!, lastPacket.rowDataRed!);
+          }
         }
 
         if (same) {
@@ -157,7 +213,10 @@ export class ImageEncoder {
           rowsData.push(newPart);
         }
 
-        const sendRowCheck = row % 200 === 199;
+        // Gray mode needs periodic synchronization because the printer may drop rows
+        // when its buffer is full. Every 100 rows matches the known working B21 Pro flow.
+        const checkInterval = isGray ? 100 : 200;
+        const sendRowCheck = row % checkInterval === checkInterval - 1;
 
         if (sendRowCheck) {
           rowsData.push({
