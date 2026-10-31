@@ -80,6 +80,10 @@ export class D110MV4PrintTask extends AbstractPrintTask {
   }
 
   override isSupportColor(pageColor: PageColorType): boolean {
-    return pageColor === PageColorType.SingleColor || pageColor === PageColorType.DoubleColor;
+    return (
+      pageColor === PageColorType.SingleColor ||
+      pageColor === PageColorType.DoubleColor ||
+      pageColor === PageColorType.Grayscale
+    );
   }
 }

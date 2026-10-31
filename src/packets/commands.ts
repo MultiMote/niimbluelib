@@ -69,6 +69,10 @@ export enum RequestCommandId {
   GetCompress = 0x89,
   GetPrinterFree = 0xc3,
   PrintBitmapRowDoubleColor = 0x8a,
+  /**
+   * Grayscale (16 levels) row wrapper with a 16-bit data length.
+   */
+  PrintBitmapRowGray = 0x8d,
   SetLabelMaterial = 0x2d,
   TubeSettings = 0x0e,
   Pause = 0xa6,
@@ -174,6 +178,7 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.PrintBitmapRowIndexed]: null,
   [TX.PrintEmptyRow]: null,
   [TX.PrintBitmapRowDoubleColor]: null,
+  [TX.PrintBitmapRowGray]: null,
   [TX.Connect]: [RX.In_Connect],
   [TX.CancelPrint]: [RX.In_CancelPrint],
   [TX.GetPaperInfo]: [RX.In_GetPaperInfo],
@@ -244,7 +249,12 @@ export const commandsMap: Record<RequestCommandId, ResponseCommandId[] | null> =
   [TX.Pause]: [RX.In_Pause],
 };
 
-export const firmwareExchangePackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
+export const crc32Packets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
   tx: [TX.FirmwareChunk, TX.FirmwareCrc, TX.FirmwareNoMoreChunks, TX.FirmwareCommit],
   rx: [RX.In_RequestFirmwareCrc, RX.In_RequestFirmwareChunk, RX.In_FirmwareCheckResult, RX.In_FirmwareResult],
 };
+
+export const twoByteLengthPackets: { tx: RequestCommandId[]; rx: ResponseCommandId[] } = {
+  tx: [TX.PrintBitmapRowGray],
+  rx: []
+}

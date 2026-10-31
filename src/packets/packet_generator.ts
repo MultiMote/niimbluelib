@@ -9,10 +9,12 @@ import {
   SoundSettingsType,
   commandsMap,
   NiimbotCrc32Packet,
+  NiimbotPacket16,
   PrinterConfig2Type,
   PrinterConfig2Action,
   PageColorType,
   BitmapColorMode,
+  GrayscaleRowType,
 } from ".";
 import { EncodedImage, ImageEncoder, Utils, Validators } from "../utils";
 
@@ -46,6 +48,22 @@ export class PacketGenerator {
     }
 
     return new NiimbotPacket(sendCmd, data, respIds);
+  }
+
+  /**
+   * Same as {@link mapped}, but uses a 16-bit data length.
+   * Required for grayscale row packets.
+   */
+  public static mapped16(sendCmd: TX, data: Uint8Array | number[] = [1]): NiimbotPacket16 {
+    const respIds: RX[] | null = commandsMap[sendCmd];
+
+    if (respIds === null) {
+      const p = new NiimbotPacket16(sendCmd, data);
+      p.oneWay = true;
+      return p;
+    }
+
+    return new NiimbotPacket16(sendCmd, data, respIds);
   }
 
   public static connect(): NiimbotPacket {
@@ -311,11 +329,118 @@ export class PacketGenerator {
     return this.mapped(TX.PrinterCheckLine, [...Utils.u16ToBytes(line), 0x01]);
   }
 
+  /**
+   * Ask the printer to confirm it has received all grayscale rows up to {@link line}.
+   * The response is {@link ResponseCommandId.In_PrinterCheckLine} (`0xD3`).
+   *
+   * Unlike {@link checkLine}, the row number must point to a row that was already sent.
+   */
+  public static checkLineGray(line: number): NiimbotPacket {
+    return this.mapped(TX.PrinterCheckLine, [...Utils.u16ToBytes(line), 0x01]);
+  }
+
+  /**
+   * One or more empty grayscale rows.
+   *
+   * Body: `84 ROW_HI ROW_LO COUNT 00` inside a 16-bit-length PrintBitmapRowGray wrapper.
+   */
+  public static printGrayEmptyRows(pos: number, repeats: number): NiimbotPacket16 {
+    if (repeats < 1 || repeats > 255) {
+      throw new Error(`Gray empty row repeats must be in 1..255 range (got ${repeats})`);
+    }
+
+    return this.mapped16(TX.PrintBitmapRowGray, [
+      GrayscaleRowType.Void,
+      ...Utils.u16ToBytes(pos),
+      repeats,
+      0x00,
+    ]);
+  }
+
+  /**
+   * A grayscale row.
+   *
+   * Body: `86 ROW_HI ROW_LO REPEATS RUNS_COUNT RUNS... DATA...` inside a 16-bit-length PrintBitmapRowGray wrapper,
+   * where `RUNS_COUNT` is the number of run descriptor bytes (not the number of runs).
+   * {@link data} stores two 4-bit grayscale levels per byte (high nibble first), `0` = white, `15` = black.
+   */
+  public static printGrayRow(pos: number, repeats: number, data: Uint8Array): NiimbotPacket16 {
+    if (repeats < 1 || repeats > 255) {
+      throw new Error(`Gray row repeats must be in 1..255 range (got ${repeats})`);
+    }
+
+    const compressed = this.compressGrayRow(data);
+
+    return this.mapped16(TX.PrintBitmapRowGray, [
+      GrayscaleRowType.Data,
+      ...Utils.u16ToBytes(pos),
+      repeats,
+      compressed.runs.length,
+      ...compressed.runs,
+      ...compressed.data,
+    ]);
+  }
+
+  /**
+   * Pack a grayscale row and encode runs of equal pixels.
+   *
+   * Run descriptor: `(pixelCount + 2) | ((dataPosition >> 8) & 1)`, then `dataPosition & 0xFF`.
+   * The printer repeats the last dot at the referenced data byte. Runs shorter than 8 pixels
+   * are not encoded because the descriptor would cost more than the data it replaces.
+   */
+  private static compressGrayRow(data: Uint8Array): { runs: number[]; data: number[] } {
+    const levels = new Uint8Array(data.length * 2);
+
+    for (let i = 0; i < data.length; i++) {
+      levels[i * 2] = (data[i] >> 4) & 0x0f;
+      levels[i * 2 + 1] = data[i] & 0x0f;
+    }
+
+    const runs: number[] = [];
+    const packed: number[] = [];
+
+    let x = 0;
+
+    while (x < levels.length) {
+      const a = levels[x];
+      const b = levels[x + 1];
+      packed.push((a << 4) | b);
+      x += 2;
+
+      if (a !== b || runs.length > 250) {
+        continue;
+      }
+
+      let count = 0;
+
+      while (x + count < levels.length && count < 252 && levels[x + count] === b) {
+        count++;
+      }
+
+      // Runs cover whole data bytes.
+      count &= ~1;
+
+      if (count < 6) {
+        continue;
+      }
+
+      const at = packed.length - 1;
+      runs.push((count + 2) | ((at >> 8) & 1));
+      runs.push(at & 0xff);
+
+      x += count;
+    }
+
+    return { runs, data: packed };
+  }
+
   public static writeImageData(image: EncodedImage, options?: ImagePacketsGenerateOptions): NiimbotPacket[] {
     if (image.pageColor === PageColorType.SingleColor) {
       return this.writeImageDataSingleColor(image, options);
     } else if (image.pageColor === PageColorType.DoubleColor) {
       return this.writeImageDataDoubleColor(image);
+    } else if (image.pageColor === PageColorType.Grayscale) {
+      return this.writeImageDataGray(image);
     }
 
     throw new Error(`Page color ${image.pageColor} not implemented`);
@@ -357,6 +482,53 @@ export class PacketGenerator {
 
       if (d.dataType === "void") {
         out.push(this.printEmptySpace(d.rowNumber, d.repeat));
+      }
+    }
+
+    return out;
+  }
+
+  /**
+   * Generate grayscale image packets.
+   *
+   * Rows are sent in 16-bit-length PrintBitmapRowGray packets
+   */
+  public static writeImageDataGray(image: EncodedImage): NiimbotPacket[] {
+    const out: NiimbotPacket[] = [];
+
+    if (image.pageColor !== PageColorType.Grayscale) {
+      throw new Error("EncodedImage.pageColor must be PageColorType.Grayscale");
+    }
+
+    if (image.cols % 2 !== 0) {
+      throw new Error(`Grayscale image width must be even (got ${image.cols})`);
+    }
+
+    for (const d of image.rowsData) {
+      if (d.dataType === "pixels") {
+        let row = d.rowNumber;
+        let repeats = d.repeat;
+
+        while (repeats > 0) {
+          const count = Math.min(255, repeats);
+          out.push(this.printGrayRow(row, count, d.rowDataGray!));
+          row += count;
+          repeats -= count;
+        }
+
+        continue;
+      }
+
+      if (d.dataType === "void") {
+        let row = d.rowNumber;
+        let repeats = d.repeat;
+
+        while (repeats > 0) {
+          const count = Math.min(255, repeats);
+          out.push(this.printGrayEmptyRows(row, count));
+          row += count;
+          repeats -= count;
+        }
       }
     }
 

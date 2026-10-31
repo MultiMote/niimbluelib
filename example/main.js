@@ -98,6 +98,16 @@ const repaint = () => {
       rectSize,
       rectSize,
     );
+  } else if (pageColor === PageColorType.Grayscale) {
+    // draw a white-to-black gradient using all 16 grayscale levels
+    const levels = 16;
+    const barHeight = canvas.height / levels;
+
+    for (let i = 0; i < levels; i++) {
+      const shade = Math.round((1 - i / (levels - 1)) * 255);
+      ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+      ctx.fillRect(0, Math.floor(i * barHeight), canvas.width, Math.ceil(barHeight));
+    }
   }
 };
 
