@@ -1,3 +1,9 @@
+# 0.49.0
+
+* **BREAKING:** Rename `PageColorType.MultiorderColor` to `PageColorType.Grayscale`
+* Add 16-level grayscale printing via `PageColorType.Grayscale` for `D110MV4PrintTask`.
+* Add `NiimbotPacket16` for packets with a 16-bit data length.
+
 # 0.48.0
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.

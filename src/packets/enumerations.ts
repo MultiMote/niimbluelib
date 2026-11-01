@@ -48,6 +48,12 @@ export enum SoundSettingsItemType {
   PowerSound = 0x02,
 }
 
+/** @category Packets */
+export enum GrayscaleRowType {
+  Void = 0x84,
+  Data = 0x86,
+}
+
 /**
  * Sent with {@link RequestCommandId.SetLabelType}.
  *
@@ -152,7 +158,7 @@ export enum PageColorType {
   SingleColor = 0,
   DoubleColor = 1,
   SingleColorAlt = 2,
-  MultiorderColor = 3,
+  Grayscale = 3,
 }
 
 /**
