@@ -1,10 +1,16 @@
+# 0.49.0
+
+* **BREAKING:** Rename `PageColorType.MultiorderColor` to `PageColorType.Grayscale`
+* Add 16-level grayscale printing via `PageColorType.Grayscale` for `D110MV4PrintTask`.
+* Add `NiimbotPacket16` for packets with a 16-bit data length.
+
 # 0.48.0
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.
 * `NiimbotCapacitorBleClient`: fix disconnect event always fired on connection.
 * `B21L2BPrintTask`: fix progress event invalid argument order.
 * Add `NiimbotAbstractClient.setAutoShutdownTime`.
-* Move `NiimbotAbstractClient.printerInfo.autoShutdownTime` to `NiimbotAbstractClient.printerInfo.settings.autoShutdownTime`.
+* **BREAKING:** Move `NiimbotAbstractClient.printerInfo.autoShutdownTime` to `NiimbotAbstractClient.printerInfo.settings.autoShutdownTime`.
 
 # 0.47.1
 

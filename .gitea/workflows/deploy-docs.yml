@@ -53,9 +53,11 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DOCS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          printf '%s\n' "$DOCS_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H -p ${{ secrets.DOCS_SSH_PORT || 22 }} ${{ secrets.DOCS_SSH_HOST }} >> ~/.ssh/known_hosts
+        env:
+          DOCS_SSH_PRIVATE_KEY: ${{ secrets.DOCS_SSH_PRIVATE_KEY }}
 
       - name: Deploy with Rsync
         run: |

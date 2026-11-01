@@ -1,6 +1,6 @@
 import {
   ConnectResult,
-  firmwareExchangePackets,
+  crc32Packets,
   HeartbeatData,
   HeartbeatPrinterInfoData,
   LabelType,
@@ -13,6 +13,8 @@ import {
   PrintStatus,
   RfidInfo,
   SequentialDataReader,
+  NiimbotPacket16,
+  twoByteLengthPackets,
 } from ".";
 import { Utils, Validators } from "../utils";
 
@@ -48,6 +50,7 @@ export class PacketParser {
       const cmd: number = buf[2];
       let cls: PacketClass = NiimbotPacket;
 
+      let sizeLength: number = 1;
       let sizePos: number = 3;
       let crcSize: number = 1;
       //  0  1  2  3  4  5  6  7
@@ -56,7 +59,7 @@ export class PacketParser {
       //           |     |
       //          size  crc
 
-      if (firmwareExchangePackets.rx.includes(cmd) || firmwareExchangePackets.tx.includes(cmd)) {
+      if (crc32Packets.rx.includes(cmd) || crc32Packets.tx.includes(cmd)) {
         cls = NiimbotCrc32Packet;
         sizePos = 5;
         crcSize = 4;
@@ -65,19 +68,31 @@ export class PacketParser {
         // 55 55 9a 00 80 01 01 d2 bd d2 fb aa aa
         //                 |    |---------|
         //                size      crc
+      } else if (twoByteLengthPackets.rx.includes(cmd) || twoByteLengthPackets.tx.includes(cmd)) {
+        cls = NiimbotPacket16;
+        sizeLength = 2;
+        //  0  1  2  3  4  5  6  7  8
+        // --------------------------
+        // 55 55 4a 00 01 04 4f aa aa
+        //          |---|     |
+        //           size    crc
       }
 
-      if (buf.byteLength <= sizePos) {
+      if (buf.byteLength <= sizePos + sizeLength) {
         break;
       }
 
-      const size: number = buf[sizePos];
+      let size: number = buf[sizePos];
 
-      if (buf.byteLength <= sizePos + size + crcSize + NiimbotPacket.TAIL.byteLength) {
+      if (sizeLength == 2) {
+        size = (size << 8) + buf[sizePos + 1];
+      }
+
+      if (buf.byteLength <= sizePos + (sizeLength - 1) + size + crcSize + NiimbotPacket.TAIL.byteLength) {
         break;
       }
 
-      const tailPos: number = sizePos + size + crcSize + 1;
+      const tailPos: number = sizePos + (sizeLength - 1) + size + crcSize + 1;
 
       if (!Utils.hasSubarrayAtPos(buf, NiimbotPacket.TAIL, tailPos)) {
         console.warn("Invalid tail");
