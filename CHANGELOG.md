@@ -2,6 +2,12 @@
 
 * Fix slow printing and firmware transfers when the browser tab is in the background: `Utils.sleep` now runs its timer in a Web Worker (browsers throttle window timers on hidden pages), falling back to `setTimeout` when workers are unavailable.
 
+# 0.49.0
+
+* **BREAKING:** Rename `PageColorType.MultiorderColor` to `PageColorType.Grayscale`
+* Add 16-level grayscale printing via `PageColorType.Grayscale` for `D110MV4PrintTask`.
+* Add `NiimbotPacket16` for packets with a 16-bit data length.
+
 # 0.48.0
 
 * Fix `NiimbotAbstractClient.isHeartbeatStarted` inversion.
