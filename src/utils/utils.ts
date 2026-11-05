@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { Validators } from "./validators";
+import { workerSleep } from "./web_worker_sleep";
 
 export interface AvailableTransports {
   webSerial: boolean;
@@ -238,10 +239,10 @@ export class Utils {
   }
 
   /**
-   * Asynchronously pauses the execution for the specified amount of time.
+   * Asynchronously pauses the execution for the specified amount of time using Web Worker if available, otherwise falls back to setTimeout.
    */
   public static sleep(ms: number): Promise<undefined> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return workerSleep(ms);
   }
 
   /**

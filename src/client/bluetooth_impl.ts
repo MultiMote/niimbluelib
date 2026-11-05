@@ -76,6 +76,8 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
       throw new Error("Device has no Bluetooth Generic Attribute Profile");
     }
 
+    const { gattServer, channel } = await this.connectGatt(device.gatt);
+
     const disconnectListener = () => {
       this.gattServer = undefined;
       this.channel = undefined;
@@ -84,12 +86,6 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     };
 
     device.addEventListener("gattserverdisconnected", disconnectListener);
-
-    const gattServer: BluetoothRemoteGATTServer = await device.gatt.connect();
-
-    const channel: BluetoothRemoteGATTCharacteristic | undefined = await this.findSuitableBluetoothCharacteristic(
-      gattServer
-    );
 
     if (channel === undefined) {
       gattServer.disconnect();
@@ -118,6 +114,33 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     this.emit("connect", new ConnectEvent(result));
 
     return result;
+  }
+
+  /**
+   * Connect to the GATT server and look up the data characteristic.
+   *
+   * Web Bluetooth sometimes drops the link right after `gatt.connect()` succeeds, which fails with
+   * `NetworkError: GATT Server is disconnected. Cannot retrieve services.` Trying again usually works.
+   */
+  private async connectGatt(
+    gatt: BluetoothRemoteGATTServer,
+    attempts: number = 3,
+    retryDelayMs: number = 500
+  ): Promise<{ gattServer: BluetoothRemoteGATTServer; channel: BluetoothRemoteGATTCharacteristic | undefined }> {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        const gattServer: BluetoothRemoteGATTServer = await gatt.connect();
+        return { gattServer, channel: await this.findSuitableBluetoothCharacteristic(gattServer) };
+      } catch (e) {
+        if (attempt >= attempts || !(e instanceof DOMException && e.name === "NetworkError")) {
+          throw e;
+        }
+
+        console.warn(`GATT connection failed (attempt ${attempt}/${attempts}), retrying`, e);
+        gatt.disconnect();
+        await Utils.sleep(retryDelayMs);
+      }
+    }
   }
 
   private async findSuitableBluetoothCharacteristic(
