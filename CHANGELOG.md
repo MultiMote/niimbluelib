@@ -1,3 +1,7 @@
+# 0.49.2
+
+* Increase `rfidInfo` timeout to 5.5 seconds (some printers take a long time to respond to this command).
+
 # 0.49.1
 
 * Fix slow printing and firmware transfers when the browser tab is in the background: `Utils.sleep` now runs its timer in a Web Worker (browsers throttle window timers on hidden pages), falling back to `setTimeout` when workers are unavailable.
