@@ -1,5 +1,6 @@
 # 0.49.2
 
+* Fix race when a response arrives before `waitForPacket` starts listening (fast transports, e.g. USB serial).
 * Increase `rfidInfo` timeout to 5.5 seconds (some printers take a long time to respond to this command).
 
 # 0.49.1
