@@ -11,8 +11,7 @@
     "niimbot-b1",
     "niimbot-b21",
     "bluetooth",
-    "serial",
-    "capacitor"
+    "serial"
   ],
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.ts",
@@ -45,8 +44,6 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@capacitor-community/bluetooth-le": "^8.3.0",
-    "@capacitor/core": "^8.5.2",
     "async-mutex": "^0.5.0",
     "crc-32": "^1.2.2",
     "eventemitter3": "^5.0.4"

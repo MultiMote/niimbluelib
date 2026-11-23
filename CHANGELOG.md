@@ -1,6 +1,7 @@
 # 0.50.0
 
 * **BREAKING:** Remove `instantiateClient`, `NiimbotClientType`, `Utils.isBluetoothSupported`, `Utils.isSerialSupported`, and `Utils.getAvailableTransports`. Instantiate clients directly or create own factory.
+* **BREAKING:** Remove `NiimbotCapacitorBleClient`. Extend `NiimbotAbstractClient` yourself if you need it ([see docs](https://libdocs.niim.blue/documents/Implementing_your_own_client.html)).
 * Add `NiimbotAbstractClient.isAvailable` static method to check transport availability (e.g. `NiimbotBluetoothClient.isAvailable()`).
 * `getType` now returns `string`, allowing custom client types.
 * Fix race when a response arrives before `waitForPacket` starts listening (fast transports, e.g. USB serial).
