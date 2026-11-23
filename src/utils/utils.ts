@@ -1,12 +1,5 @@
-import { Capacitor } from "@capacitor/core";
 import { Validators } from "./validators";
 import { workerSleep } from "./web_worker_sleep";
-
-export interface AvailableTransports {
-  webSerial: boolean;
-  webBluetooth: boolean;
-  capacitorBle: boolean;
-}
 
 export interface PixelCountResult {
   total: number;
@@ -243,33 +236,6 @@ export class Utils {
    */
   public static sleep(ms: number): Promise<undefined> {
     return workerSleep(ms);
-  }
-
-  /**
-   * Checks if the browser supports Bluetooth functionality.
-   * @deprecated use {@link getAvailableTransports}
-   */
-  public static isBluetoothSupported(): boolean {
-    return typeof navigator.bluetooth?.requestDevice !== "undefined";
-  }
-
-  /**
-   * Checks if the browser supports the Web Serial API for serial communication.
-   * @deprecated use {@link getAvailableTransports}
-   */
-  public static isSerialSupported(): boolean {
-    return typeof navigator.serial?.requestPort !== "undefined";
-  }
-
-  /**
-   * Checks environment functionality
-   */
-  public static getAvailableTransports(): AvailableTransports {
-    return {
-      capacitorBle: Capacitor.getPlatform() !== "web",
-      webBluetooth: typeof navigator.bluetooth?.requestDevice !== "undefined",
-      webSerial: typeof navigator.serial?.requestPort !== "undefined",
-    };
   }
 
   /** Find check array has subarray at index */

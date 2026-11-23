@@ -1,5 +1,5 @@
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
+import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { modelsLibrary } from "../printer_models";
@@ -193,7 +193,11 @@ export class NiimbotBluetoothClient extends NiimbotAbstractClient {
     }
   }
 
-  public getType(): NiimbotClientType {
+  public getType(): string {
     return "bluetooth";
+  }
+
+  public static override isAvailable(): boolean {
+    return typeof navigator.bluetooth?.requestDevice !== "undefined";
   }
 }

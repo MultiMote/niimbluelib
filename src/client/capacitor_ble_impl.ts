@@ -1,8 +1,9 @@
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
+import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
+import { Capacitor } from "@capacitor/core";
 
 /**
  * @category Client
@@ -144,7 +145,11 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
     }
   }
 
-  public override getType(): NiimbotClientType {
+  public override getType(): string {
     return "capacitor-ble";
+  }
+
+  public static override isAvailable(): boolean {
+    return Capacitor.getPlatform() !== "web";
   }
 }

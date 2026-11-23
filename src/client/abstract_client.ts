@@ -24,7 +24,6 @@ import {
 import { findPrintTask, PrintTaskName } from "../print_tasks";
 import { Utils, Validators } from "../utils";
 import { CombinedRfidInfo, HeartbeatData, PrinterInfo, PrintError } from "../packets/dto";
-import { NiimbotClientType } from ".";
 
 /**
  * Represents the connection result information.
@@ -602,5 +601,9 @@ export abstract class NiimbotAbstractClient extends EventEmitter<ClientEventMap>
     this.fetchRfidOnPrintEnd = value;
   }
 
-  public abstract getType(): NiimbotClientType;
+  public abstract getType(): string;
+
+  public static isAvailable(): boolean {
+    return false;
+  }
 }

@@ -1,5 +1,8 @@
-# 0.49.2
+# 0.45.0
 
+* **BREAKING:** Remove `instantiateClient`, `NiimbotClientType`, `Utils.isBluetoothSupported`, `Utils.isSerialSupported`, and `Utils.getAvailableTransports`. Instantiate clients directly or create own factory.
+* Add `NiimbotAbstractClient.isAvailable` static method to check transport availability (e.g. `NiimbotBluetoothClient.isAvailable()`).
+* `getType` now returns `string`, allowing custom client types.
 * Fix race when a response arrives before `waitForPacket` starts listening (fast transports, e.g. USB serial).
 * Increase `rfidInfo` timeout to 5.5 seconds (some printers take a long time to respond to this command).
 
@@ -63,7 +66,7 @@
 # 0.0.1-alpha.45
 
 * node: fix BLE scan and connection setup.
-* Add `NiimbotClientType.getType`.
+* Add `NiimbotAbstractClient.getType`.
 * Add statusPollTimer cleanup to printEnd.
 * `AbstractPrintTask`:
    - Add `isSupportColor`, `setPrintOptions`, `reset` (allow reusing the same print task for multiple print jobs).
