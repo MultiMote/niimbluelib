@@ -1,10 +1,11 @@
-# 0.45.0
+# 0.50.0
 
 * **BREAKING:** Remove `instantiateClient`, `NiimbotClientType`, `Utils.isBluetoothSupported`, `Utils.isSerialSupported`, and `Utils.getAvailableTransports`. Instantiate clients directly or create own factory.
 * Add `NiimbotAbstractClient.isAvailable` static method to check transport availability (e.g. `NiimbotBluetoothClient.isAvailable()`).
 * `getType` now returns `string`, allowing custom client types.
 * Fix race when a response arrives before `waitForPacket` starts listening (fast transports, e.g. USB serial).
 * Increase `rfidInfo` timeout to 5.5 seconds (some printers take a long time to respond to this command).
+* `AbstractPrintTask.printheadPixels`: prefer value returned from printer.
 
 # 0.49.1
 
