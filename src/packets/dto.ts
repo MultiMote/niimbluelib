@@ -75,10 +75,15 @@ export interface RfidInfo {
   uuid2?: string;
   barCode: string;
   serialNumber: string;
+  /**
+   * Usage limit rather than the label count: e.g. a 95-label B1 Pro roll reports 114 here and 95 in {@link capacity}.
+   */
   allPaper: number;
   usedPaper: number;
   consumablesType: LabelType;
+  /** Actual label count of the roll */
   capacity?: number;
+  classCode?: number;
 }
 
 /**
@@ -99,6 +104,11 @@ export interface HeartbeatData {
   wifiRssi?: number;
   lightingErrorCode?: number;
   voltageState?: number;
+  firmwareUpgradeStatus?: number;
+  cutterStatus?: number;
+  wifiUpgradeStatus?: number;
+  bluetoothUpgradeStatus?: number;
+  faultEventFrames?: number;
 }
 
 /**
@@ -129,6 +139,14 @@ export interface SoundSettings {
 export interface PrinterStatusData {
   supportColor: boolean;
   protocolVersion: number;
+  /** data[11] */
+  versionMajor?: number;
+  /** data[12] */
+  versionMinor?: number;
+  /** data[2..3] */
+  cacheRows?: number;
+  /** data[4..5], rows per data block (B1 Pro: 150, matches the number of 0xD3 packets sent during print) */
+  blockRows?: number;
 }
 
 /**
