@@ -151,7 +151,8 @@ export abstract class AbstractPrintTask {
   abstract waitForFinished(): Promise<void>;
   /** Printer's printhead resolution in pixels */
   protected printheadPixels(): number | undefined {
-    return this.protocol.getClient().getModelMetadata()?.printheadPixels;
+    return this.protocol.getClient().getPrinterInfo().printheadWidth
+            ?? this.protocol.getClient().getModelMetadata()?.printheadPixels;
   }
   /** End print, cleanup */
   async printEnd(): Promise<boolean> {

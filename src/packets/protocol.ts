@@ -343,13 +343,14 @@ export class NiimbotProtocol {
 
   /** Read paper nfc tag info */
   public async rfidInfo(): Promise<RfidInfo> {
-    const packet = await this.send(PacketGenerator.rfidInfo());
+    // On some printers (B1 Pro), this command can take a long time to respond, so we set a longer timeout.
+    const packet = await this.send(PacketGenerator.rfidInfo(), 5_500);
     return PacketParser.parseRfidInfoResponse(packet);
   }
 
   /** Read ribbon nfc tag info */
   public async rfidInfo2(): Promise<RfidInfo> {
-    const packet = await this.send(PacketGenerator.rfidInfo2());
+    const packet = await this.send(PacketGenerator.rfidInfo2(), 5_500);
     return PacketParser.parseRfidInfoResponse(packet);
   }
 

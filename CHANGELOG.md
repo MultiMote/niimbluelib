@@ -1,3 +1,13 @@
+# 0.50.0
+
+* **BREAKING:** Remove `instantiateClient`, `NiimbotClientType`, `Utils.isBluetoothSupported`, `Utils.isSerialSupported`, and `Utils.getAvailableTransports`. Instantiate clients directly or create own factory.
+* **BREAKING:** Remove `NiimbotCapacitorBleClient`. Extend `NiimbotAbstractClient` yourself if you need it ([see docs](https://libdocs.niim.blue/documents/Implementing_your_own_client.html)).
+* Add `NiimbotAbstractClient.isAvailable` static method to check transport availability (e.g. `NiimbotBluetoothClient.isAvailable()`).
+* `getType` now returns `string`, allowing custom client types.
+* Fix race when a response arrives before `waitForPacket` starts listening (fast transports, e.g. USB serial).
+* Increase `rfidInfo` timeout to 5.5 seconds (some printers take a long time to respond to this command).
+* `AbstractPrintTask.printheadPixels`: prefer value returned from printer.
+
 # 0.49.1
 
 * Fix slow printing and firmware transfers when the browser tab is in the background: `Utils.sleep` now runs its timer in a Web Worker (browsers throttle window timers on hidden pages), falling back to `setTimeout` when workers are unavailable.
@@ -58,7 +68,7 @@
 # 0.0.1-alpha.45
 
 * node: fix BLE scan and connection setup.
-* Add `NiimbotClientType.getType`.
+* Add `NiimbotAbstractClient.getType`.
 * Add statusPollTimer cleanup to printEnd.
 * `AbstractPrintTask`:
    - Add `isSupportColor`, `setPrintOptions`, `reset` (allow reusing the same print task for multiple print jobs).

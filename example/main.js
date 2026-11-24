@@ -1,3 +1,5 @@
+import { NiimbotSerialClient } from "@mmote/niimbluelib";
+import { NiimbotBluetoothClient } from "@mmote/niimbluelib";
 import {
   Utils,
   RequestCommandId,
@@ -5,7 +7,6 @@ import {
   ImageEncoder,
   PageColorType,
   printTaskNames,
-  instantiateClient,
 } from "@mmote/niimbluelib";
 
 let client = null;
@@ -124,7 +125,17 @@ const newClient = (transport) => {
     client.disconnect();
   }
 
-  client = instantiateClient(transport);
+  client = undefined;
+
+  if (transport === "bluetooth" && NiimbotBluetoothClient.isAvailable()) {
+    client = new NiimbotBluetoothClient();
+  } else if (transport === "serial"&& NiimbotSerialClient.isAvailable() ) {
+    client = new NiimbotSerialClient();
+  }
+
+  if (!client) {
+    throw new Error(`Client ${transport} is not available`);
+  }
 
   client.on("packetsent", (e) => {
     logger(`>> ${Utils.bufToHex(e.packet.toBytes())} (${RequestCommandId[e.packet.command]})`);
@@ -169,9 +180,8 @@ disconnectButton.onclick = () => {
 
 /** On "Connect BLE" clicked */
 bleConnectButton.onclick = async () => {
-  newClient("bluetooth");
-
   try {
+    newClient("bluetooth");
     await client.connect();
   } catch (e) {
     alert(e);
@@ -180,9 +190,8 @@ bleConnectButton.onclick = async () => {
 
 /** On "Connect Serial" clicked */
 serialConnectButton.onclick = async () => {
-  newClient("serial");
-
   try {
+    newClient("serial");
     await client.connect();
   } catch (e) {
     alert(e);

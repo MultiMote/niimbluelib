@@ -1,5 +1,5 @@
 import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
+import { ConnectionInfo, NiimbotAbstractClient } from ".";
 import { ConnectResult } from "../packets";
 import { Utils } from "../utils";
 
@@ -130,7 +130,11 @@ export class NiimbotSerialClient extends NiimbotAbstractClient {
     }
   }
 
-  public override getType(): NiimbotClientType {
+  public override getType(): string {
     return "serial";
+  }
+
+  public static override isAvailable(): boolean {
+    return typeof navigator.serial?.requestPort !== "undefined";
   }
 }

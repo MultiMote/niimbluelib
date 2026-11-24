@@ -1,34 +1,59 @@
-import { ConnectEvent, DisconnectEvent, RawPacketSentEvent } from "../events";
-import { ConnectionInfo, NiimbotAbstractClient, NiimbotClientType } from ".";
-import { ConnectResult } from "../packets";
-import { Utils } from "../utils";
+---
+title: Implementing your own client
+---
+
+NiimBlueLib ships clients for Web Bluetooth (`NiimbotBluetoothClient`) and Web Serial (`NiimbotSerialClient`).
+Node.js clients (`NiimbotNodeBleClient`, `NiimbotNodeSerialClient`) are available in
+the Node,js version of the library.
+If your platform provides another transport (Capacitor BLE plugin, React Native, ...) you can
+implement your own client by extending `NiimbotAbstractClient`.
+
+## What you have to implement
+
+Extend `NiimbotAbstractClient` and implement four members:
+
+| Member | Description |
+| --- | --- |
+| `connect()` | Open the transport channel, then call `negotiateAndGetPrinterInfo()` and emit `connect`. |
+| `disconnect()` | Close the channel (stop the heartbeat first) and emit `disconnect`. |
+| `isConnected()` | Return `true` when the channel is usable. |
+| `sendRaw(data, force?)` | Write bytes to the printer. |
+
+Plus two trivial ones:
+
+- `getType()` — a unique transport name, e.g. `"my-transport"`.
+- `static isAvailable()` — return `true` when the transport can be used in the current environment.
+
+## Events to emit
+
+- `connect` (`ConnectEvent`) — after a successful handshake.
+- `disconnect` (`DisconnectEvent`) — when the channel is closed, also on unexpected transport loss.
+
+## Example: client based on @capacitor-community/bluetooth-le
+
+A client for native mobile apps using
+[@capacitor-community/bluetooth-le](https://github.com/capacitor-community/bluetooth-le)
+(this client was previously shipped with the library itself):
+
+```ts
 import { BleCharacteristic, BleClient, BleDevice, BleService } from "@capacitor-community/bluetooth-le";
+import { Capacitor } from "@capacitor/core";
+import {
+  ConnectEvent,
+  ConnectResult,
+  DisconnectEvent,
+  ConnectionInfo,
+  NiimbotAbstractClient,
+  RawPacketSentEvent,
+  Utils,
+} from "@mmote/niimbluelib";
 
-/**
- * @category Client
- */
-export interface NiimbotCapacitorBleClientConnectOptions {
-  /**
-   * Skip device picker dialog and connect to given device ID.
-   *
-   * On **Android** this is the BLE MAC address.
-   *
-   * On **iOS** and **web** it is an identifier.
-   */
-  deviceId?: string;
-}
-
-/**
- * Uses [@capacitor-community/bluetooth-le](https://github.com/capacitor-community/bluetooth-le)
- *
- * @category Client
- */
 export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
   private deviceId?: string;
   private serviceUUID?: string;
   private characteristicUUID?: string;
 
-  public async connect(options?: NiimbotCapacitorBleClientConnectOptions): Promise<ConnectionInfo> {
+  public async connect(options?: { deviceId?: string }): Promise<ConnectionInfo> {
     await this.disconnect();
 
     await BleClient.initialize({ androidNeverForLocation: true });
@@ -118,10 +143,12 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
 
   public async disconnect() {
     this.stopHeartbeat();
+
     if (this.deviceId !== undefined) {
       await BleClient.stopNotifications(this.deviceId, this.serviceUUID!, this.characteristicUUID!);
       await BleClient.disconnect(this.deviceId);
     }
+
     this.deviceId = undefined;
   }
 
@@ -137,6 +164,7 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
 
       this.emit("rawpacketsent", new RawPacketSentEvent(data));
     };
+
     if (force) {
       await send();
     } else {
@@ -144,7 +172,21 @@ export class NiimbotCapacitorBleClient extends NiimbotAbstractClient {
     }
   }
 
-  public override getType(): NiimbotClientType {
+  public override getType(): string {
     return "capacitor-ble";
   }
+
+  public static override isAvailable(): boolean {
+    return Capacitor.getPlatform() !== "web";
+  }
 }
+```
+
+Usage:
+
+```ts
+const client = new NiimbotCapacitorBleClient();
+await client.connect();
+// ...
+await client.disconnect();
+```
